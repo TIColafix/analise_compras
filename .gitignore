@@ -1,5 +1,16 @@
 source-data/
 dist/data.json
+docs/qualidade-dados.json
 __pycache__/
+*.log
 node_modules/
+.venv/
 .env
+.env.*
+!.env.example
+PACOTE.json
+*.tmp
+docs/modelo-extraido.json
+docs/qualidade-dados.json
+docs/importacao-erp-*.json
+docs/correcao-descricoes.json
