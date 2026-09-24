@@ -44,3 +44,7 @@ A pedido do usuário, a programação semanal de cimento a granel voltou a ser *
 A agenda semanal única possui filtro rápido de empresa: **Todas / Colafix / Fixcol / Argamazza**. O padrão é Todas; selecionar uma empresa apenas filtra a visualização da semana, sem alterar, mover ou apagar os registros.
 
 No cimento **a granel**, o cadastro passou a exigir **Quantidade do pedido** e **Descrição do cimento** (ex.: `32 t` e `CP II Z 40`). Os campos aparecem também nos cartões da programação semanal e na listagem de cargas. Foram adicionados somente ao granel; o ensacado mantém o fluxo anterior. Registros antigos sem esses campos continuam exibidos com `—` até serem editados.
+
+## Cimento ensacado
+
+Em 24/09/2026 o módulo **Cimento ensacado** passou a usar a mesma agenda semanal do granel, mas com os campos do controle operacional mostrado pelo usuário: **Data, Entrega/Empresa, Produto/Cimento, Quantidade em SC, Cidade, NF, OC, Freteiro/Transportador, OC Freteiro, Valor do frete, Status e Observações**. Na agenda, o cartão reproduz essa ordem de informações (CARGA/produto, entrega, quantidade, cidade, NF, OC, freteiro, OC freteiro e valor do frete). O filtro semanal por empresa e o histórico/status são mantidos. Campos novos são compatíveis com registros antigos, que podem permanecer vazios até edição.
