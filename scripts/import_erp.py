@@ -30,7 +30,7 @@ def parse_erp(folder):
  stocks={};current=None
  for pi,txt in enumerate(texts[FILES[2]],1):
   for line in txt.splitlines():
-   m=re.match(r'^([A-Z]+\d+)\s+(.*)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+(.+)
+   m=re.match(r'^([A-Z]+\\d+)\\s+(.*)\\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\\s+(.+)$',line)
    if m:
     name_start=m.start(2);name_end=m.start(3);id,name,unit,rest=m.groups();values=re.findall(r'-?[\d.]+,\d+',rest)
     if id in stocks:raise ValueError('Item de saldo repetido: '+id)
