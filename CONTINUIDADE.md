@@ -70,3 +70,8 @@ Em 24/09/2026 o controle de Prazos de entrega recebeu uma carga inicial baseada 
 ### Correção do saldo FOCCO de 24/09/2026
 
 O relatório REST0331.pdf revelou que o parser de saldos aceitava apenas as unidades KG, UN, SC, MT e PC. Quando encontrou AB0010 com unidade CX, a linha do item não era reconhecida e os almoxarifados desse item eram associados indevidamente ao item anterior AB0009, gerando o falso erro `Almoxarifado duplicado: AB0009`. O parser foi ampliado para as unidades observadas no relatório (incluindo CX, FD, L, TON, PCT, RL, BD e PAR) e a descrição passou a usar correspondência gulosa para não confundir palavras da descrição com a unidade. Validação direta no REST0331.pdf: 991 itens de saldo reconhecidos, nenhum item sem almoxarifado, nenhum almoxarifado duplicado e todos os 991 saldos reconciliados com a soma dos almoxarifados. O histórico não foi alterado por essa correção; ela atua somente na leitura de novos lotes.
+
+
+### Primeira carga diária em computador novo
+
+Em 24/09/2026 o fluxo de Importações foi ajustado para o uso operacional definido pelo usuário: todos os dias são enviados três relatórios do ERP (necessidades CSV, perfil PDF e saldos PDF). Se `dist/data.json` ainda não existir, **Conferir arquivos** não falha mais por ENOENT e **Salvar lote** cria a base local inicial diretamente a partir do primeiro lote válido. Os lotes seguintes acrescentam novas datas ao histórico, mantendo as anteriores e sem permitir substituição silenciosa de um lote diferente na mesma data. A criação inicial não inventa dados históricos de Excel: estruturas sem fonte no lote diário começam vazias e passam a ser preenchidas conforme os relatórios disponíveis.
