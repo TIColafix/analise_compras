@@ -38,3 +38,5 @@ Em 24/09/2026 a área de cimento ganhou uma visão **Programação semanal**, in
 A programação semanal também possui navegação por semana (anterior, hoje e próxima), botão **+ Agendar carga** em cada dia útil que abre o cadastro com a data preenchida e não exibe o aviso da base Power BI nas telas de cimento, pois esse módulo é independente do MRP.
 
 A agenda de cimento passou a separar visualmente as programações por empresa: **Cimento Colafix**, **Cimento Fixcol** e **Cimento Argamazza**. A empresa selecionada filtra tanto a programação semanal quanto a lista de cargas e é preenchida automaticamente ao iniciar um novo agendamento pelo dia. Os registros continuam na mesma persistência, preservando histórico e o campo `company`.
+
+A pedido do usuário, a programação semanal de cimento a granel voltou a ser **uma agenda única**: Colafix, Fixcol e Argamazza aparecem juntas na mesma semana. Quando houver várias cargas no mesmo dia, os cartões ficam um abaixo do outro e cada cartão identifica claramente a empresa. A tela **Todas as cargas** continua permitindo filtrar por empresa. Isso altera apenas a visualização, sem mover ou apagar registros.
