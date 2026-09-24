@@ -60,3 +60,8 @@ Em 24/09/2026 foi criada uma aba **Diesel**, separada dos módulos de cimento, u
 ## Prazos de entrega
 
 Em 24/09/2026 foi criada a aba **Prazos de entrega** para controle manual dos pedidos de compra. Campos: Código, Produto, Pedido de compra, Contato, Fornecedor, Status, Data de entrega prevista, Quantidade, Frete, UN, Nova data e Observação. A data original é preservada; reprogramações usam **Nova data** e todas as edições ficam no histórico do registro. A tela possui indicadores de atrasados, próximos 7 dias, aguardando entrega e entregues, além de filtros por fornecedor, status e busca. A tabela destaca atrasados em vermelho, próximos 7 dias em amarelo e entregues em verde. Persistência independente em `source-data/delivery-deadlines.json`, com backup antes de cada gravação; não alterar dados do MRP/ERP.
+
+
+### Carga inicial dos prazos
+
+Em 24/09/2026 o controle de Prazos de entrega recebeu uma carga inicial baseada nas linhas pendentes da planilha fornecida pelo usuário. Os registros iniciais ficam em dist/delivery-deadlines-initial.json e são mesclados com a persistência local sem sobrescrever registros locais com o mesmo ID. Linhas já entregues não fazem parte da carga inicial. Valores da coluna Nova data que não eram datas futuras coerentes foram preservados como observação para revisão, sem alterar a data efetiva do pedido.
