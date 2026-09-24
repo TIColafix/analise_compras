@@ -29,3 +29,8 @@ Conexão GitHub autorizada para analise_compras. Código preparado para envio pe
 ## Ajuste de inicialização sem base local
 
 Corrigido em 24/09/2026: quando `dist/data.json` ainda não existe em um PC recém-clonado, a falha de carregamento não interrompe mais a navegação. A tela **Importações** e as áreas independentes continuam acessíveis para permitir carregar a base local. Dashboard, MRP, Estoque e Movimentações permanecem sem cálculo até existir uma base válida. A correção não cria, substitui nem apaga `data.json`, históricos, ajustes ou cargas locais.
+
+
+## Programação semanal de cimento
+
+Em 24/09/2026 a área de cimento ganhou uma visão **Programação semanal**, inspirada na planilha operacional `PROGRAMAÇÃO CIMENTO GRANEL.xlsx`. A agenda mostra segunda a sexta, quantidade de cargas por dia e cartões com fornecedor, pedido do sistema, pedido/contrato do fornecedor, NF, empresa, transportador, status e observações/avisos. A área **Todas as cargas** mantém cadastro, edição, filtros, status e histórico já existentes. Nenhum dado histórico foi importado automaticamente da planilha; a mudança é somente de interface e reaproveita `source-data/cement-loads.json`.
