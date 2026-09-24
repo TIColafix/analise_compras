@@ -66,11 +66,25 @@ def parse_erp(folder):
   if r['id'] not in items:raise ValueError('Item CSV sem perfil: '+r['id'])
   if r['unit']!=items[r['id']]['unit']:raise ValueError('Unidade CSV/perfil divergente: '+r['id'])
  return dict(date=reportdate,params=list(items.values()),movements=moves,stocks=list(stocks.values()),requests=requests,files=[dict(name=f,sha256=hashlib.sha256((folder/f).read_bytes()).hexdigest()) for f in FILES])
+def initial_data(batch):
+ snapshot=batch['date'];catalog={}
+ for r in batch['params']+batch['stocks']+batch['requests']:
+  row=catalog.setdefault(r['id'],dict(id=r['id'],name=r.get('name') or r['id'],supplier='',unit=r.get('unit','')))
+  if not row.get('name') and r.get('name'):row['name']=r['name']
+  if not row.get('unit') and r.get('unit'):row['unit']=r['unit']
+ return dict(meta=dict(files=[],counts={},imported=datetime.datetime.now().isoformat(timespec='seconds'),erpImports=[],preferredDate=snapshot),catalog=list(catalog.values()),params=[],daily=[],weekly=[],monthly=[],movements=[],history=[],issues=[],parameterEdits=[],paramSnapshots=[],requests=[],reportProfiles=[])
+
 def import_erp(folder=ROOT/'source-data/erp'):
- batch=parse_erp(folder);target=ROOT/'dist/data.json';data=json.loads(target.read_text(encoding='utf8'));snapshot=batch['date'];signature=hashlib.sha256(json.dumps(batch['files'],sort_keys=True).encode()).hexdigest()
+ batch=parse_erp(folder);target=ROOT/'dist/data.json'
+ if target.exists():
+  data=json.loads(target.read_text(encoding='utf8'))
+ else:
+  target.parent.mkdir(parents=True,exist_ok=True);data=initial_data(batch)
+ snapshot=batch['date'];signature=hashlib.sha256(json.dumps(batch['files'],sort_keys=True).encode()).hexdigest()
  if any(r.get('signature')==signature for r in data['meta'].get('erpImports',[])):print('Lote ERP já importado; nenhuma duplicação.');return
  if any(r['date']==snapshot for r in data['meta'].get('erpImports',[])):raise ValueError('Já existe outro lote nesta data. Para preservar o histórico, a substituição não é permitida.')
- backup=ROOT/'source-data/backups';backup.mkdir(parents=True,exist_ok=True);shutil.copy2(target,backup/('before-'+datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')+'.json'))
+ backup=ROOT/'source-data/backups';backup.mkdir(parents=True,exist_ok=True)
+ if target.exists():shutil.copy2(target,backup/('before-'+datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')+'.json'))
  audit=dict(date=snapshot,files=batch['files'],counts={k:len(batch[k]) for k in ['requests','params','stocks','movements']},notes=[],changes=[])
  def replace_rows(key,new,keyfn):
   keys={keyfn(r) for r in new};old=[r for r in data.get(key,[]) if keyfn(r) in keys];data[key]=[r for r in data.get(key,[]) if keyfn(r) not in keys]+new;audit['changes'].append(dict(table=key,replaced=len(old),imported=len(new)))
