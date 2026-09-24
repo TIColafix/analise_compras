@@ -44,3 +44,6 @@
 .cement-week-nav{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}.cement-week-nav button,.cement-add-day{border:1px solid #d3d8df;border-radius:5px;background:white;color:#414954;padding:7px 10px;cursor:pointer;font-size:12px}.cement-week-nav button:hover,.cement-add-day:hover{border-color:#ed353e;color:#c92f3a}.cement-add-day{width:100%;border-style:dashed;background:#fff}.cement-day-empty{margin-top:0}@media(max-width:700px){.cement-week-nav button{flex:1;min-width:120px}}
 
 .cement-company-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}.cement-company-tabs button{border:1px solid #d5d9df;background:#fff;color:#4d5560;border-radius:6px;padding:12px 18px;cursor:pointer;font-weight:700}.cement-company-tabs button[aria-pressed="true"]{background:#ed353e;border-color:#ed353e;color:#fff}.cement-company-tabs button:hover{border-color:#ed353e}@media(max-width:700px){.cement-company-tabs button{flex:1;min-width:145px}}
+
+/* Programação semanal única: cargas de todas as empresas no mesmo dia, uma abaixo da outra. */
+.cement-load-card>div>strong{font-weight:700}.cement-load-card.company-colafix{border-left-color:#ed353e}.cement-load-card.company-fixcol{border-left-color:#3982c4}.cement-load-card.company-argamazza{border-left-color:#c28a2c}
