@@ -1,7 +1,7 @@
 import {readFile,writeFile,mkdir,rename} from 'node:fs/promises';
 import {join} from 'node:path';
 import {randomUUID} from 'node:crypto';
-export const companies=['Colafix','Fixcol','Argamazza'],suppliers=['Votorantim','Intercement'],carriers=['Itamar','Marielo'],statuses=['Agendado','Carregado','Entregue','Cancelado'];
+export const companies=['Colafix','Fixcol','Argamazza'],suppliers=['Votorantim','Intercement'],carriers=['Itamar','Marielo','CHAPELÃO','IVAN FREDERICO'],statuses=['Agendado','Carregado','Entregue','Cancelado'];
 export async function readLoads(root){try{return JSON.parse(await readFile(join(root,'source-data/cement-loads.json'),'utf8'));}catch(e){if(e.code==='ENOENT')return {loads:[]};throw e;}}
 export async function saveLoad(root,input){const data=await readLoads(root),old=input.id?data.loads.find(r=>r.id===input.id):null;
  if(input.id&&!old)throw Error('Carga não encontrada.');if(old&&input.version!==old.version)throw Error('Esta carga foi alterada em outra janela. Recarregue antes de salvar.');
