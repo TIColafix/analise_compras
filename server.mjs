@@ -1,5 +1,5 @@
 import {existsSync} from 'node:fs';
-import {readLoads,saveLoad} from './cement-store.mjs';
+import {readLoads,saveLoad,readDiesel,saveDiesel} from './cement-store.mjs';
 import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile,rename} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
@@ -21,6 +21,7 @@ createServer(async(req,res)=>{try{
  const path=new URL(req.url,'http://localhost').pathname;
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
  if(path==='/api/cement'&&req.method==='GET')return reply(res,200,await readLoads(root));
+ if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path.startsWith('/api/')){
   if(req.method!=='POST')return reply(res,405,{error:'Método não permitido.'});
   if(!['http://127.0.0.1:4173','http://localhost:4173'].includes(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Importação permitida apenas pela aplicação local.'});
@@ -28,6 +29,7 @@ createServer(async(req,res)=>{try{
   busy=true;try{const input=await body(req);
    if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
  if(path==='/api/cement')return reply(res,200,{ok:true,load:await saveLoad(root,input)});
+   if(path==='/api/diesel')return reply(res,200,{ok:true,load:await saveDiesel(root,input)});
    if(path==='/api/parameters'){
     const target=join(root,'dist/data.json'),raw=await readFile(target,'utf8'),data=JSON.parse(raw);
     if(!data.catalog.some(r=>r.id===input.id)||!/^\d{4}-\d{2}-\d{2}$/.test(input.date)||![...data.daily,...data.weekly,...(data.reportProfiles||[])].some(r=>r.id===input.id&&r.date===input.date))throw Error('Item ou data inválidos.');
