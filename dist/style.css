@@ -47,3 +47,5 @@
 
 /* Programação semanal única: cargas de todas as empresas no mesmo dia, uma abaixo da outra. */
 .cement-load-card>div>strong{font-weight:700}.cement-load-card.company-colafix{border-left-color:#ed353e}.cement-load-card.company-fixcol{border-left-color:#3982c4}.cement-load-card.company-argamazza{border-left-color:#c28a2c}
+
+.cement-week-company-filter{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:13px}.cement-week-company-filter span{font-size:12px;font-weight:700;color:#59616c;margin-right:2px}.cement-week-company-filter button{border:1px solid #d3d8df;border-radius:5px;background:#fff;color:#414954;padding:6px 11px;cursor:pointer;font-size:12px}.cement-week-company-filter button[aria-pressed="true"]{background:#ed353e;border-color:#ed353e;color:#fff;font-weight:700}
