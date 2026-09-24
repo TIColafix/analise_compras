@@ -48,8 +48,8 @@ createServer(async(req,res)=>{try{
     const id=randomUUID(),folder=join(root,'source-data/imports',id);await mkdir(folder,{recursive:true});
     for(let n=0;n<3;n++){const f=input.files[n];if(typeof f.content!=='string'||!f.content.length)throw Error('Arquivo vazio.');const bytes=Buffer.from(f.content,'base64');if(n>0&&bytes.subarray(0,5).toString()!=='%PDF-')throw Error('Perfil e saldos devem ser arquivos PDF.');await writeFile(join(folder,names[n]),bytes);}
     await writeFile(join(folder,'originais.json'),JSON.stringify(input.files.map(f=>({name:String(f.name)}))));
-    const result=JSON.parse(await run('preview',folder));const data=JSON.parse(await readFile(join(root,'dist/data.json'),'utf8'));
-    const same=data.meta.erpImports?.find(r=>r.date===result.date);result.duplicate=!!same&&result.files.every((f,i)=>same.files[i]?.sha256===f.sha256);result.conflict=!!same&&!result.duplicate;
+    const result=JSON.parse(await run('preview',folder));let data={meta:{erpImports:[]}};try{data=JSON.parse(await readFile(join(root,'dist/data.json'),'utf8'));}catch(e){if(e.code!=='ENOENT')throw e;}
+    const same=data.meta?.erpImports?.find(r=>r.date===result.date);result.duplicate=!!same&&result.files.every((f,i)=>same.files[i]?.sha256===f.sha256);result.conflict=!!same&&!result.duplicate;
     pending.set(id,{folder,result});return reply(res,200,{id,...result});
    }
    if(path==='/api/import/commit'){
