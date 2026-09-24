@@ -65,3 +65,8 @@ Em 24/09/2026 foi criada a aba **Prazos de entrega** para controle manual dos pe
 ### Carga inicial dos prazos
 
 Em 24/09/2026 o controle de Prazos de entrega recebeu uma carga inicial baseada nas linhas pendentes da planilha fornecida pelo usuário. Os registros iniciais ficam em dist/delivery-deadlines-initial.json e são mesclados com a persistência local sem sobrescrever registros locais com o mesmo ID. Linhas já entregues não fazem parte da carga inicial. Valores da coluna Nova data que não eram datas futuras coerentes foram preservados como observação para revisão, sem alterar a data efetiva do pedido.
+
+
+### Correção do saldo FOCCO de 24/09/2026
+
+O relatório REST0331.pdf revelou que o parser de saldos aceitava apenas as unidades KG, UN, SC, MT e PC. Quando encontrou AB0010 com unidade CX, a linha do item não era reconhecida e os almoxarifados desse item eram associados indevidamente ao item anterior AB0009, gerando o falso erro `Almoxarifado duplicado: AB0009`. O parser foi ampliado para as unidades observadas no relatório (incluindo CX, FD, L, TON, PCT, RL, BD e PAR) e a descrição passou a usar correspondência gulosa para não confundir palavras da descrição com a unidade. Validação direta no REST0331.pdf: 991 itens de saldo reconhecidos, nenhum item sem almoxarifado, nenhum almoxarifado duplicado e todos os 991 saldos reconciliados com a soma dos almoxarifados. O histórico não foi alterado por essa correção; ela atua somente na leitura de novos lotes.
