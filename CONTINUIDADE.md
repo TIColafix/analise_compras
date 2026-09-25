@@ -103,3 +103,7 @@ A data recomendada de antecipação é o limite calculado para o saldo do Almox.
 Também foi corrigida a data de início de compra para nunca sugerir uma data futura quando, pela segurança + lead time + buffer, a compra já deveria ter sido iniciada. O Dashboard só oculta um alerta como já comprado quando a quantidade pendente é suficiente **e chega a tempo**; pedido tardio permanece como prioridade de antecipação e pedido insuficiente permanece como necessidade de complemento.
 
 Teste sintético adicionado em `tests/purchase-plan.test.mjs` cobrindo MP0214-like: compra com múltiplo de lote, pedido suficiente atrasado, pedido atrasado insuficiente e pedido suficiente no prazo. Os testes foram adicionados ao repositório, mas não foram executados por esta integração GitHub; executar `node --test tests/*.test.mjs` no PC antes da validação operacional.
+
+### Status direto no card semanal de cimento
+
+Em 25/09/2026 o selo de status dos cards da programação semanal passou a ser editável no próprio card. O usuário pode trocar diretamente entre **Agendado**, **Carregado**, **Descarregado** e **Cancelado**, sem abrir o formulário completo. A alteração usa a mesma API de cargas, preserva versionamento e histórico. Registros legados com status `Entregue` continuam com estilo de concluído, mas as novas opções operacionais usam `Descarregado`.
