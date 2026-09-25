@@ -136,3 +136,15 @@
 .deadline-table .table-scroll{
   position:relative;
 }
+
+.deadline-scroll-dock{
+  position:sticky;
+  bottom:0;
+  z-index:20;
+  height:17px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  background:#f4f6f8;
+  border-top:1px solid #cfd5dc;
+}
+.deadline-scroll-dock>div{height:1px}
