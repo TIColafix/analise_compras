@@ -74,3 +74,19 @@ Conferência adicional: cinco coberturas/status da imagem de estoque e os nove v
 ## Verificação final desta versão
 
 Sete testes automatizados aprovados: cartões MP0023, cinco linhas de estoque, ausência de média mensal, duplicidade/conflito, OFA/OFP, nove valores históricos e consumo ausente. Navegador: filtros, seleção, datas históricas, quatro telas em 390 px sem transbordamento horizontal e seleção WebMCP válida/inválida. A conferência é por amostras e regras, não execução exaustiva do motor DAX.
+
+
+## Regra operacional de recomendação de compras
+
+A partir de 25/09/2026, além das fórmulas recuperadas do Power BI, a aplicação possui uma regra operacional explícita solicitada pelo usuário. Esta regra **não é atribuída ao DAX original**.
+
+- A aba **Prazos de entrega** é a fonte dos pedidos já comprados e ainda aguardando recebimento.
+- O cruzamento exige mesmo código do item e mesma unidade. Entregas parciais consideram somente o saldo pendente. A data efetiva é `Nova data` quando informada; caso contrário, usa a entrega prevista original.
+- Para proteção contra falta, o motor usa como taxa diária a maior entre o consumo diário projetado OFA/OFP do snapshot e o consumo médio mensal dividido por 30. Isso evita reduzir artificialmente a necessidade quando uma das duas referências indica consumo maior, sem somá-las e duplicar demanda.
+- A data de necessidade é quando o saldo do Almox. 1 alcança o estoque de segurança. Um pedido comprado precisa chegar até essa data para ser considerado a tempo.
+- Se o pedido comprado for suficiente, mas chegar depois da data de necessidade, a ação é **Antecipar entrega**, mostrando a data máxima recomendada.
+- Se o pedido for atrasado e insuficiente, a ação é **Antecipar + comprar complemento**. Se estiver no prazo mas for insuficiente, a ação é **Comprar complemento**.
+- Quantidade-base a proteger = estoque de segurança + consumo previsto durante `lead time + tempo de segurança` − saldo atual. Pedidos pendentes são abatidos da necessidade adicional. A quantidade final respeita lote mínimo e é arredondada para cima ao lote múltiplo.
+- Se o pedido pendente for suficiente e estiver no prazo, a ação é **Já comprado** e o item pode sair da lista de nova compra do Dashboard. Apenas existir uma OC não basta para esconder o alerta.
+
+A recomendação é apoio operacional. Datas/quantidades dependem da qualidade dos saldos, parâmetros, OFA/OFP e cadastro de Prazos de entrega; casos com dados inválidos continuam bloqueados para revisão.
