@@ -99,3 +99,9 @@
 .deadline-icon-btn:disabled{opacity:.45;cursor:not-allowed}
 .deadline-ok-btn{font-size:19px}
 .deadline-actions{gap:5px}
+
+/* Datas dos prazos sempre legíveis e campo de reprogramação visível */
+.deadlines-grid .deadline-date-col{min-width:112px;width:112px;white-space:nowrap;overflow:visible;text-overflow:clip}
+.deadlines-grid .deadline-newdate-col{min-width:162px;width:162px;white-space:nowrap;overflow:visible}
+.deadlines-grid .deadline-newdate-col .deadline-date-edit{display:flex;align-items:center;flex-wrap:nowrap}
+.deadlines-grid .deadline-newdate-col input[type="date"]{display:block;min-width:120px;width:120px}
