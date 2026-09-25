@@ -192,4 +192,4 @@
 .deadlines-grid tbody tr[data-edit-row]:hover td{box-shadow:inset 0 0 0 9999px rgba(255,255,255,.16)}
 .deadline-purchase-entry [data-cancel-purchase-edit]{margin-left:8px}
 
-.cement-load-card .cement-card-status{width:112px;max-width:none;cursor:pointer;font-size:12px;padding:6px 28px 6px 10px;white-space:nowrap}.cement-load-card .cement-card-status:disabled{cursor:wait;opacity:.7}
+.cement-load-card .cement-card-status{width:124px;min-width:124px;max-width:124px;box-sizing:border-box;cursor:pointer;font-size:12px;padding:6px 30px 6px 10px;white-space:nowrap;overflow:visible}.cement-load-card>div>strong{min-width:0;flex:1}.cement-load-card>div>.cement-card-status{flex:0 0 124px}.cement-load-card .cement-card-status:disabled{cursor:wait;opacity:.7}
