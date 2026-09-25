@@ -63,8 +63,10 @@ def parse_erp(folder):
  if not items or not stocks or unmatched:raise ValueError('Extração incompleta: '+str(unmatched))
  if len({(r['company'],r['order'],r['id']) for r in requests})!=len(requests):raise ValueError('Ordens duplicadas no CSV')
  for r in requests:
-  if r['id'] not in items:raise ValueError('Item CSV sem perfil: '+r['id'])
-  if r['unit']!=items[r['id']]['unit']:raise ValueError('Unidade CSV/perfil divergente: '+r['id'])
+  # Necessidades do CSV podem aparecer sem perfil no PDF do mesmo dia.
+  # Isso é esperado no fluxo diário: o CSV define a necessidade atual e o
+  # perfil apenas complementa parâmetros quando o item estiver presente nele.
+  if r['id'] in items and r['unit']!=items[r['id']]['unit']:raise ValueError('Unidade CSV/perfil divergente: '+r['id'])
  return dict(date=reportdate,params=list(items.values()),movements=moves,stocks=list(stocks.values()),requests=requests,files=[dict(name=f,sha256=hashlib.sha256((folder/f).read_bytes()).hexdigest()) for f in FILES])
 def initial_data(batch):
  snapshot=batch['date'];catalog={}
@@ -89,7 +91,7 @@ def import_erp(folder=ROOT/'source-data/erp'):
  def replace_rows(key,new,keyfn):
   keys={keyfn(r) for r in new};old=[r for r in data.get(key,[]) if keyfn(r) in keys];data[key]=[r for r in data.get(key,[]) if keyfn(r) not in keys]+new;audit['changes'].append(dict(table=key,replaced=len(old),imported=len(new)))
  olddaily={(r['date'],r['id']):r for r in data['daily']};stockmap={r['id']:r for r in batch['stocks']};catalog={r['id']:r for r in data['catalog']};known=set(catalog)
- for r in batch['params']+batch['stocks']:
+ for r in batch['params']+batch['stocks']+batch['requests']:
   existing=catalog.setdefault(r['id'],dict(id=r['id'],name=r['name'],supplier='',unit=r['unit']));existing.setdefault('unit',r['unit'])
   if existing.get('unit') and existing['unit']!=r['unit']:raise ValueError('Unidade diverge do catálogo: '+r['id'])
   existing['unit']=r['unit']
