@@ -82,3 +82,8 @@ Em 24/09/2026 o fluxo de Importações foi ajustado para o uso operacional defin
 Em 25/09/2026 a aba **Prazos de entrega** foi ampliada para o controle operacional: o código do item ganhou largura mínima para não ser truncado; cada pedido passa a mostrar **quantidade pedida, quantidade já entregue e saldo pendente**. O botão **Entrega parcial** registra a quantidade recebida sem finalizar o pedido; enquanto houver saldo, o pedido permanece em `Aguardando entrega` e aparece visualmente como **Parcial**. **Entregar saldo** conclui o restante e muda para `Entregue`. Os eventos de recebimento são guardados em `deliveryEventsJson` e a quantidade acumulada em `deliveredQuantity`, preservando compatibilidade com registros antigos.
 
 A coluna **Nova data** agora é editável diretamente na tabela. Salvar uma nova data preserva a data original e passa a usar a reprogramada para atraso/próxima semana; limpar a nova data volta a considerar a data original. Foi adicionado KPI/filtro de **Parciais**. Entregues continuam no fim da lista, em ordem de data.
+
+
+### Cadastro de pedidos comprados
+
+Em 25/09/2026 a aba **Prazos de entrega** ganhou o cadastro manual **+ Adicionar pedido comprado**. O cabeçalho do pedido registra pedido de compra, contato/comprador, fornecedor, entrega prevista, frete e observação. Um mesmo pedido aceita vários itens; cada item possui código, produto, quantidade e unidade e é salvo como registro independente para permitir acompanhamento individual de entrega parcial, saldo, entrega final e reprogramação. Novos itens entram como **Aguardando entrega** e usam a persistência existente em `source-data/delivery-deadlines.json`, sem alterar a base importada do MRP.
