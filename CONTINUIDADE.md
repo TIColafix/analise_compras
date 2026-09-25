@@ -87,3 +87,8 @@ A coluna **Nova data** agora é editável diretamente na tabela. Salvar uma nova
 ### Cadastro de pedidos comprados
 
 Em 25/09/2026 a aba **Prazos de entrega** ganhou o cadastro manual **+ Adicionar pedido comprado**. O cabeçalho do pedido registra pedido de compra, contato/comprador, fornecedor, entrega prevista, frete e observação. Um mesmo pedido aceita vários itens; cada item possui código, produto, quantidade e unidade e é salvo como registro independente para permitir acompanhamento individual de entrega parcial, saldo, entrega final e reprogramação. Novos itens entram como **Aguardando entrega** e usam a persistência existente em `source-data/delivery-deadlines.json`, sem alterar a base importada do MRP.
+
+
+### Dashboard considera pedidos comprados pendentes
+
+Em 25/09/2026 o Dashboard passou a cruzar **Itens de compra em situação crítica** com a aba **Prazos de entrega**. Para o mesmo código e unidade, pedidos em `Aguardando entrega` têm apenas o saldo ainda não recebido considerado. Se esse saldo comprado for suficiente para cobrir a necessidade calculada até o estoque de segurança, o item deixa de aparecer como compra crítica/urgente no Dashboard. Entregues e cancelados não entram como pendência; entregas parciais consideram somente o saldo restante. O MRP de origem continua preservado e o cruzamento afeta a priorização visual do Dashboard.
