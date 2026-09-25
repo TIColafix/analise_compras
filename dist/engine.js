@@ -5,6 +5,26 @@ export const addDays=(date,n)=>new Date(Date.parse(date)+n*86400000).toISOString
 export const sum=rows=>rows.some(r=>r.qty!=null)?rows.reduce((s,r)=>s+(r.qty??0),0):null;
 const group=(rows,key)=>{const m=new Map();for(const r of rows){const k=key(r);if(!m.has(k))m.set(k,[]);m.get(k).push(r);}return m;};
 function one(rows,key){const v=[...new Set(rows.map(r=>r[key]))];return v.length===1?v[0]:null;}
+function num(v){const n=Number(String(v??'').replace(/\./g,'').replace(',','.'));return Number.isFinite(n)?n:0;}
+function norm(v){return String(v||'').trim().toUpperCase();}
+function roundOrderQty(value,min,multiple){let q=Math.max(0,value||0);if(!q)return 0;if((min??0)>0)q=Math.max(q,min);if((multiple??0)>0)q=Math.ceil(q/multiple)*multiple;return q;}
+export function purchasePlan(item,deadlineOrders=[],date=item.date){
+ const average=divide(item.monthly,30),rate=Math.max(0,item.estimated??0,average??0),start=item.warehouse??0,safety=item.safety??0,lead=Math.max(0,item.lead??0),buffer=Math.max(0,item.buffer??0);
+ const matching=deadlineOrders.filter(r=>norm(r.code)===norm(item.id)&&r.status==='Aguardando entrega'&&norm(r.unit)===norm(item.unit)).map(r=>{const quantity=Math.max(0,num(r.quantity)-num(r.deliveredQuantity));return {...r,pendingQuantity:quantity,effectiveDate:r.newDate||r.deliveryDate||null};}).filter(r=>r.pendingQuantity>0);
+ if(!rate||item.problems?.length)return {action:'Sem cálculo',rate,pending:matching,needDate:null,recommendedArrival:null,recommendedQty:0,additionalQty:0};
+ const daysToSafety=Math.max(0,(start-safety)/rate),needDate=addDays(date,Math.max(0,Math.floor(daysToSafety))),recommendedArrival=needDate;
+ const horizonDays=lead+buffer,target=safety+rate*horizonDays,required=Math.max(0,target-start);
+ const onTime=matching.filter(r=>r.effectiveDate&&r.effectiveDate<=recommendedArrival),late=matching.filter(r=>!r.effectiveDate||r.effectiveDate>recommendedArrival);
+ const onTimeQty=onTime.reduce((s,r)=>s+r.pendingQuantity,0),allPending=matching.reduce((s,r)=>s+r.pendingQuantity,0);
+ const additionalQty=roundOrderQty(Math.max(0,required-allPending),item.min,item.multiple);
+ let action='Não comprar agora';
+ if(!matching.length&&required>0)action='Comprar';
+ else if(matching.length&&late.length&&allPending>=required)action='Antecipar entrega';
+ else if(matching.length&&late.length&&allPending<required)action='Antecipar + comprar complemento';
+ else if(matching.length&&onTimeQty<required)action='Comprar complemento';
+ else if(matching.length)action='Já comprado';
+ return {action,rate,pending:matching,onTime,late,pendingQty:allPending,onTimeQty,needDate,recommendedArrival,target,required,recommendedQty:roundOrderQty(required,item.min,item.multiple),additionalQty};
+}
 export function createEngine(data){
  const catalog=new Map(data.catalog.map(r=>[r.id,r])),params=new Map(data.params.map(r=>[r.id,r]));
  const daily=group(data.daily,r=>r.date),weekly=group(data.weekly,r=>r.date),moves=group(data.movements,r=>r.date+'|'+r.id),month=group(data.monthly,r=>r.id+'|'+r.date?.slice(0,7)),stockHistory=group(data.weekly,r=>r.id);
@@ -28,7 +48,8 @@ export function createEngine(data){
   const estimated=period>0?divide(c.adjusted,period):null,average=divide(i.monthly,30),coverage=divide(i.warehouse,average),messageCoverage=divide(i.warehouse,estimated),afterLead=estimated==null?null:i.warehouse-estimated*i.lead;
   let status='Estoque baixo';const monthDays=new Date(Date.UTC(+date.slice(0,4),+date.slice(5,7),0)).getUTCDate();
   if(i.problems.length)status='Revisar dados';else if(!period||period<=0)status='Período inválido';else if(!estimated)status='Sem consumo';else if(estimated<0)status='Revisar dados';else if(afterLead<i.safety)status='Compra urgente';else if(messageCoverage<=i.lead+i.buffer+2)status='Estoque crítico';else if(messageCoverage<=i.lead+i.buffer+5)status='Estoque baixo';else if(messageCoverage>=monthDays&&messageCoverage>i.lead+i.buffer&&i.warehouse>i.safety)status='Estoque adequado';
-  const buyDate=estimated>0&&!i.problems.length?addDays(date,Math.sign(messageCoverage-i.lead-i.buffer)*Math.ceil(Math.abs(messageCoverage-i.lead-i.buffer))):null;
+  const daysUntilBuy=estimated>0&&!i.problems.length?Math.floor((i.warehouse-i.safety)/estimated)-i.lead-i.buffer:null;
+  const buyDate=daysUntilBuy==null?null:addDays(date,Math.max(0,daysUntilBuy));
   return {...i,...c,date,period,end,estimated,coverage,messageCoverage,afterLead,status,buyDate,orders:c.rows.filter(r=>r.type==='OCL'),needs:['Compra urgente','Estoque crítico','Estoque baixo'].includes(status)};
  });}
  function stock(date){return [...group(weekly.get(date)||[],r=>r.id).values()].map(rs=>{const i=base(rs),c=consumption(i.id,date);const vals=(month.get(i.id+'|'+date.slice(0,7))||[]).map(r=>r.monthly).filter(v=>v!=null),monthly=i.editedMonthly?i.monthly:vals.length?Math.max(...vals):null,dailyMean=divide(monthly,30);const coverage=divide(i.stock,dailyMean),warehouseCoverage=divide(i.warehouse,dailyMean),chosen=warehouseCoverage>0?warehouseCoverage:coverage;
