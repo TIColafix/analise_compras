@@ -75,3 +75,10 @@ O relatório REST0331.pdf revelou que o parser de saldos aceitava apenas as unid
 ### Primeira carga diária em computador novo
 
 Em 24/09/2026 o fluxo de Importações foi ajustado para o uso operacional definido pelo usuário: todos os dias são enviados três relatórios do ERP (necessidades CSV, perfil PDF e saldos PDF). Se `dist/data.json` ainda não existir, **Conferir arquivos** não falha mais por ENOENT e **Salvar lote** cria a base local inicial diretamente a partir do primeiro lote válido. Os lotes seguintes acrescentam novas datas ao histórico, mantendo as anteriores e sem permitir substituição silenciosa de um lote diferente na mesma data. A criação inicial não inventa dados históricos de Excel: estruturas sem fonte no lote diário começam vazias e passam a ser preenchidas conforme os relatórios disponíveis.
+
+
+### Entregas parciais e reprogramação dos prazos
+
+Em 25/09/2026 a aba **Prazos de entrega** foi ampliada para o controle operacional: o código do item ganhou largura mínima para não ser truncado; cada pedido passa a mostrar **quantidade pedida, quantidade já entregue e saldo pendente**. O botão **Entrega parcial** registra a quantidade recebida sem finalizar o pedido; enquanto houver saldo, o pedido permanece em `Aguardando entrega` e aparece visualmente como **Parcial**. **Entregar saldo** conclui o restante e muda para `Entregue`. Os eventos de recebimento são guardados em `deliveryEventsJson` e a quantidade acumulada em `deliveredQuantity`, preservando compatibilidade com registros antigos.
+
+A coluna **Nova data** agora é editável diretamente na tabela. Salvar uma nova data preserva a data original e passa a usar a reprogramada para atraso/próxima semana; limpar a nova data volta a considerar a data original. Foi adicionado KPI/filtro de **Parciais**. Entregues continuam no fim da lista, em ordem de data.
