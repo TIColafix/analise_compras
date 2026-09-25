@@ -5,7 +5,7 @@ export const addDays=(date,n)=>new Date(Date.parse(date)+n*86400000).toISOString
 export const sum=rows=>rows.some(r=>r.qty!=null)?rows.reduce((s,r)=>s+(r.qty??0),0):null;
 const group=(rows,key)=>{const m=new Map();for(const r of rows){const k=key(r);if(!m.has(k))m.set(k,[]);m.get(k).push(r);}return m;};
 function one(rows,key){const v=[...new Set(rows.map(r=>r[key]))];return v.length===1?v[0]:null;}
-function num(v){const n=Number(String(v??'').replace(/\./g,'').replace(',','.'));return Number.isFinite(n)?n:0;}
+function num(v){if(typeof v==='number')return Number.isFinite(v)?v:0;const s=String(v??'').trim();const normalized=s.includes(',')?s.replace(/\./g,'').replace(',','.'):s;const n=Number(normalized);return Number.isFinite(n)?n:0;}
 function norm(v){return String(v||'').trim().toUpperCase();}
 function roundOrderQty(value,min,multiple){let q=Math.max(0,value||0);if(!q)return 0;if((min??0)>0)q=Math.max(q,min);if((multiple??0)>0)q=Math.ceil(q/multiple)*multiple;return q;}
 export function purchasePlan(item,deadlineOrders=[],date=item.date){
