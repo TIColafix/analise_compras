@@ -52,11 +52,11 @@ export function createEngine(data){
   const buyDate=daysUntilBuy==null?null:addDays(date,Math.max(0,daysUntilBuy));
   return {...i,...c,date,period,end,estimated,coverage,messageCoverage,afterLead,status,buyDate,orders:c.rows.filter(r=>r.type==='OCL'),needs:['Compra urgente','Estoque crítico','Estoque baixo'].includes(status)};
  });}
- function stock(date){return [...group(weekly.get(date)||[],r=>r.id).values()].map(rs=>{const i=base(rs),c=consumption(i.id,date);const vals=(month.get(i.id+'|'+date.slice(0,7))||[]).map(r=>r.monthly).filter(v=>v!=null),monthly=i.editedMonthly?i.monthly:vals.length?Math.max(...vals):null,dailyMean=divide(monthly,30);const coverage=divide(i.stock,dailyMean),warehouseCoverage=divide(i.warehouse,dailyMean),chosen=warehouseCoverage>0?warehouseCoverage:coverage;
+ function stock(date){return [...group(weekly.get(date)||[],r=>r.id).values()].map(rs=>{const i=base(rs),c=consumption(i.id,date);const vals=(month.get(i.id+'|'+date.slice(0,7))||[]).map(r=>r.monthly).filter(v=>v!=null),monthly=i.editedMonthly?i.monthly:vals.length?Math.max(...vals):(i.monthly??null),monthlySource=i.editedMonthly?'Ajuste manual / importação posterior':vals.length?'Monitoramento Mensal':'Perfil de Itens / parâmetro vigente',dailyMean=divide(monthly,30);const coverage=divide(i.stock,dailyMean),warehouseCoverage=divide(i.warehouse,dailyMean),chosen=warehouseCoverage>0?warehouseCoverage:coverage;
   let status=i.problems.length?'Revisar dados':coverage==null?'Sem consumo':chosen<i.lead+i.buffer?'Crítico':chosen<i.lead+i.buffer+10?'Atenção':'Ok';
   const prior=(stockHistory.get(i.id)||[]).filter(r=>r.date&&r.date<date),previousDate=prior.map(r=>r.date).sort().at(-1),previous=previousDate?one(prior.filter(r=>r.date===previousDate),'stock'):null,variation=divide(i.stock-previous,previous);
   const orders=c.rows.filter(r=>r.type==='OCL'||r.type==='AVR'),next=orders.filter(r=>r.type==='OCL'&&r.end>date).map(r=>r.end).sort()[0];const rupture=i.problems.length||coverage==null?'Não calculável':coverage<=0?'Ruptura':!next?'Sem pedido':Date.parse(next)>=Date.parse(date)+coverage*86400000?'Risco de ruptura':'Sem risco';
-  return {...i,...c,date,monthly,coverage,warehouseCoverage,status,previousDate,previous,variation,orders,next,rupture,missingMonth:monthly==null};
+  return {...i,...c,date,monthly,monthlySource,coverage,warehouseCoverage,status,previousDate,previous,variation,orders,next,rupture,missingMonth:monthly==null};
  });}
  function dashboard(date){
   const inventory=stock(date),planning=mrp(date),seen=new Set(inventory.map(i=>i.id));
