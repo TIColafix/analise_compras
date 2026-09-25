@@ -148,3 +148,24 @@
   border-top:1px solid #cfd5dc;
 }
 .deadline-scroll-dock>div{height:1px}
+
+
+/* Prazos: dock horizontal sempre acompanha a janela visível */
+#prazos-view .deadline-scroll-dock{
+  position:fixed;
+  left:calc(224px + 28px);
+  right:28px;
+  bottom:0;
+  z-index:50;
+  height:18px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  background:#f4f6f8;
+  border:1px solid #cfd5dc;
+  border-bottom:0;
+  box-shadow:0 -2px 6px rgba(0,0,0,.08);
+}
+#prazos-view[hidden] .deadline-scroll-dock{display:none!important}
+@media(max-width:900px){
+  #prazos-view .deadline-scroll-dock{left:12px;right:12px}
+}
