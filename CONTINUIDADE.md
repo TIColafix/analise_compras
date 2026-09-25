@@ -92,3 +92,14 @@ Em 25/09/2026 a aba **Prazos de entrega** ganhou o cadastro manual **+ Adicionar
 ### Dashboard considera pedidos comprados pendentes
 
 Em 25/09/2026 o Dashboard passou a cruzar **Itens de compra em situação crítica** com a aba **Prazos de entrega**. Para o mesmo código e unidade, pedidos em `Aguardando entrega` têm apenas o saldo ainda não recebido considerado. Se esse saldo comprado for suficiente para cobrir a necessidade calculada até o estoque de segurança, o item deixa de aparecer como compra crítica/urgente no Dashboard. Entregues e cancelados não entram como pendência; entregas parciais consideram somente o saldo restante. O MRP de origem continua preservado e o cruzamento afeta a priorização visual do Dashboard.
+
+
+### Motor operacional de compra com Prazos de entrega
+
+Em 25/09/2026 o MRP passou a tratar **Prazos de entrega** como fonte dos itens já comprados e aguardando chegada. O novo plano por item cruza código e unidade, usa somente saldo pendente de entregas parciais e respeita a data reprogramada quando houver. O motor diferencia **Comprar**, **Já comprado**, **Antecipar entrega**, **Comprar complemento** e **Antecipar + comprar complemento**.
+
+A data recomendada de antecipação é o limite calculado para o saldo do Almox. 1 alcançar o estoque de segurança. A quantidade de reposição protege estoque de segurança + consumo durante lead time e tempo de segurança, abatendo pedidos pendentes e aplicando lote mínimo/múltiplo. A taxa de consumo usada na regra operacional é a maior entre a projeção diária OFA/OFP do snapshot e a média mensal/30, evitando somar as duas referências e duplicar consumo.
+
+Também foi corrigida a data de início de compra para nunca sugerir uma data futura quando, pela segurança + lead time + buffer, a compra já deveria ter sido iniciada. O Dashboard só oculta um alerta como já comprado quando a quantidade pendente é suficiente **e chega a tempo**; pedido tardio permanece como prioridade de antecipação e pedido insuficiente permanece como necessidade de complemento.
+
+Teste sintético adicionado em `tests/purchase-plan.test.mjs` cobrindo MP0214-like: compra com múltiplo de lote, pedido suficiente atrasado, pedido atrasado insuficiente e pedido suficiente no prazo. Os testes foram adicionados ao repositório, mas não foram executados por esta integração GitHub; executar `node --test tests/*.test.mjs` no PC antes da validação operacional.
