@@ -86,3 +86,16 @@
 .deadlines-grid th,.deadlines-grid td{padding-left:10px;padding-right:10px}
 @media(max-width:1200px){.deadline-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.deadline-kpis{grid-template-columns:1fr 1fr}}
+
+/* Ações compactas dos prazos: ícones com descrição nativa no hover */
+.deadlines-grid{min-width:1180px;font-size:12px}
+.deadlines-grid .deadline-code{min-width:76px;width:76px}
+.deadlines-grid .deadline-product{min-width:205px;max-width:270px}
+.deadlines-grid th,.deadlines-grid td{padding:10px 7px}
+.deadline-date-edit{gap:4px}
+.deadline-date-edit input{width:118px;padding:6px 4px}
+.deadline-icon-btn{width:34px;height:34px;min-width:34px;padding:0!important;display:inline-grid;place-items:center;border:1px solid #aeb5bd;border-radius:5px;background:#fff;color:#343a40;font-size:16px;line-height:1;cursor:pointer}
+.deadline-icon-btn:hover{background:#f1f3f5;border-color:#737b85}
+.deadline-icon-btn:disabled{opacity:.45;cursor:not-allowed}
+.deadline-ok-btn{font-size:19px}
+.deadline-actions{gap:5px}
