@@ -193,3 +193,5 @@
 .deadline-purchase-entry [data-cancel-purchase-edit]{margin-left:8px}
 
 .cement-load-card .cement-card-status{width:124px;min-width:124px;max-width:124px;box-sizing:border-box;cursor:pointer;font-size:12px;padding:6px 30px 6px 10px;white-space:nowrap;overflow:visible}.cement-load-card>div>strong{min-width:0;flex:1}.cement-load-card>div>.cement-card-status{flex:0 0 124px}.cement-load-card .cement-card-status:disabled{cursor:wait;opacity:.7}
+
+.diesel-list tbody tr.diesel-row{transition:background-color .12s ease,box-shadow .12s ease}.diesel-list tbody tr.diesel-row:hover{background:#fff0f0;box-shadow:inset 5px 0 0 #ff3b45}.diesel-list tbody tr.diesel-row:hover td{background:transparent}
