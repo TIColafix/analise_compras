@@ -73,3 +73,16 @@
 #prazos-view .deadline-table td:nth-child(12){display:none}
 #prazos-view .deadline-table th:nth-child(13){width:12%}
 #prazos-view .deadline-confirm{width:100%;font-size:12px;padding:8px 5px}
+
+/* Prazos de entrega: preservar código completo e manter ações utilizáveis sem alargar a tela */
+.deadline-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
+.deadlines-grid{table-layout:auto;min-width:1380px}
+.deadlines-grid .deadline-code{min-width:88px;width:88px;font-weight:600;overflow:visible;text-overflow:clip}
+.deadlines-grid .deadline-product{min-width:250px;max-width:330px;overflow:hidden;text-overflow:ellipsis}
+.deadline-date-edit{display:flex;gap:5px;align-items:center}
+.deadline-date-edit input{width:132px;padding:7px 5px;font-size:12px}
+.deadline-date-edit button,.deadline-actions button{padding:8px 10px;white-space:nowrap}
+.deadline-actions{display:flex;gap:6px;align-items:center}
+.deadlines-grid th,.deadlines-grid td{padding-left:10px;padding-right:10px}
+@media(max-width:1200px){.deadline-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.deadline-kpis{grid-template-columns:1fr 1fr}}
