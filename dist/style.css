@@ -105,3 +105,34 @@
 .deadlines-grid .deadline-newdate-col{min-width:162px;width:162px;white-space:nowrap;overflow:visible}
 .deadlines-grid .deadline-newdate-col .deadline-date-edit{display:flex;align-items:center;flex-wrap:nowrap}
 .deadlines-grid .deadline-newdate-col input[type="date"]{display:block;min-width:120px;width:120px}
+
+/* Prazos: preservar conteúdo e manter rolagem horizontal acessível durante a página */
+.deadline-table{overflow:visible}
+.deadline-table .table-scroll{
+  overflow-x:auto;
+  overflow-y:visible;
+  scrollbar-gutter:stable;
+}
+.deadlines-grid{
+  min-width:1540px;
+  table-layout:auto;
+}
+.deadlines-grid th,.deadlines-grid td{
+  overflow:visible;
+  text-overflow:clip;
+}
+.deadlines-grid .deadline-code{min-width:82px;width:auto;white-space:nowrap}
+.deadlines-grid .deadline-product{min-width:310px;max-width:none;white-space:nowrap}
+.deadlines-grid th:nth-child(3),.deadlines-grid td:nth-child(3){min-width:74px;white-space:nowrap}
+.deadlines-grid th:nth-child(4),.deadlines-grid td:nth-child(4){min-width:115px;white-space:nowrap}
+.deadlines-grid th:nth-child(5),.deadlines-grid td:nth-child(5){min-width:150px;white-space:nowrap}
+.deadlines-grid th:nth-child(6),.deadlines-grid td:nth-child(6){min-width:145px;white-space:nowrap}
+.deadlines-grid th:nth-child(8),.deadlines-grid td:nth-child(8),
+.deadlines-grid th:nth-child(9),.deadlines-grid td:nth-child(9),
+.deadlines-grid th:nth-child(10),.deadlines-grid td:nth-child(10){min-width:82px;white-space:nowrap}
+.deadlines-grid th:nth-child(11),.deadlines-grid td:nth-child(11){min-width:55px;white-space:nowrap}
+.deadlines-grid th:last-child,.deadlines-grid td:last-child{min-width:92px;white-space:nowrap}
+/* Chrome/Edge: barra horizontal acompanha a área visível em vez de exigir ir ao fim da lista */
+.deadline-table .table-scroll{
+  position:relative;
+}
