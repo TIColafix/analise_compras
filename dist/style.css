@@ -169,3 +169,20 @@
 @media(max-width:900px){
   #prazos-view .deadline-scroll-dock{left:12px;right:12px}
 }
+
+
+/* Cadastro manual de pedidos comprados */
+.deadline-purchase-entry{margin-bottom:18px}
+.deadline-purchase-entry details>summary{cursor:pointer;font-weight:700;font-size:15px;color:#343a40;padding:3px 0}
+.deadline-purchase-entry form{margin-top:18px}
+.deadline-purchase-common{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.deadline-purchase-common label,.deadline-purchase-item label{display:grid;gap:6px}
+.deadline-purchase-common input,.deadline-purchase-item input{width:100%;padding:10px;border:1px solid #d3d8df;border-radius:5px;background:#fff}
+.deadline-purchase-items{border:1px solid #dde1e6;border-radius:7px;padding:14px;background:#f8f9fb;margin-bottom:14px}
+.deadline-purchase-items>strong,.deadline-purchase-items>small{display:block;margin-bottom:10px}
+.deadline-purchase-items>small{margin-top:9px;margin-bottom:0;color:#737b85}
+.deadline-purchase-item{display:grid;grid-template-columns:130px minmax(260px,2fr) 140px 90px 38px;gap:10px;align-items:end;margin-bottom:10px}
+.deadline-purchase-product{min-width:0}
+.deadline-entry-message{margin:10px 0 0}
+@media(max-width:900px){.deadline-purchase-common{grid-template-columns:1fr 1fr}.deadline-purchase-item{grid-template-columns:1fr 2fr 1fr 80px 38px}}
+@media(max-width:650px){.deadline-purchase-common,.deadline-purchase-item{grid-template-columns:1fr}.deadline-purchase-item [data-remove-purchase]{justify-self:start}}
