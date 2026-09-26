@@ -23,7 +23,7 @@ export function purchasePlan(item,deadlineOrders=[],date=item.date){
  else if(matching.length&&late.length&&allPending<required)action='Antecipar + comprar complemento';
  else if(matching.length&&onTimeQty<required)action='Comprar complemento';
  else if(matching.length)action='Já comprado';
- return {action,rate,pending:matching,onTime,late,pendingQty:allPending,onTimeQty,needDate,recommendedArrival,target,required,recommendedQty:roundOrderQty(required,item.min,item.multiple),additionalQty};
+ const orderByDate=addDays(recommendedArrival,-Math.ceil(lead+buffer));return {action,rate,pending:matching,onTime,late,pendingQty:allPending,onTimeQty,needDate,recommendedArrival,orderByDate,target,required,recommendedQty:roundOrderQty(required,item.min,item.multiple),additionalQty};
 }
 export function createEngine(data){
  const catalog=new Map(data.catalog.map(r=>[r.id,r])),params=new Map(data.params.map(r=>[r.id,r]));
