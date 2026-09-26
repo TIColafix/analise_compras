@@ -225,3 +225,5 @@
 
 /* Dashboard: fontes compactas */
 #dashboard-view .source-info-compact{margin-top:14px;font-size:11px;line-height:1.25}#dashboard-view .source-info-compact h3{font-size:12px;margin:0}#dashboard-view .source-info-compact p{margin:4px 0}#dashboard-view .source-info-compact details{font-size:10px}#dashboard-view .source-info-compact>div,#dashboard-view .source-info-compact>section{padding-top:7px;padding-bottom:7px}
+
+.dash-hero-actions{display:flex;align-items:center;gap:10px}.dash-recalc{border:1px solid #1682e8;background:#edf6ff;color:#1269b7;border-radius:9px;padding:10px 13px;font-weight:700;cursor:pointer}.dash-recalc:hover{background:#dceeff}.dash-recalc:disabled{opacity:.65;cursor:wait}@media(max-width:900px){.dash-hero-actions{width:100%;flex-wrap:wrap}}
