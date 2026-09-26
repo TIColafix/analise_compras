@@ -107,3 +107,12 @@ Teste sintético adicionado em `tests/purchase-plan.test.mjs` cobrindo MP0214-li
 ### Status direto no card semanal de cimento
 
 Em 25/09/2026 o selo de status dos cards da programação semanal passou a ser editável no próprio card. O usuário pode trocar diretamente entre **Agendado**, **Carregado**, **Descarregado** e **Cancelado**, sem abrir o formulário completo. A alteração usa a mesma API de cargas, preserva versionamento e histórico. Registros legados com status `Entregue` continuam com estilo de concluído, mas as novas opções operacionais usam `Descarregado`.
+
+
+### Compras de manutenção
+
+Em 25/09/2026 foi iniciado o módulo independente **Compras Manutenção** para centralizar solicitações que chegam por OC, WhatsApp ou outro meio. A persistência fica em `source-data/maintenance-orders.json`, com backup antes de cada gravação, numeração automática `MAN-0001` etc., versionamento e histórico de alterações. O módulo não altera dados do MRP/ERP.
+
+A primeira interface operacional permite cadastrar material ou serviço, origem, solicitante, responsável pela compra, OC, prioridade, equipamento/setor, quantidade/UM, data necessária, status, fornecedor escolhido, pedido no sistema, entrega prometida e observações. O fluxo contempla Solicitado, Em cotação, Aguardando aprovação, Pedido emitido, Aguardando entrega, Recebido/Concluído, Cancelado e Duplicado. A tela possui indicadores de abertos, em cotação, aguardando entrega e urgentes, busca geral e edição clicando na linha. Durante a digitação da descrição, solicitações abertas com termos semelhantes são exibidas como possível duplicidade para reduzir compras repetidas entre compradores.
+
+A estrutura de dados já reserva `quotesJson` para a próxima evolução de comparação estruturada de cotações por fornecedor. Validação automatizada deste novo módulo ainda deve ser adicionada/executada localmente antes do uso operacional.
