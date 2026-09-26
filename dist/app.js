@@ -1,4 +1,4 @@
-import {createEngine,divide,purchasePlan} from './engine.js';
+import {createEngine,divide,purchasePlan,addDays} from './engine.js';
 const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),fmt=n=>n==null||!Number.isFinite(n)?'—':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(n),dt=d=>d?d.split('-').reverse().join('/'):'—';
 const qty=(n,u)=>fmt(n)+(u?' '+esc(u):' · UM não informada');
 const table=(headers,rows)=>`<div class="table-scroll"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
