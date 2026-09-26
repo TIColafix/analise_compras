@@ -131,3 +131,8 @@ Em 25/09/2026 o cadastro de manutenção passou a registrar, sem alterar os regi
 ## Dashboard operacional
 
 Em 26/09/2026 o Dashboard inicial foi redesenhado no estilo visual aprovado pelo usuário: cartões coloridos, atalhos para todas as áreas operacionais e painéis resumidos clicáveis. A tela usa somente dados já disponíveis na aplicação: MRP/estoque, pedidos da semana, alertas, Prazos de entrega e acessos aos módulos de Cimento, Diesel, Movimentações, Importações e Compras Manutenção. Os detalhes de alertas continuam abrindo sem remover a navegação para o MRP. Não foram inventados dados para módulos que ainda não expõem resumo consolidado ao app principal; nesses casos o cartão funciona como acesso rápido.
+
+
+### Dólar, diesel e clima no Dashboard
+
+Em 26/09/2026 o Dashboard passou a carregar um resumo externo com cotação USD/BRL e previsão de 7 dias para Cachoeirinha/RS. A previsão usa Open-Meteo e é exibida com máxima, mínima, probabilidade de precipitação e ícone por dia. O bloco de Diesel S500 usa o último preço válido já registrado na própria aba Diesel, evitando inventar uma cotação externa diária. Se uma fonte externa falhar, o Dashboard mostra indisponibilidade sem impedir o restante da aplicação. A rota local é GET `/api/external-summary`.
