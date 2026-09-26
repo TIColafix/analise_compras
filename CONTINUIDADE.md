@@ -121,3 +121,8 @@ A estrutura de dados já reserva `quotesJson` para a próxima evolução de comp
 ### Kanban de manutenção
 
 Em 25/09/2026 a visualização principal de **Compras Manutenção** foi transformada em um quadro Kanban/post-it, mantendo a lista como visualização alternativa. As colunas representam Solicitado, Em cotação, Aguardando aprovação, Pedido emitido, Aguardando entrega e Concluído/Cancelado. Cada card mostra número, descrição, solicitante, comprador responsável, origem/OC, prazo necessário, quantidade, equipamento, fornecedor e pedido. O status pode ser alterado diretamente no card e o registro muda de coluna após a gravação. Foram adicionados filtros de status e origem, busca geral e seis indicadores operacionais no topo. O formulário e o aviso de possível duplicidade continuam disponíveis ao clicar no card ou criar nova solicitação.
+
+
+### Dados comerciais da manutenção
+
+Em 25/09/2026 o cadastro de manutenção passou a registrar, sem alterar os registros existentes, valor total, condição de pagamento, data do pedido e data prevista de execução do serviço. Estes dados ficam no bloco comercial reservado em `quotesJson`, preservando compatibilidade com o arquivo local já existente. Valor e condição de pagamento aparecem no post-it. Solicitações em `Aguardando entrega` sem `promisedDate` recebem alerta visual de prazo não informado. A evolução seguinte continua sendo transformar `quotesJson` em comparação estruturada de múltiplos fornecedores/cotações.
