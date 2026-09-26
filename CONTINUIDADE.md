@@ -136,3 +136,8 @@ Em 26/09/2026 o Dashboard inicial foi redesenhado no estilo visual aprovado pelo
 ### Dólar, diesel e clima no Dashboard
 
 Em 26/09/2026 o Dashboard passou a carregar um resumo externo com cotação USD/BRL e previsão de 7 dias para Cachoeirinha/RS. A previsão usa Open-Meteo e é exibida com máxima, mínima, probabilidade de precipitação e ícone por dia. O bloco de Diesel S500 usa o último preço válido já registrado na própria aba Diesel, evitando inventar uma cotação externa diária. Se uma fonte externa falhar, o Dashboard mostra indisponibilidade sem impedir o restante da aplicação. A rota local é GET `/api/external-summary`.
+
+
+### Recálculo após alterações manuais
+
+Em 26/09/2026 foi adicionado recálculo do planejamento quando um pedido em Prazos de entrega é criado ou alterado. Após a gravação, o módulo emite um evento local e `app.js` recarrega os pedidos em aberto, fazendo MRP, cobertura, necessidade complementar e Dashboard usarem imediatamente os novos valores. O Dashboard também ganhou o botão `Recalcular planejamento`, que força a recarga dos pedidos e a renderização dos cálculos sem alterar os dados persistidos. Quantidade de compra pendente continua separada do saldo físico de estoque: alterar um pedido não simula recebimento no almoxarifado.
