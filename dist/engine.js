@@ -11,19 +11,18 @@ function roundOrderQty(value,min,multiple){let q=Math.max(0,value||0);if(!q)retu
 export function purchasePlan(item,deadlineOrders=[],date=item.date){
  const average=divide(item.monthly,30),rate=Math.max(0,item.estimated??0,average??0),start=item.warehouse??0,safety=item.safety??0,lead=Math.max(0,item.lead??0),buffer=Math.max(0,item.buffer??0);
  const matching=deadlineOrders.filter(r=>norm(r.code)===norm(item.id)&&r.status==='Aguardando entrega'&&norm(r.unit)===norm(item.unit)).map(r=>{const quantity=Math.max(0,num(r.quantity)-num(r.deliveredQuantity));return {...r,pendingQuantity:quantity,effectiveDate:r.newDate||r.deliveryDate||null};}).filter(r=>r.pendingQuantity>0);
- if(!rate||item.problems?.length)return {action:'Sem cálculo',rate,pending:matching,needDate:null,recommendedArrival:null,recommendedQty:0,additionalQty:0};
- const daysToSafety=Math.max(0,(start-safety)/rate),needDate=addDays(date,Math.max(0,Math.floor(daysToSafety))),recommendedArrival=needDate;
- const horizonDays=lead+buffer,target=safety+rate*horizonDays,required=Math.max(0,target-start);
+ if(!rate||item.problems?.length)return {action:'Sem cálculo',rate,pending:matching,needDate:null,recommendedArrival:null,orderByDate:null,recommendedQty:0,additionalQty:0};
+ const protectionDays=lead+buffer,reorderPoint=safety+rate*protectionDays;
+ const daysToReorder=Math.max(0,(start-reorderPoint)/rate),orderByDate=addDays(date,Math.floor(daysToReorder));
+ const arrivalDate=addDays(orderByDate,Math.ceil(lead));
+ const daysToSafety=Math.max(0,(start-safety)/rate),needDate=addDays(date,Math.floor(daysToSafety)),recommendedArrival=needDate;
  const onTime=matching.filter(r=>r.effectiveDate&&r.effectiveDate<=recommendedArrival),late=matching.filter(r=>!r.effectiveDate||r.effectiveDate>recommendedArrival);
  const onTimeQty=onTime.reduce((s,r)=>s+r.pendingQuantity,0),allPending=matching.reduce((s,r)=>s+r.pendingQuantity,0);
- const additionalQty=roundOrderQty(Math.max(0,required-allPending),item.min,item.multiple);
+ const required=roundOrderQty(rate*protectionDays,item.min,item.multiple),additionalQty=roundOrderQty(Math.max(0,required-allPending),item.min,item.multiple);
  let action='Não comprar agora';
- if(!matching.length&&required>0)action='Comprar';
- else if(matching.length&&late.length&&allPending>=required)action='Antecipar entrega';
- else if(matching.length&&late.length&&allPending<required)action='Antecipar + comprar complemento';
- else if(matching.length&&onTimeQty<required)action='Comprar complemento';
- else if(matching.length)action='Já comprado';
- const orderByDate=addDays(recommendedArrival,-Math.ceil(lead+buffer));return {action,rate,pending:matching,onTime,late,pendingQty:allPending,onTimeQty,needDate,recommendedArrival,orderByDate,target,required,recommendedQty:roundOrderQty(required,item.min,item.multiple),additionalQty};
+ if(matching.length){if(late.length&&allPending>=required)action='Antecipar entrega';else if(late.length&&allPending<required)action='Antecipar + comprar complemento';else if(onTimeQty<required)action='Comprar complemento';else action='Já comprado';}
+ else action=orderByDate<=date?'Comprar':'Programar compra';
+ return {action,rate,pending:matching,onTime,late,pendingQty:allPending,onTimeQty,needDate,recommendedArrival,orderByDate,arrivalDate,reorderPoint,protectionDays,required,recommendedQty:required,additionalQty};
 }
 export function createEngine(data){
  const catalog=new Map(data.catalog.map(r=>[r.id,r])),params=new Map(data.params.map(r=>[r.id,r]));
