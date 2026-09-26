@@ -21,6 +21,19 @@ createServer(async(req,res)=>{try{
  if(req.headers.host!=='127.0.0.1:4173'&&req.headers.host!=='localhost:4173')return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
+ if(path==='/api/external-summary'&&req.method==='GET'){
+  const get=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
+  let dollar=null,weather=[];
+  try{
+   const j=await get('https://economia.awesomeapi.com.br/json/last/USD-BRL');
+   const x=j.USDBRL;if(x)dollar={value:Number(x.bid),high:Number(x.high),low:Number(x.low),updated:x.create_date||''};
+  }catch{}
+  try{
+   const j=await get('https://api.open-meteo.com/v1/forecast?latitude=-29.9514&longitude=-51.0939&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FSao_Paulo&forecast_days=7');
+   weather=(j.daily?.time||[]).map((date,i)=>({date,code:j.daily.weather_code[i],max:j.daily.temperature_2m_max[i],min:j.daily.temperature_2m_min[i],rain:j.daily.precipitation_probability_max[i]}));
+  }catch{}
+  return reply(res,200,{dollar,weather,updatedAt:new Date().toISOString()});
+ }
  if(path==='/api/cement'&&req.method==='GET')return reply(res,200,await readLoads(root));
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
