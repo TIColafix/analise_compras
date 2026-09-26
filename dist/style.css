@@ -212,3 +212,5 @@
 @media(max-width:1200px){.maintenance-kpis{grid-template-columns:repeat(3,1fr)}}@media(max-width:700px){.maintenance-kpis{grid-template-columns:repeat(2,1fr)}.maintenance-toolbar>input{min-width:100%}.maintenance-view{margin-left:0}.maintenance-board{grid-template-columns:repeat(6,240px)}}
 
 .maintenance-card .maintenance-alert{margin-top:9px;padding:7px 8px;border-radius:5px;background:#fff0f0;color:#b4232c;font-weight:700;border:1px solid #ffc7ca}.maintenance-card p b{font-weight:700}.maintenance-editor input[name="amount"]{font-weight:700}
+
+.cement-whatsapp{margin-top:10px;width:100%;border:1px solid #1f9d55;border-radius:7px;background:#eaf9f0;color:#13733d;font-weight:700;padding:8px 10px;cursor:pointer}.cement-whatsapp:hover{background:#d9f5e4}.cement-whatsapp:focus-visible{outline:2px solid currentColor;outline-offset:2px}
