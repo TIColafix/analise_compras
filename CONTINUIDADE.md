@@ -126,3 +126,8 @@ Em 25/09/2026 a visualização principal de **Compras Manutenção** foi transfo
 ### Dados comerciais da manutenção
 
 Em 25/09/2026 o cadastro de manutenção passou a registrar, sem alterar os registros existentes, valor total, condição de pagamento, data do pedido e data prevista de execução do serviço. Estes dados ficam no bloco comercial reservado em `quotesJson`, preservando compatibilidade com o arquivo local já existente. Valor e condição de pagamento aparecem no post-it. Solicitações em `Aguardando entrega` sem `promisedDate` recebem alerta visual de prazo não informado. A evolução seguinte continua sendo transformar `quotesJson` em comparação estruturada de múltiplos fornecedores/cotações.
+
+
+## Dashboard operacional
+
+Em 26/09/2026 o Dashboard inicial foi redesenhado no estilo visual aprovado pelo usuário: cartões coloridos, atalhos para todas as áreas operacionais e painéis resumidos clicáveis. A tela usa somente dados já disponíveis na aplicação: MRP/estoque, pedidos da semana, alertas, Prazos de entrega e acessos aos módulos de Cimento, Diesel, Movimentações, Importações e Compras Manutenção. Os detalhes de alertas continuam abrindo sem remover a navegação para o MRP. Não foram inventados dados para módulos que ainda não expõem resumo consolidado ao app principal; nesses casos o cartão funciona como acesso rápido.
