@@ -141,3 +141,8 @@ Em 26/09/2026 o Dashboard passou a carregar um resumo externo com cotação USD/
 ### Recálculo após alterações manuais
 
 Em 26/09/2026 foi adicionado recálculo do planejamento quando um pedido em Prazos de entrega é criado ou alterado. Após a gravação, o módulo emite um evento local e `app.js` recarrega os pedidos em aberto, fazendo MRP, cobertura, necessidade complementar e Dashboard usarem imediatamente os novos valores. O Dashboard também ganhou o botão `Recalcular planejamento`, que força a recarga dos pedidos e a renderização dos cálculos sem alterar os dados persistidos. Quantidade de compra pendente continua separada do saldo físico de estoque: alterar um pedido não simula recebimento no almoxarifado.
+
+
+### Manutenção alinhada ao layout aprovado
+
+Em 27/09/2026 a interface de Compras Manutenção foi redesenhada conforme o mockup aprovado, sem alterar ou recriar `source-data/maintenance-orders.json`. O Kanban ganhou KPIs coloridos, cards compactos, alertas de prazo e ações funcionais de visualizar, editar, compartilhar por WhatsApp e avançar etapa. A visualização detalhada mostra o fluxo da solicitação, dados gerais, cotações e histórico. Foi habilitado cadastro de múltiplas cotações dentro de `quotesJson` com `kind: "quote"`, preservando o bloco comercial legado `kind: "commercial"` e os registros existentes. A visualização em lista continua disponível. Não há exclusão automática de solicitações.
