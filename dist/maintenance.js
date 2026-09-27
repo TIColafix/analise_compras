@@ -27,14 +27,14 @@ function quoteNumber(v){const s=String(v??'').trim().replace(/\s/g,'');if(!s)ret
 function deliveryDays(v){const m=String(v??'').match(/\d+/);return m?Number(m[0]):null}
 function paymentScore(v){
   const text=String(v||'').toLowerCase().trim();
-  if(!text)return {score:50,label:'Não informado'};
-  if(/à vista|a vista|avista/.test(text))return {score:15,label:'À vista'};
-  const nums=(text.match(/\d+/g)||[]).map(Number).filter(Number.isFinite);
-  if(!nums.length)return {score:50,label:text};
+  if(!text)return {score:35,label:'Não informado'};
+  if(/à vista|a vista|avista/.test(text))return {score:0,label:'À vista'};
+  const nums=(text.match(/\d+/g)||[]).map(Number).filter(n=>Number.isFinite(n)&&n>0);
+  if(!nums.length)return {score:35,label:text};
   const max=Math.max(...nums),installments=nums.length;
-  const term=Math.min(100,(max/90)*100);
-  const split=Math.min(100,installments*25);
-  return {score:Math.round(term*.7+split*.3),label:text,max,installments};
+  const prazoScore=Math.min(100,(max/90)*100);
+  const parcelaBonus=Math.min(25,Math.max(0,installments-1)*10);
+  return {score:Math.min(100,Math.round(prazoScore+parcelaBonus)),label:text,max,installments};
 }
 function analyzeQuotes(r){
   const q=quotes(r),box=document.querySelector('#mn-quote-analysis');
@@ -45,12 +45,12 @@ function analyzeQuotes(r){
   const scored=data.map(x=>{
     const priceScore=minPrice!=null&&x.price!=null?(minPrice/x.price)*100:50;
     const deliveryScore=minDays!=null&&x.days!=null&&x.days>0?(minDays/x.days)*100:50;
-    const score=priceScore*.40+deliveryScore*.30+x.pay.score*.30;
+    const score=priceScore*.35+deliveryScore*.20+x.pay.score*.45;
     return {...x,priceScore,deliveryScore,score};
   });
   const best=[...scored].sort((a,b)=>b.score-a.score)[0];
   const rows=scored.map(x=>'<tr class="'+(x._i===best._i?'best':'')+'"><td>'+e(x.supplier||'—')+'</td><td>'+money(x.price)+'</td><td>'+e(x.delivery||'A confirmar')+'</td><td>'+e(x.payment||'—')+'</td><td>'+x.priceScore.toFixed(0)+'</td><td>'+x.deliveryScore.toFixed(0)+'</td><td>'+x.pay.score.toFixed(0)+'</td><td><b>'+x.score.toFixed(0)+'%</b></td></tr>').join('');
-  box.innerHTML='<div class="mn-analysis"><div class="mn-analysis-head"><div><span>RECOMENDAÇÃO DO SISTEMA</span><h4>✓ '+e(best.supplier||'Fornecedor')+'</h4><p>Entre as cotações cadastradas, '+e(best.supplier||'este fornecedor')+' apresenta a melhor relação considerando preço, prazo de entrega e condição de pagamento.</p></div><div class="mn-analysis-score"><strong>'+best.score.toFixed(0)+'</strong><span>Índice comparativo</span></div></div><div class="table-scroll"><table><thead><tr><th>Fornecedor</th><th>Preço total</th><th>Prazo entrega</th><th>Condição de pagamento</th><th>Preço (40%)</th><th>Prazo (30%)</th><th>Pagamento (30%)</th><th>Índice</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="mn-analysis-rule"><b>Critério:</b> preço 40% + prazo de entrega 30% + condição de pagamento 30%. No pagamento, prazos mais longos e parcelamentos distribuídos recebem pontuação maior; pagamento à vista recebe pontuação menor. Prazo de entrega “a confirmar” recebe pontuação neutra até ser informado.</p><button class="mn-select-quote">🛒 Comprar com '+e(best.supplier||'fornecedor')+'</button></div>';
+  box.innerHTML='<div class="mn-analysis"><div class="mn-analysis-head"><div><span>RECOMENDAÇÃO DO SISTEMA</span><h4>✓ '+e(best.supplier||'Fornecedor')+'</h4><p>Entre as cotações cadastradas, '+e(best.supplier||'este fornecedor')+' apresenta a melhor relação considerando preço, prazo de entrega e condição de pagamento.</p></div><div class="mn-analysis-score"><strong>'+best.score.toFixed(0)+'</strong><span>Índice comparativo</span></div></div><div class="table-scroll"><table><thead><tr><th>Fornecedor</th><th>Preço total</th><th>Prazo entrega</th><th>Condição de pagamento</th><th>Preço (35%)</th><th>Prazo (20%)</th><th>Pagamento (45%)</th><th>Índice</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="mn-analysis-rule"><b>Critério:</b> preço 35% + prazo de entrega 20% + condição de pagamento 45%. No pagamento, à vista recebe 0 ponto; quanto maior o prazo e quanto mais parcelas, maior a pontuação. Prazo de entrega “a confirmar” recebe pontuação neutra até ser informado.</p><button class="mn-select-quote">🛒 Comprar com '+e(best.supplier||'fornecedor')+'</button></div>';
   box.querySelector('.mn-select-quote').onclick=async()=>{if(!confirm('Confirmar '+e(best.supplier||'fornecedor')+' como fornecedor escolhido?'))return;try{await saveRow(r,{supplier:best.supplier||r.supplier,status:'Pedido emitido'});await load();detail(rows.find(x=>x.id===r.id))}catch(err){alert(err.message)}};
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
