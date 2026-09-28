@@ -14,6 +14,7 @@ const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css
 const types={html:'text/html; charset=utf-8',css:'text/css',js:'text/javascript',svg:'image/svg+xml',json:'application/json; charset=utf-8'};
 const pending=new Map();let busy=false;
 const names=['Necessidades de compra do dia.csv','PERFIL ITENS 27.04.pdf','SALDO ALMOXARIFADOS 27.04.pdf'];
+function runPurchasePdf(file){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_purchase_order.py'),file],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',reject);p.on('close',c=>c?reject(Error(err.trim()||(()=>{try{return JSON.parse(out).error}catch{return 'Falha ao ler pedido PDF.'}})())):resolve(out));});}
 function run(mode,folder){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_erp.py'),mode,folder],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',reject);p.on('close',c=>c?reject(Error(err.trim()||'Falha na importação.')):resolve(out));});}
 async function body(req){let size=0,chunks=[];for await(const chunk of req){size+=chunk.length;if(size>40*1024*1024)throw Error('Limite de 30 MB por lote excedido.');chunks.push(chunk);}return JSON.parse(Buffer.concat(chunks).toString());}
 const reply=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
@@ -58,6 +59,13 @@ createServer(async(req,res)=>{try{
     const backup=join(root,'source-data/backups');await mkdir(backup,{recursive:true});await writeFile(join(backup,'parameters-'+randomUUID()+'.json'),raw);
     const temp=target+'.'+randomUUID()+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);
     return reply(res,200,{ok:true,edit});
+   }
+   if(path==='/api/deadlines/import-pdf'){
+    const f=input.file;if(!f||typeof f.content!=='string'||!f.content.length)throw Error('Selecione o PDF do pedido.');
+    const bytes=Buffer.from(f.content,'base64');if(bytes.subarray(0,5).toString()!=='%PDF-')throw Error('O arquivo deve ser um PDF.');
+    const folder=join(root,'source-data/imports/purchase-orders');await mkdir(folder,{recursive:true});
+    const target=join(folder,randomUUID()+'.pdf');await writeFile(target,bytes);
+    const parsed=JSON.parse(await runPurchasePdf(target));return reply(res,200,{ok:true,...parsed});
    }
    if(path==='/api/import/preview'){
     if(!Array.isArray(input.files)||input.files.length!==3)throw Error('Selecione os três arquivos.');
