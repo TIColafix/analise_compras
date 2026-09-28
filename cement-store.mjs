@@ -6,7 +6,7 @@ export async function readLoads(root){try{return JSON.parse(await readFile(join(
 export async function saveLoad(root,input){const data=await readLoads(root),old=input.id?data.loads.find(r=>r.id===input.id):null;
  if(input.id&&!old)throw Error('Carga não encontrada.');if(old&&input.version!==old.version)throw Error('Esta carga foi alterada em outra janela. Recarregue antes de salvar.');
  const fields=['kind','company','supplier','carrier','scheduledDate','systemOrder','supplierOrder','orderQuantity','cementDescription','invoice','status','notes','bagProduct','bagQuantity','deliveryCity','purchaseOrder','freightOrder','freightValue','bagItemsJson'];const v={};
- for(const key of fields){const raw=input[key]??'';if(typeof raw!=='string')throw Error('Campo inválido: '+key);v[key]=raw.trim();if(v[key].length>(key==='notes'?2000:120))throw Error('Texto muito longo: '+key);}
+ for(const key of fields){const raw=input[key]??'';if(typeof raw!=='string')throw Error('Campo inválido: '+key);v[key]=raw.trim();const maxLength=key==='notes'?2000:key==='bagItemsJson'?4000:120;if(v[key].length>maxLength)throw Error('Texto muito longo: '+key);}
  if(!['granel','ensacado'].includes(v.kind)||!companies.includes(v.company)||!carriers.includes(v.carrier)||!statuses.includes(v.status)||(v.kind==='granel'&&!suppliers.includes(v.supplier)))throw Error('Seleção inválida.');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(v.scheduledDate)||Number.isNaN(Date.parse(v.scheduledDate))||new Date(v.scheduledDate).toISOString().slice(0,10)!==v.scheduledDate)throw Error('Data agendada inválida.');
  if(!old)v.status='Agendado';
