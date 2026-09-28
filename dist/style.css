@@ -250,3 +250,5 @@
 .mn-list-row{cursor:pointer;transition:background-color .15s ease,box-shadow .15s ease}.mn-list-row:hover td{background:#eaf3ff!important}.mn-list-row:active td{background:#dbeafe!important}.mn-list-row td:first-child{border-left:3px solid transparent}.mn-list-row:hover td:first-child{border-left-color:#2563eb}.mn-list-row button{cursor:pointer}
 
 .cement-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0}.cement-card-head>strong{display:block;min-width:0;flex:1;line-height:1.25;overflow-wrap:anywhere}.cement-card-head .cement-card-status{flex:0 0 auto;max-width:118px;margin:0}
+
+.deadline-pdf-import{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 14px;padding:12px;border:1px dashed #93c5fd;border-radius:8px;background:#eff6ff}.deadline-pdf-import strong{color:#1d4ed8}.deadline-pdf-import [data-purchase-pdf-status]{font-size:12px;color:#475569}.deadline-purchase-item{grid-template-columns:minmax(110px,.8fr) minmax(280px,3fr) minmax(110px,.8fr) minmax(145px,1fr) minmax(80px,.6fr) auto!important}
