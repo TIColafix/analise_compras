@@ -6,11 +6,13 @@ export const sum=rows=>rows.some(r=>r.qty!=null)?rows.reduce((s,r)=>s+(r.qty??0)
 const group=(rows,key)=>{const m=new Map();for(const r of rows){const k=key(r);if(!m.has(k))m.set(k,[]);m.get(k).push(r);}return m;};
 function one(rows,key){const v=[...new Set(rows.map(r=>r[key]))];return v.length===1?v[0]:null;}
 function num(v){if(typeof v==='number')return Number.isFinite(v)?v:0;const s=String(v??'').trim();const normalized=s.includes(',')?s.replace(/\./g,'').replace(',','.'):s;const n=Number(normalized);return Number.isFinite(n)?n:0;}
-function norm(v){return String(v||'').trim().toUpperCase();}
+function norm(v){return String(v||'').trim().toUpperCase();}function unit(v){const u=norm(v);return ['UN','UND','UNID','UNIDADE'].includes(u)?'UN':u;}
 function roundOrderQty(value,min,multiple){let q=Math.max(0,value||0);if(!q)return 0;if((min??0)>0)q=Math.max(q,min);if((multiple??0)>0)q=Math.ceil(q/multiple)*multiple;return q;}
 export function purchasePlan(item,deadlineOrders=[],date=item.date){
- const average=divide(item.monthly,30),rate=Math.max(0,item.estimated??0,average??0),start=item.warehouse??0,safety=item.safety??0,lead=Math.max(0,item.lead??0),buffer=Math.max(0,item.buffer??0);
- const matching=deadlineOrders.filter(r=>norm(r.code)===norm(item.id)&&r.status==='Aguardando entrega'&&norm(r.unit)===norm(item.unit)).map(r=>{const quantity=Math.max(0,num(r.quantity)-num(r.deliveredQuantity));return {...r,pendingQuantity:quantity,effectiveDate:r.newDate||r.deliveryDate||null};}).filter(r=>r.pendingQuantity>0);
+ const average=divide(item.monthly,30),rate=Math.max(0,item.estimated??0,average??0),erpStock=item.warehouse??0,safety=item.safety??0,lead=Math.max(0,item.lead??0),buffer=Math.max(0,item.buffer??0);
+ const sameItem=deadlineOrders.filter(r=>norm(r.code)===norm(item.id)&&unit(r.unit)===unit(item.unit));
+ const deliveredAfterSnapshot=sameItem.reduce((sum,r)=>{let events=[];try{events=JSON.parse(r.deliveryEventsJson||'[]')}catch{}return sum+events.filter(x=>String(x.at||'').slice(0,10)>date).reduce((s,x)=>s+num(x.quantity),0)},0),start=erpStock+deliveredAfterSnapshot;
+ const matching=sameItem.filter(r=>r.status==='Aguardando entrega').map(r=>{const quantity=Math.max(0,num(r.quantity)-num(r.deliveredQuantity));return {...r,pendingQuantity:quantity,effectiveDate:r.newDate||r.deliveryDate||null};}).filter(r=>r.pendingQuantity>0);
  if(!rate||item.problems?.length)return {action:'Sem cálculo',rate,pending:matching,needDate:null,recommendedArrival:null,orderByDate:null,recommendedQty:0,additionalQty:0};
  const protectionDays=lead+buffer,reorderPoint=safety+rate*protectionDays;
  const daysToReorder=Math.max(0,(start-reorderPoint)/rate),orderByDate=addDays(date,Math.floor(daysToReorder));
@@ -22,7 +24,7 @@ export function purchasePlan(item,deadlineOrders=[],date=item.date){
  let action='Não comprar agora';
  if(matching.length){if(late.length&&allPending>=required)action='Antecipar entrega';else if(late.length&&allPending<required)action='Antecipar + comprar complemento';else if(onTimeQty<required)action='Comprar complemento';else action='Já comprado';}
  else action=orderByDate<=date?'Comprar':'Programar compra';
- return {action,rate,pending:matching,onTime,late,pendingQty:allPending,onTimeQty,needDate,recommendedArrival,orderByDate,arrivalDate,reorderPoint,protectionDays,required,recommendedQty:required,additionalQty};
+ return {action,rate,pending:matching,onTime,late,pendingQty:allPending,onTimeQty,needDate,recommendedArrival,orderByDate,arrivalDate,reorderPoint,protectionDays,required,recommendedQty:required,additionalQty,erpStock,deliveredAfterSnapshot,planningStock:start};
 }
 export function createEngine(data){
  const catalog=new Map(data.catalog.map(r=>[r.id,r])),params=new Map(data.params.map(r=>[r.id,r]));
