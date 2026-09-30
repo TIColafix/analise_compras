@@ -42,3 +42,5 @@ async function changeDate(id){const r=orders.find(x=>x.id===id);if(!r)return;con
 function busy(on){root.querySelectorAll('.deadline-table button,.deadline-table input').forEach(b=>b.disabled=on)}
 async function refresh(notify=false){const r=await fetch('/api/deadlines'),j=await r.json();if(!r.ok)throw Error(j.error);orders=j.orders||[];render();if(notify)window.dispatchEvent(new CustomEvent('planning:data-changed',{detail:{message:'Pedido alterado. MRP, cobertura e Dashboard recalculados.'}}))}
 refresh().catch(e=>msg.textContent=e.message);
+let deadlinesAutoRefresh=setInterval(()=>{if(document.hidden||!root.isConnected)return;refresh(false).catch(e=>msg.textContent=e.message)},30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&root.isConnected)refresh(false).catch(e=>msg.textContent=e.message)});
