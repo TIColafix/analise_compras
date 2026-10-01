@@ -4,7 +4,7 @@ const statuses=['Solicitado','Em cotação','Aguardando aprovação','Pedido emi
 const d=v=>v?v.split('-').reverse().join('/'):'—';
 const parsed=r=>{try{return JSON.parse(r.quotesJson||'[]')}catch{return[]}};
 const quotes=r=>parsed(r).filter(x=>x&&x.kind==='quote');
-const num=v=>{const x=String(v??'').trim().replace(/R\$\s?/g,'').replace(/\./g,'').replace(',','.');const n=Number(x);return Number.isFinite(n)?n:null};
+const num=v=>{let x=String(v??'').trim().replace(/R\$\s?/gi,'').replace(/\s/g,'');if(!x)return null;if(x.includes(','))x=x.replace(/\./g,'').replace(',','.');else if(/^\d+\.\d{1,2}$/.test(x)){}else x=x.replace(/\./g,'');const n=Number(x);return Number.isFinite(n)?n:null};
 const money=v=>{const n=num(v);return n==null?'—':n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})};
 const payScore=t=>{const x=String(t||'').toLowerCase();if(!x)return 40;if(/vista/.test(x))return 10;const ns=[...x.matchAll(/\d+/g)].map(m=>Number(m[0])).filter(n=>n>0);if(!ns.length)return 35;const avg=ns.reduce((a,b)=>a+b,0)/ns.length;return Math.min(100,Math.round(avg*2+Math.min(ns.length,4)*10))};
 const deliveryScore=v=>{const n=Number(String(v||'').match(/\d+/)?.[0]);return Number.isFinite(n)?Math.max(10,100-n*4):50};
