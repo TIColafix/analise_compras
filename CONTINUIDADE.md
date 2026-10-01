@@ -151,3 +151,13 @@ Em 27/09/2026 a interface de Compras Manutenção foi redesenhada conforme o moc
 ### Importação de pedido PDF em Prazos de entrega
 
 Em 28/09/2026 a aba **Prazos de entrega** ganhou importação de pedido de compra em PDF no formato FoccoERP RPDC0250. O fluxo lê o PDF localmente pelo servidor da aplicação, extrai número do pedido, comprador/contato, fornecedor, frete, condição de pagamento e os itens (código, descrição, quantidade, unidade e data de entrega). A tela preenche uma prévia editável antes de salvar; nada é gravado automaticamente ao selecionar o PDF. Cada item passa a aceitar sua própria data de entrega, usando a data geral como fallback para cadastro manual. O parser inicial foi modelado pelo pedido 7429/Nova Chamfer fornecido pelo usuário. Se o cabeçalho e os itens trouxerem datas divergentes, o importador preserva a data de cada item e exibe aviso para conferência. PDFs importados para leitura ficam na área local ignorada `source-data/imports/purchase-orders`; não enviar dados operacionais ao Git.
+
+
+## Cotações de Matéria Prima
+- Nova aba `#mpquotes`, separada de Compras Manutenção.
+- Registros usam a mesma persistência segura de manutenção com `category: MP`; registros antigos sem categoria continuam na Manutenção e não são migrados.
+- Fluxo: Solicitado, Em cotação, Aguardando aprovação, Pedido emitido, Aguardando entrega, Recebido/Concluído e Cancelado.
+- Cadastro contém empresa, solicitante, comprador, código do material, quantidade/UN, necessidade e observações.
+- Cada solicitação aceita múltiplas cotações com fornecedor, valor, prazo de entrega, condição de pagamento e observação; permite editar e excluir.
+- Análise compara preço 40%, entrega 30% e pagamento 30%, valorizando pagamentos com prazos maiores/parcelados e penalizando à vista.
+- Dados operacionais continuam em `source-data/maintenance-orders.json`; nunca apagar/recriar para testes.
