@@ -161,3 +161,7 @@ Em 28/09/2026 a aba **Prazos de entrega** ganhou importação de pedido de compr
 - Cada solicitação aceita múltiplas cotações com fornecedor, valor, prazo de entrega, condição de pagamento e observação; permite editar e excluir.
 - Análise compara preço 40%, entrega 30% e pagamento 30%, valorizando pagamentos com prazos maiores/parcelados e penalizando à vista.
 - Dados operacionais continuam em `source-data/maintenance-orders.json`; nunca apagar/recriar para testes.
+
+
+## Relatórios operacionais
+Em 01/10/2026 foi criado `dist/reports.js` com painel padronizado de relatório para Diesel, Cimento a granel, Cimento ensacado, Prazos de entrega, Cotações de MP e Compras Manutenção. Cada módulo possui **Imprimir relatório** (A4 horizontal, sem menu da aplicação) e **Baixar Excel** (arquivo .xls com dados em colunas). A primeira versão usa os registros e filtros visíveis na própria tela, sem alterar dados operacionais. Ajustar posteriormente colunas/resumos específicos de cada módulo conforme validação do usuário.
