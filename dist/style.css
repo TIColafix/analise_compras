@@ -261,3 +261,6 @@
 @media(max-width:800px){.mpq-toolbar{grid-template-columns:1fr}.mpq-grid{grid-template-columns:1fr}}
 
 .cement-monthly-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.cement-monthly-head h3{margin:0}.cement-monthly-head button{padding:6px 12px;white-space:nowrap}
+
+/* Relatorios operacionais */
+.report-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-height:44px;margin:0 0 12px;padding:8px 10px;background:#fff;border:1px solid #daddE3;border-radius:6px}.report-actions strong{margin-right:2px}.report-actions span{font-size:11px;color:#7a838e;margin-right:8px}.report-actions button{padding:8px 12px;border:1px solid #bfc7d1;border-radius:5px;background:#fff;cursor:pointer;font-weight:600}.report-actions button:hover{background:#f2f5f8;border-color:#6b7785}@media(max-width:800px){.report-actions{flex-wrap:wrap;justify-content:flex-start}.report-actions span{width:100%}}
