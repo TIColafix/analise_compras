@@ -1,39 +1,34 @@
 (()=>{
-const modules=[
- ['diesel-view','Diesel'],['granel-view','Cimento a granel'],['ensacado-view','Cimento ensacado'],
- ['prazos-view','Prazos de entrega'],['mpquotes-view','Cotações de MP'],['manutencao-view','Compras Manutenção']
-];
-const clean=s=>String(s??'').replace(/\s+/g,' ').trim();
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function visible(el){const st=getComputedStyle(el);return st.display!=='none'&&st.visibility!=='hidden'&&!el.hidden}
-function filters(root){
- return [...root.querySelectorAll('select,input[type="date"],input[type="month"],input[type="search"]')]
- .filter(visible).map(x=>{const l=x.closest('label');return [clean(l?.childNodes?.[0]?.textContent||x.getAttribute('aria-label')||x.placeholder||x.name),clean(x.options?x.options[x.selectedIndex]?.text:x.value)]})
- .filter(x=>x[0]&&x[1]);
+const fmt=d=>{if(!d)return '—';const [y,m,dd]=String(d).slice(0,10).split('-');return dd&&m&&y?dd+'/'+m+'/'+y:String(d)};
+const money=v=>String(v??'').trim()||'—';
+const defs={
+ granel:{id:'granel-view',title:'Cimento a granel',companies:['Colafix','Fixcol','Argamazza','Cassaroli'],suppliers:['Votorantim','Intercement'],statuses:['Agendado','Carregado','Descarregado','Cancelado']},
+ ensacado:{id:'ensacado-view',title:'Cimento ensacado',companies:['Colafix','Fixcol','Argamazza','Cassaroli'],statuses:['Agendado','Carregado','Descarregado','Cancelado']},
+ diesel:{id:'diesel-view',title:'Diesel',companies:['Colafix','Fixcol','Argamazza','Cassaroli'],statuses:['Agendado','Carregado','Descarregado','Cancelado']}
+};
+let data={cement:[],diesel:[]};
+const opt=(a,all='Todos')=>'<option value="">'+all+'</option>'+a.map(x=>'<option>'+esc(x)+'</option>').join('');
+function panel(key,d){
+ const root=document.getElementById(d.id),slot=root?.querySelector('.report-slot');if(!slot||slot.dataset.ready)return;
+ slot.dataset.ready='1';slot.innerHTML='<div class="report-box"><div class="report-box-head"><strong>📊 Relatório</strong><span>Filtre antes de imprimir ou baixar</span></div><div class="report-filter-grid"><label>Empresa<select data-r-company>'+opt(d.companies)+'</select></label>'+(d.suppliers?'<label>Fornecedor<select data-r-supplier>'+opt(d.suppliers)+'</select></label>':'')+'<label>Status<select data-r-status>'+opt(d.statuses)+'</select></label><label>Data inicial<input type="date" data-r-from></label><label>Data final<input type="date" data-r-to></label></div><div class="report-box-actions"><span data-r-count>0 registros</span><button type="button" data-r-print>🖨 Imprimir relatório</button><button type="button" data-r-xls>📊 Baixar Excel</button></div></div>';
+ slot.querySelectorAll('select,input').forEach(x=>x.onchange=()=>update(key,d));slot.querySelector('[data-r-print]').onclick=()=>printReport(key,d);slot.querySelector('[data-r-xls]').onclick=()=>excel(key,d);update(key,d)
 }
-function tableRows(root){
- const tables=[...root.querySelectorAll('table')].filter(visible);
- if(tables.length){const t=tables.sort((a,b)=>b.rows.length-a.rows.length)[0];return [...t.rows].map(r=>[...r.cells].map(c=>clean(c.innerText))).filter(r=>r.some(Boolean))}
- const cards=[...root.querySelectorAll('article,.cement-card,.diesel-card,.maintenance-card,.mpq-card')].filter(visible);
- if(!cards.length)return [];
- const parsed=cards.map(c=>{const obj={};clean(c.innerText).split(/\n+/).forEach((line,i)=>{const p=line.indexOf(':');if(p>0)obj[clean(line.slice(0,p))]=clean(line.slice(p+1));else if(i<2)obj[i?'Descrição':'Registro']=line});return obj});
- const heads=[...new Set(parsed.flatMap(Object.keys))];return [heads,...parsed.map(o=>heads.map(h=>o[h]||''))];
+function rows(key,d){
+ const root=document.getElementById(d.id),company=root.querySelector('[data-r-company]').value,supplier=root.querySelector('[data-r-supplier]')?.value||'',status=root.querySelector('[data-r-status]').value,from=root.querySelector('[data-r-from]').value,to=root.querySelector('[data-r-to]').value;
+ const src=key==='diesel'?data.diesel:data.cement.filter(r=>r.kind===key);
+ return src.filter(r=>(!company||r.company===company)&&(!supplier||r.supplier===supplier)&&(!status||r.status===status)&&(!from||r.scheduledDate>=from)&&(!to||r.scheduledDate<=to)).sort((a,b)=>a.scheduledDate.localeCompare(b.scheduledDate)||String(a.createdAt||'').localeCompare(String(b.createdAt||'')))
 }
-function current(root){let rows=tableRows(root);if(!rows.length)rows=[['Informação'],['Nenhum registro visível com os filtros atuais.']];return rows}
-function report(title,root){
- const rows=current(root),fs=filters(root),date=new Date().toLocaleString('pt-BR');
- const th=rows[0],body=rows.slice(1);
- const html='<!doctype html><html><head><meta charset="utf-8"><title>'+esc(title)+'</title><style>@page{size:A4 landscape;margin:10mm}body{font:11px Arial;color:#20252b}h1{margin:0;font-size:22px}h2{font-size:13px;color:#666;margin:4px 0 16px}.meta{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0;padding:8px;background:#f3f4f6}.meta b{margin-right:4px}table{width:100%;border-collapse:collapse}th{background:#343a40;color:white}th,td{border:1px solid #cfd4da;padding:6px;text-align:left}tr:nth-child(even){background:#f7f7f7}.foot{margin-top:12px;color:#666}</style></head><body><h1>COLAFIX · '+esc(title)+'</h1><h2>Relatório operacional</h2><div class="meta">'+fs.map(x=>'<span><b>'+esc(x[0])+':</b>'+esc(x[1])+'</span>').join('')+'</div><table><thead><tr>'+th.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+body.map(r=>'<tr>'+th.map((_,i)=>'<td>'+esc(r[i]||'')+'</td>').join('')+'</tr>').join('')+'</tbody></table><div class="foot">Emitido em '+esc(date)+' · Registros: '+body.length+'</div></body></html>';
- const w=open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>w.print(),250)
+function matrix(key,d){
+ const rs=rows(key,d);
+ if(key==='granel')return [['Data','Empresa','Fornecedor','Pedido sistema','Pedido/contrato','Quantidade','Cimento','Transportador','NF','Venc. boleto','Status','Observações'],...rs.map(r=>[fmt(r.scheduledDate),r.company,r.supplier,r.systemOrder||'—',r.supplierOrder||'—',r.orderQuantity||'—',r.cementDescription||'—',r.carrier||'—',r.invoice||'—',fmt(r.dueDate),r.status,r.notes||''])];
+ if(key==='ensacado')return [['Data','Empresa','Produto(s)','Quantidade(s)','OC item(ns)','Cidade','Transportador','NF','OC freteiro','Valor frete','Venc. boleto','Status','Observações'],...rs.map(r=>{let it=[];try{it=JSON.parse(r.bagItemsJson||'[]')}catch{};return [fmt(r.scheduledDate),r.company,it.map(x=>x.product).join(' | ')||r.bagProduct||'—',it.map(x=>x.quantity).join(' | ')||r.bagQuantity||'—',it.map(x=>x.purchaseOrder||'—').join(' | ')||r.purchaseOrder||'—',r.deliveryCity||'—',r.carrier||'—',r.invoice||'—',r.freightOrder||'—',money(r.freightValue),fmt(r.dueDate),r.status,r.notes||''] } )];
+ return [['Data','Empresa','Produto','Litros','Preço/L','Pagamento','NF','OC','Status','Observações'],...rs.map(r=>[fmt(r.scheduledDate),r.company,r.product||r.description||'DIESEL S500',r.liters||r.quantity||'—',r.price||r.unitPrice||'—',r.payment||r.paymentTerms||'—',r.invoice||'—',r.purchaseOrder||r.oc||'—',r.status,r.notes||''])];
 }
-function excel(title,root){
- const rows=current(root),fs=filters(root);
- const all=[[title],['Relatório operacional'],...fs.map(x=>[x[0],x[1]]),[],...rows];
- const xml='<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Relatório"><Table>'+all.map(r=>'<Row>'+r.map(v=>'<Cell><Data ss:Type="String">'+esc(v)+'</Data></Cell>').join('')+'</Row>').join('')+'</Table></Worksheet></Workbook>';
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([xml],{type:'application/vnd.ms-excel'}));a.download=title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-')+'.xls';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
-}
-function mount(){
- modules.forEach(([id,title])=>{const root=document.getElementById(id);if(!root)return;let box=root.querySelector('.report-actions');if(!box){box=document.createElement('div');box.className='report-actions';box.innerHTML='<strong>Relatórios</strong><span>Usa os filtros visíveis desta tela</span><button type="button">🖨 Imprimir relatório</button><button type="button">📊 Baixar Excel</button>';box.children[2].onclick=()=>report(title,root);box.children[3].onclick=()=>excel(title,root)}const slot=root.querySelector('.report-slot');if(slot){if(box.parentElement!==slot)slot.appendChild(box)}else if(!box.isConnected||box.parentElement!==root)root.insertBefore(box,root.firstChild)})
-}
-mount();setInterval(mount,1000);
+function update(key,d){const root=document.getElementById(d.id);root.querySelector('[data-r-count]').textContent=rows(key,d).length+' registros'}
+function filterMeta(d){const root=document.getElementById(d.id);return [...root.querySelectorAll('.report-filter-grid label')].map(l=>[l.childNodes[0].textContent.trim(),l.querySelector('select')?.selectedOptions[0]?.text||l.querySelector('input')?.value||'Todos'])}
+function printReport(key,d){const m=matrix(key,d),meta=filterMeta(d),body=m.slice(1),w=open('','_blank');w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(d.title)+'</title><style>@page{size:A4 landscape;margin:8mm}body{font:10px Arial;color:#222}h1{font-size:20px;margin:0}.sub{color:#666;margin:3px 0 12px}.meta{display:flex;gap:14px;flex-wrap:wrap;background:#f2f4f6;padding:7px;margin-bottom:10px}table{width:100%;border-collapse:collapse}th{background:#343a40;color:#fff}th,td{border:1px solid #ccd1d6;padding:5px;vertical-align:top}tr:nth-child(even){background:#f7f7f7}.foot{margin-top:8px;color:#666}</style></head><body><h1>COLAFIX · '+esc(d.title)+'</h1><div class="sub">Relatório operacional</div><div class="meta">'+meta.map(x=>'<span><b>'+esc(x[0])+':</b> '+esc(x[1])+'</span>').join('')+'</div><table><thead><tr>'+m[0].map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+body.map(r=>'<tr>'+r.map(x=>'<td>'+esc(x)+'</td>').join('')+'</tr>').join('')+'</tbody></table><div class="foot">Registros: '+body.length+' · Emitido em '+new Date().toLocaleString('pt-BR')+'</div></body></html>');w.document.close();setTimeout(()=>w.print(),250)}
+function excel(key,d){const m=matrix(key,d),meta=filterMeta(d),all=[[d.title],['Relatório operacional'],...meta,[],...m],xml='<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Relatório"><Table>'+all.map(r=>'<Row>'+r.map(v=>'<Cell><Data ss:Type="String">'+esc(v)+'</Data></Cell>').join('')+'</Row>').join('')+'</Table></Worksheet></Workbook>',a=document.createElement('a');a.href=URL.createObjectURL(new Blob([xml],{type:'application/vnd.ms-excel'}));a.download=d.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-')+'.xls';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+async function load(){try{const [c,d]=await Promise.all([fetch('/api/cement').then(r=>r.json()),fetch('/api/diesel').then(r=>r.json())]);data.cement=c.loads||[];data.diesel=d.loads||d.diesel||[];Object.entries(defs).forEach(([k,v])=>panel(k,v))}catch(e){console.error('Relatórios:',e)}}
+load();setInterval(()=>Object.entries(defs).forEach(([k,v])=>panel(k,v)),1000);
 })();
