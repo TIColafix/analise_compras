@@ -45,7 +45,7 @@ createServer(async(req,res)=>{try{
   if(busy)return reply(res,409,{error:'Uma importação está em andamento. Aguarde.'});
   busy=true;try{const input=await body(req);
    if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
- if(path==='/api/cement')return reply(res,200,{ok:true,load:await saveLoad(root,input)});
+ if(path==='/api/cement')return reply(res,200,{ok:true,load:await saveLoad(root,input)});if(path==='/api/cement-monthly-order')return reply(res,200,{ok:true,orders:await saveMonthlyOrder(root,input)});
    if(path==='/api/diesel')return reply(res,200,{ok:true,load:await saveDiesel(root,input)});
    if(path==='/api/deadlines')return reply(res,200,{ok:true,order:await saveDeliveryDeadline(root,input)});
    if(path==='/api/maintenance')return reply(res,200,{ok:true,request:await saveMaintenance(root,input)});
