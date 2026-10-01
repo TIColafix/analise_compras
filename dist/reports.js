@@ -33,7 +33,7 @@ function excel(title,root){
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([xml],{type:'application/vnd.ms-excel'}));a.download=title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-')+'.xls';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
 }
 function mount(){
- modules.forEach(([id,title])=>{const root=document.getElementById(id);if(!root||root.querySelector(':scope > .report-actions'))return;const box=document.createElement('div');box.className='report-actions';box.innerHTML='<strong>Relatórios</strong><span>Usa os filtros visíveis desta tela</span><button type="button">🖨 Imprimir relatório</button><button type="button">📊 Baixar Excel</button>';box.children[2].onclick=()=>report(title,root);box.children[3].onclick=()=>excel(title,root);root.prepend(box)})
+ modules.forEach(([id,title])=>{const root=document.getElementById(id);if(!root||root.querySelector('.report-actions'))return;const box=document.createElement('div');box.className='report-actions';box.innerHTML='<strong>Relatórios</strong><span>Usa os filtros visíveis desta tela</span><button type="button">🖨 Imprimir relatório</button><button type="button">📊 Baixar Excel</button>';box.children[2].onclick=()=>report(title,root);box.children[3].onclick=()=>excel(title,root);root.prepend(box)})
 }
 new MutationObserver(()=>mount()).observe(document.body,{childList:true,subtree:true});mount();
 })();
