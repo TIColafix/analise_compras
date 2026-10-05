@@ -13,6 +13,17 @@ class ImportTests(unittest.TestCase):
   self.assertEqual(rows['E00015']['warehouse'],26629)
   self.assertEqual(rows['E00015']['unit'],'UN')
   for row in rows.values():self.assertAlmostEqual(row['stock'],sum(w['qty'] for w in row['warehouses']),places=3)
+ def test_purchase_stock_uses_only_warehouse_1(self):
+  batch=imp.parse_erp(imp.ROOT/'source-data/erp');rows={r['id']:r for r in batch['stocks']}
+  for row in rows.values():
+   almox1=next((w['qty'] for w in row['warehouses'] if w['code']=='1'),0)
+   self.assertEqual(row['warehouse'],almox1)
+  # O saldo total continua reconciliado para auditoria, mas planejamento/MRP
+  # deve consumir somente o campo warehouse (Almoxarifado 1).
+  sample=next((row for row in rows.values() if any(w['code']=='2' and w['qty'] for w in row['warehouses'])),None)
+  self.assertIsNotNone(sample)
+  self.assertNotEqual(sample['stock'],sample['warehouse'])
+
  def test_daily_history_and_conflict(self):
   original=imp.ROOT;parser=imp.parse_erp
   batch=parser(original/'source-data/erp')
