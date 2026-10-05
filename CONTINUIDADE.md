@@ -208,3 +208,8 @@ A página `/migration` é somente para carga inicial. Depois de confirmar os mó
 Foi adicionado `Dockerfile` para o deploy web instalar Node 20, Python 3 e as dependências de `scripts/requirements.txt` (incluindo pypdf). No container, `MRP_PYTHON=python3`. A rota autenticada `GET /api/import/runtime` executa um diagnóstico sem tocar nos dados e informa se Python+pypdf estão disponíveis. `/api/health` continua público e não expõe segredos, apenas versão e presença de configuração do banco.
 
 Antes do primeiro lote ERP real no Railway: confirmar deploy do Dockerfile, abrir `/api/import/runtime` autenticado e exigir `ok:true`. Depois testar primeiro somente **Conferir arquivos** (preview), que não altera `main-data`; validar data/contagens. Só então usar **Salvar lote no histórico**. O commit da importação grava o resultado em PostgreSQL somente após o parser terminar com sucesso. A regra operacional permanece: compras/MRP usam exclusivamente Almoxarifado 1; o parser mantém Almox. 2 e demais apenas para reconciliação/conferência.
+
+
+## Backup completo baixável (05/10/2026)
+
+A versão web possui agora o link **Baixar backup** no menu lateral. A rota autenticada `GET /api/backup` gera no momento do clique um JSON com nome `backup-colafix-AAAA-MM-DD.json`, contendo os documentos persistentes `main-data`, cimento, diesel, prazos de entrega e manutenção/MP. O download é somente leitura: não altera o PostgreSQL nem os registros operacionais. O arquivo inclui formato, versão e data/hora de geração para futura validação/restauração. Não existe restauração automática nesta etapa; ela deve ser implementada separadamente com validação e confirmação explícita para evitar sobrescrita acidental da produção.
