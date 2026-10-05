@@ -73,14 +73,14 @@ createServer(async(req,res)=>{try{
    if(path==='/api/deadlines')return reply(res,200,{ok:true,order:await saveDeliveryDeadline(root,input)});
    if(path==='/api/maintenance')return reply(res,200,{ok:true,request:await saveMaintenance(root,input)});
    if(path==='/api/parameters'){
-    const target=join(root,'dist/data.json'),raw=await readFile(target,'utf8'),data=JSON.parse(raw);
+    const target=join(root,'dist/data.json');let data,raw;
+    if(process.env.DATABASE_URL){data=await readDocument('main-data',null);if(!data)throw Error('Base principal não encontrada no PostgreSQL.');raw=JSON.stringify(data);}else{raw=await readFile(target,'utf8');data=JSON.parse(raw);}
     if(!data.catalog.some(r=>r.id===input.id)||!/^\d{4}-\d{2}-\d{2}$/.test(input.date)||![...data.daily,...data.weekly,...(data.reportProfiles||[])].some(r=>r.id===input.id&&r.date===input.date))throw Error('Item ou data inválidos.');
     const allowed=['monthly','safety','min','multiple','lead','buffer'],values=input.values;
     if(!values||typeof values!=='object'||!Object.keys(values).length||Object.entries(values).some(([k,v])=>!allowed.includes(k)||typeof v!=='number'||!Number.isFinite(v)||v<0||v>1e12))throw Error('Informe números válidos e não negativos.');
     const edit={id:input.id,date:input.date,values,savedAt:new Date().toISOString(),knownDates:[...new Set((data.paramSnapshots||[]).map(r=>r.date))]};
     data.parameterEdits??=[];data.parameterEdits.push(edit);
-    const backup=join(root,'source-data/backups');await mkdir(backup,{recursive:true});await writeFile(join(backup,'parameters-'+randomUUID()+'.json'),raw);
-    const temp=target+'.'+randomUUID()+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);
+    if(process.env.DATABASE_URL){await writeDocument('main-data',data);}else{const backup=join(root,'source-data/backups');await mkdir(backup,{recursive:true});await writeFile(join(backup,'parameters-'+randomUUID()+'.json'),raw);const temp=target+'.'+randomUUID()+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);}
     return reply(res,200,{ok:true,edit});
    }
    if(path==='/api/deadlines/import-pdf'){
@@ -92,6 +92,7 @@ createServer(async(req,res)=>{try{
    }
    if(path==='/api/import/preview'){
     if(!Array.isArray(input.files)||input.files.length!==3)throw Error('Selecione os três arquivos.');
+    if(process.env.DATABASE_URL){const remote=await readDocument('main-data',null);if(remote){await mkdir(join(root,'dist'),{recursive:true});await writeFile(join(root,'dist/data.json'),JSON.stringify(remote));}}
     const id=randomUUID(),folder=join(root,'source-data/imports',id);await mkdir(folder,{recursive:true});
     for(let n=0;n<3;n++){const f=input.files[n];if(typeof f.content!=='string'||!f.content.length)throw Error('Arquivo vazio.');const bytes=Buffer.from(f.content,'base64');if(n>0&&bytes.subarray(0,5).toString()!=='%PDF-')throw Error('Perfil e saldos devem ser arquivos PDF.');await writeFile(join(folder,names[n]),bytes);}
     await writeFile(join(folder,'originais.json'),JSON.stringify(input.files.map(f=>({name:String(f.name)}))));
@@ -101,7 +102,7 @@ createServer(async(req,res)=>{try{
    }
    if(path==='/api/import/commit'){
     const entry=pending.get(input.id);if(!entry)throw Error('Confira os arquivos novamente antes de importar.');if(entry.result.conflict)throw Error('Já existe um lote diferente nesta data; histórico preservado.');
-    if(!entry.result.duplicate)await run('commit',entry.folder);
+    if(!entry.result.duplicate){await run('commit',entry.folder);if(process.env.DATABASE_URL){const updated=JSON.parse(await readFile(join(root,'dist/data.json'),'utf8'));await writeDocument('main-data',updated);}}
     await writeFile(join(entry.folder,'resultado.json'),JSON.stringify({...entry.result,importedAt:new Date().toISOString()},null,2));pending.delete(input.id);
     return reply(res,200,{ok:true,duplicate:entry.result.duplicate,date:entry.result.date});
    }
