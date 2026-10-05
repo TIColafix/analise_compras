@@ -47,7 +47,13 @@ def parse_erp(folder):
   if len({w['code'] for w in r['warehouses']})!=len(r['warehouses']):raise ValueError('Almoxarifado duplicado: '+r['id'])
   total=round(sum(w['qty'] for w in r['warehouses']),4)
   if abs(total-r['stock'])>.0002:raise ValueError(f'Saldo não reconciliado: {r["id"]}: {r["stock"]} x {total}')
-  r['warehouse']=next((w['qty'] for w in r['warehouses'] if w['code']=='1'),0)
+  # REGRA OPERACIONAL: para compras/MRP, estoque disponível é exclusivamente
+  # o Almoxarifado 1 (MATERIA PRIMA). Almox. 2 é material já em elaboração e
+  # os demais almoxarifados não podem aumentar a disponibilidade de compra.
+  almox1=[w for w in r['warehouses'] if w['code']=='1']
+  r['warehouse']=almox1[0]['qty'] if almox1 else 0
+  r['purchaseWarehouseCode']='1'
+  r['purchaseWarehouseName']=almox1[0]['name'] if almox1 else 'MATERIA PRIMA'
   r['reconciled']=True
  for r in items.values():
   for k in labels:r.setdefault(k,None)
@@ -122,7 +128,8 @@ def import_erp(folder=ROOT/'source-data/erp'):
  data['catalog']=list(catalog.values());audit['newItems']=sorted(set(catalog)-known);audit['notes'].append(f'CSV associado ao lote {snapshot} pela data dos PDFs; datas de compra e entrega mantidas separadamente.')
  audit['notes'].append('Estoque Inicial do Perfil não substitui Saldo Atual do relatório de almoxarifados: são conceitos e escopos diferentes.')
  audit['notes'].append(f'Parâmetros versionados em {snapshot}; histórico anterior preservado.')
- audit['notes'].append(f"{len(batch['stocks'])} saldos reconciliados com a soma dos almoxarifados.")
+ audit['notes'].append(f"{len(batch['stocks'])} saldos totais reconciliados com a soma dos almoxarifados.")
+ audit['notes'].append('Regra de compras/MRP: saldo disponível usa exclusivamente o Almoxarifado 1 (MATERIA PRIMA); Almox. 2 e demais posições ficam apenas para conferência do saldo total.')
  data['meta'].setdefault('erpImports',[]).append(dict(signature=signature,date=snapshot,files=batch['files'],counts=audit['counts']));data['meta']['preferredDate']=max(r['date'] for r in data['meta']['erpImports'])
  data['meta']['files']=[r for r in data['meta']['files'] if r['name'] not in FILES]+batch['files']
  for note in audit['notes']:data['issues'].append(dict(table='Importação ERP',row='',field='Lote '+snapshot,value='',reason=note))
