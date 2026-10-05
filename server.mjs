@@ -58,6 +58,17 @@ createServer(async(req,res)=>{try{
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
  if(path==='/api/maintenance'&&req.method==='GET')return reply(res,200,await readMaintenance(root));
+ if(path==='/api/backup'&&req.method==='GET'){
+  const [main,cement,diesel,deadlines,maintenance]=await Promise.all([
+   readDocument('main-data',null),readLoads(root),readDiesel(root),readDeliveryDeadlines(root),readMaintenance(root)
+  ]);
+  if(main===null)throw Error('Base principal não encontrada.');
+  const stamp=new Date().toISOString().slice(0,10);
+  const backup={format:'colafix-compras-backup',version:1,createdAt:new Date().toISOString(),documents:{main,cement,diesel,deadlines,maintenance}};
+  const payload=JSON.stringify(backup,null,2);
+  res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Content-Disposition':`attachment; filename="backup-colafix-${stamp}.json"`,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
+  return res.end(payload);
+ }
  if(path.startsWith('/api/')){
   if(req.method!=='POST')return reply(res,405,{error:'Método não permitido.'});
   if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Operação não autorizada para esta origem.'});
