@@ -7,6 +7,7 @@ import {spawn} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
+import {readDocument,writeDocument} from './database.mjs';
 const root=fileURLToPath(new URL('.',import.meta.url));
 const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
 const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'python');
@@ -18,6 +19,14 @@ const host=process.env.HOST||(process.env.RAILWAY_ENVIRONMENT?'0.0.0.0':'127.0.0
 const publicOrigin=(process.env.APP_ORIGIN||'').replace(/\/$/,'');
 const localOrigins=new Set(['http://127.0.0.1:4173','http://localhost:4173']);
 function allowedOrigin(origin){return localOrigins.has(origin)||!!publicOrigin&&origin===publicOrigin;}
+function authorized(req){
+ if(!process.env.RAILWAY_ENVIRONMENT)return true;
+ const user=process.env.APP_USER||'',pass=process.env.APP_PASSWORD||'';
+ if(!user||!pass)return false;
+ const h=req.headers.authorization||'';if(!h.startsWith('Basic '))return false;
+ try{const [u,p]=Buffer.from(h.slice(6),'base64').toString().split(':');return u===user&&p===pass}catch{return false}
+}
+function askLogin(res){res.writeHead(process.env.APP_USER&&process.env.APP_PASSWORD?401:503,{'WWW-Authenticate':'Basic realm="Colafix Compras"','Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});res.end(process.env.APP_USER&&process.env.APP_PASSWORD?'Login necessário.':'Acesso web bloqueado até configurar APP_USER e APP_PASSWORD.');}
 function allowedHost(value){if(!value)return false;if(!process.env.RAILWAY_ENVIRONMENT)return value==='127.0.0.1:4173'||value==='localhost:4173';if(publicOrigin){try{return value===new URL(publicOrigin).host}catch{return false}}return true;}
 const names=['Necessidades de compra do dia.csv','PERFIL ITENS 27.04.pdf','SALDO ALMOXARIFADOS 27.04.pdf'];
 function runPurchasePdf(file){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_purchase_order.py'),file],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',reject);p.on('close',c=>c?reject(Error(err.trim()||(()=>{try{return JSON.parse(out).error}catch{return 'Falha ao ler pedido PDF.'}})())):resolve(out));});}
@@ -27,6 +36,7 @@ const reply=(res,status,value)=>{res.writeHead(status,{'Content-Type':'applicati
 createServer(async(req,res)=>{try{
  if(!allowedHost(req.headers.host))return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
+ if(path!=='/api/health'&&!authorized(req))return askLogin(res);
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
  if(path==='/api/external-summary'&&req.method==='GET'){
   const get=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
@@ -41,6 +51,7 @@ createServer(async(req,res)=>{try{
   }catch{}
   return reply(res,200,{dollar,weather,updatedAt:new Date().toISOString()});
  }
+ if(path==='/data.json'&&req.method==='GET'){const data=await readDocument('main-data',null);if(data!==null)return reply(res,200,data);}
  if(path==='/api/cement'&&req.method==='GET')return reply(res,200,await readLoads(root));
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
@@ -50,6 +61,12 @@ createServer(async(req,res)=>{try{
   if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Operação não autorizada para esta origem.'});
   if(busy)return reply(res,409,{error:'Uma importação está em andamento. Aguarde.'});
   busy=true;try{const input=await body(req);
+   if(path==='/api/admin/migrate'){
+    if(process.env.ALLOW_DATA_MIGRATION!=='true')throw Error('Migração desativada.');
+    const docs=input.documents||{},map={main:'main-data',cement:'cement',diesel:'diesel',deadlines:'delivery-deadlines',maintenance:'maintenance'},result={};
+    for(const [name,key] of Object.entries(map)){if(!(name in docs))continue;const current=await readDocument(key,null);if(current!==null){result[name]='preservado: já existe';continue;}await writeDocument(key,docs[name]);result[name]='migrado';}
+    return reply(res,200,{ok:true,result,message:'Migração concluída sem sobrescrever documentos existentes.'});
+   }
    if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
  if(path==='/api/cement')return reply(res,200,{ok:true,load:await saveLoad(root,input)});if(path==='/api/cement-monthly-order')return reply(res,200,{ok:true,orders:await saveMonthlyOrder(root,input)});
    if(path==='/api/diesel')return reply(res,200,{ok:true,load:await saveDiesel(root,input)});
