@@ -13,13 +13,19 @@ const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'p
 const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/diesel.js':'diesel.js','/deadlines.js':'deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js'};
 const types={html:'text/html; charset=utf-8',css:'text/css',js:'text/javascript',svg:'image/svg+xml',json:'application/json; charset=utf-8'};
 const pending=new Map();let busy=false;
+const port=Number(process.env.PORT)||4173;
+const host=process.env.HOST||(process.env.RAILWAY_ENVIRONMENT?'0.0.0.0':'127.0.0.1');
+const publicOrigin=(process.env.APP_ORIGIN||'').replace(/\/$/,'');
+const localOrigins=new Set(['http://127.0.0.1:4173','http://localhost:4173']);
+function allowedOrigin(origin){return localOrigins.has(origin)||!!publicOrigin&&origin===publicOrigin;}
+function allowedHost(value){if(!value)return false;if(!process.env.RAILWAY_ENVIRONMENT)return value==='127.0.0.1:4173'||value==='localhost:4173';if(publicOrigin){try{return value===new URL(publicOrigin).host}catch{return false}}return true;}
 const names=['Necessidades de compra do dia.csv','PERFIL ITENS 27.04.pdf','SALDO ALMOXARIFADOS 27.04.pdf'];
 function runPurchasePdf(file){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_purchase_order.py'),file],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',reject);p.on('close',c=>c?reject(Error(err.trim()||(()=>{try{return JSON.parse(out).error}catch{return 'Falha ao ler pedido PDF.'}})())):resolve(out));});}
 function run(mode,folder){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_erp.py'),mode,folder],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',reject);p.on('close',c=>c?reject(Error(err.trim()||'Falha na importação.')):resolve(out));});}
 async function body(req){let size=0,chunks=[];for await(const chunk of req){size+=chunk.length;if(size>40*1024*1024)throw Error('Limite de 30 MB por lote excedido.');chunks.push(chunk);}return JSON.parse(Buffer.concat(chunks).toString());}
 const reply=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
 createServer(async(req,res)=>{try{
- if(req.headers.host!=='127.0.0.1:4173'&&req.headers.host!=='localhost:4173')return reply(res,403,{error:'Endereço não autorizado.'});
+ if(!allowedHost(req.headers.host))return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
  if(path==='/api/external-summary'&&req.method==='GET'){
@@ -41,7 +47,7 @@ createServer(async(req,res)=>{try{
  if(path==='/api/maintenance'&&req.method==='GET')return reply(res,200,await readMaintenance(root));
  if(path.startsWith('/api/')){
   if(req.method!=='POST')return reply(res,405,{error:'Método não permitido.'});
-  if(!['http://127.0.0.1:4173','http://localhost:4173'].includes(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Importação permitida apenas pela aplicação local.'});
+  if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Operação não autorizada para esta origem.'});
   if(busy)return reply(res,409,{error:'Uma importação está em andamento. Aguarde.'});
   busy=true;try{const input=await body(req);
    if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
@@ -87,4 +93,4 @@ createServer(async(req,res)=>{try{
  }
  if(req.method!=='GET')return reply(res,405,{error:'Método não permitido.'});
  const file=files[path];if(!file)return reply(res,404,{error:'Não encontrado.'});const content=await readFile(join(root,'dist',file));res.writeHead(200,{'Content-Type':types[file.split('.').pop()],'Cache-Control':'no-store'});res.end(content);
-}catch(e){reply(res,400,{error:e.message});}}).listen(4173,'127.0.0.1',()=>console.log('Monitoramento MRP: http://127.0.0.1:4173'));
+}catch(e){reply(res,400,{error:e.message});}}).listen(port,host,()=>console.log(`Monitoramento MRP: http://${host}:${port}`));
