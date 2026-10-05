@@ -201,3 +201,10 @@ Na branch `web-migration`, cimento (inclusive pedido mensal), diesel, prazos e m
 A base principal `main-data` também passou a receber os ajustes manuais de parâmetros diretamente no PostgreSQL. O fluxo diário de Importações materializa temporariamente a versão atual de `main-data` em `dist/data.json` para manter compatibilidade com o parser Python, preserva as regras de duplicidade/conflito e, após um commit válido, grava a base resultante de volta em `main-data`. O arquivo no Railway é apenas temporário; a fonte persistente web é PostgreSQL.
 
 A página `/migration` é somente para carga inicial. Depois de confirmar os módulos e a base principal, remover ou definir `ALLOW_DATA_MIGRATION=false`. Manter `APP_USER`, `APP_PASSWORD`, `APP_ORIGIN` e `DATABASE_URL` no serviço Railway. Ainda validar no ambiente Railway a disponibilidade do Python + pypdf antes de considerar a importação diária ERP pronta para produção.
+
+
+## Runtime Railway para importação ERP (05/10/2026)
+
+Foi adicionado `Dockerfile` para o deploy web instalar Node 20, Python 3 e as dependências de `scripts/requirements.txt` (incluindo pypdf). No container, `MRP_PYTHON=python3`. A rota autenticada `GET /api/import/runtime` executa um diagnóstico sem tocar nos dados e informa se Python+pypdf estão disponíveis. `/api/health` continua público e não expõe segredos, apenas versão e presença de configuração do banco.
+
+Antes do primeiro lote ERP real no Railway: confirmar deploy do Dockerfile, abrir `/api/import/runtime` autenticado e exigir `ok:true`. Depois testar primeiro somente **Conferir arquivos** (preview), que não altera `main-data`; validar data/contagens. Só então usar **Salvar lote no histórico**. O commit da importação grava o resultado em PostgreSQL somente após o parser terminar com sucesso. A regra operacional permanece: compras/MRP usam exclusivamente Almoxarifado 1; o parser mantém Almox. 2 e demais apenas para reconciliação/conferência.
