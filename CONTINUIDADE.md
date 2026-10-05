@@ -183,3 +183,12 @@ Na branch `web-migration`, os módulos Cimento, Diesel, Prazos de entrega e Comp
 A tabela `app_documents` guarda documentos JSONB versionados por chave nesta primeira etapa, reduzindo o risco de alterar o formato consumido pela interface durante a migração. O comando `npm run db:migrate-operational` copia os quatro arquivos operacionais locais para o banco somente quando a respectiva chave ainda não existe; dados já existentes no PostgreSQL nunca são sobrescritos pelo migrador. Não adicionar `source-data/` nem `dist/data.json` ao Git.
 
 O MRP principal, snapshots ERP, ajustes de parâmetros e fluxo de importação diária ainda permanecem em `dist/data.json` nesta etapa e devem ser migrados separadamente antes do corte definitivo para web. A aplicação pública também continua sem autenticação e não deve ser liberada externamente até essa proteção estar implementada.
+
+
+## Migração web segura (05/10/2026)
+
+A branch `web-migration` passou a proteger o serviço Railway com autenticação HTTP Basic definida somente por variáveis `APP_USER` e `APP_PASSWORD`. Em Railway, sem essas duas variáveis o serviço fica bloqueado (exceto `/api/health`), evitando publicar dados operacionais por engano.
+
+Foi criada a página temporária `/migration`, habilitada para gravação somente quando `ALLOW_DATA_MIGRATION=true`. Ela recebe os cinco documentos locais principais (base ERP `dist/data.json`, cimento, diesel, prazos e manutenção/MP) e grava no PostgreSQL em `app_documents` somente quando a chave ainda não existe; documentos remotos existentes são preservados e nunca sobrescritos. Após a carga inicial, definir `ALLOW_DATA_MIGRATION=false` ou remover a variável.
+
+Quando existe `main-data` no PostgreSQL, GET `/data.json` passa a servi-lo; sem documento remoto, o comportamento local continua usando `dist/data.json`. Ainda falta migrar as rotas que alteram a base principal (parâmetros e importação ERP) para persistirem `main-data` no PostgreSQL antes do corte operacional definitivo. Não usar a web para novas importações/edições da base principal até essa etapa ser concluída.
