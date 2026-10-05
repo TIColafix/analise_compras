@@ -14,6 +14,7 @@ const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'p
 const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/diesel.js':'diesel.js','/deadlines.js':'deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js','/migration':'migration.html','/migration.html':'migration.html'};
 const types={html:'text/html; charset=utf-8',css:'text/css',js:'text/javascript',svg:'image/svg+xml',json:'application/json; charset=utf-8'};
 const pending=new Map();let busy=false;
+async function pythonReady(){return new Promise(resolve=>{const p=spawn(python,['-c','import sys,pypdf; print(sys.version.split()[0],pypdf.__version__)'],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',e=>resolve({ok:false,error:e.message}));p.on('close',c=>resolve(c===0?{ok:true,detail:out.trim()}:{ok:false,error:err.trim()||'Python indisponível'}));});}
 const port=Number(process.env.PORT)||4173;
 const host=process.env.HOST||(process.env.RAILWAY_ENVIRONMENT?'0.0.0.0':'127.0.0.1');
 const publicOrigin=(process.env.APP_ORIGIN||'').replace(/\/$/,'');
@@ -37,7 +38,8 @@ createServer(async(req,res)=>{try{
  if(!allowedHost(req.headers.host))return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
  if(path!=='/api/health'&&!authorized(req))return askLogin(res);
- if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
+ if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:2,database:!!process.env.DATABASE_URL});
+ if(path==='/api/import/runtime'&&req.method==='GET')return reply(res,200,await pythonReady());
  if(path==='/api/external-summary'&&req.method==='GET'){
   const get=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
   let dollar=null,weather=[];
