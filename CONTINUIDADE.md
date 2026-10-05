@@ -165,3 +165,12 @@ Em 28/09/2026 a aba **Prazos de entrega** ganhou importação de pedido de compr
 
 ## Relatórios operacionais
 Em 01/10/2026 foi criado `dist/reports.js` com painel padronizado de relatório para Diesel, Cimento a granel, Cimento ensacado, Prazos de entrega, Cotações de MP e Compras Manutenção. Cada módulo possui **Imprimir relatório** (A4 horizontal, sem menu da aplicação) e **Baixar Excel** (arquivo .xls com dados em colunas). A primeira versão usa os registros e filtros visíveis na própria tela, sem alterar dados operacionais. Ajustar posteriormente colunas/resumos específicos de cada módulo conforme validação do usuário.
+
+
+## Migração web — 05/10/2026
+
+A migração para web está sendo desenvolvida exclusivamente na branch `web-migration`; a branch `main` permanece como versão operacional local. Foi criado um projeto privado no Railway com PostgreSQL, mas os dados operacionais ainda não foram migrados e a aplicação não deve ser publicada para uso externo antes de autenticação e persistência online estarem prontas.
+
+O servidor passou a aceitar `PORT` e `HOST` por ambiente. Localmente, sem variáveis de nuvem, continua em `127.0.0.1:4173` com as mesmas restrições de Host/Origin. Em ambiente Railway, usa `0.0.0.0` e a porta fornecida pela plataforma. `APP_ORIGIN` será usada para restringir a origem pública quando o domínio definitivo for configurado. Não colocar dados de `dist/data.json` ou `source-data/` no Git.
+
+Regra operacional de estoque confirmada pelo usuário: análises de compras/MRP devem considerar exclusivamente o saldo do **Almoxarifado 1 (MATERIA PRIMA)** como disponível. Almoxarifado 2 representa material já em produção e não deve ser somado ao saldo disponível para compras.
