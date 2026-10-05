@@ -11,7 +11,7 @@ import {readDocument,writeDocument} from './database.mjs';
 const root=fileURLToPath(new URL('.',import.meta.url));
 const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
 const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'python');
-const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/diesel.js':'diesel.js','/deadlines.js':'deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js'};
+const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/diesel.js':'diesel.js','/deadlines.js':'deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js','/migration':'migration.html','/migration.html':'migration.html'};
 const types={html:'text/html; charset=utf-8',css:'text/css',js:'text/javascript',svg:'image/svg+xml',json:'application/json; charset=utf-8'};
 const pending=new Map();let busy=false;
 const port=Number(process.env.PORT)||4173;
