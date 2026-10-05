@@ -17,8 +17,9 @@ export async function saveLoad(root,input){const data=await readLoads(root),old=
  const now=new Date().toISOString(),changes=Object.fromEntries(fields.filter(k=>!old||old[k]!==v[k]).map(k=>[k,{before:old?.[k]??null,after:v[k]}]));
  if(old&&!Object.keys(changes).length)return old;
  const row={...v,id:old?.id||randomUUID(),version:(old?.version||0)+1,createdAt:old?.createdAt||now,updatedAt:now,history:[...(old?.history||[]),{at:now,changes}]};
- const dir=join(root,'source-data');await mkdir(join(dir,'backups'),{recursive:true});await writeFile(join(dir,'backups','cement-'+randomUUID()+'.json'),JSON.stringify(data));
- data.loads=old?data.loads.map(r=>r.id===old.id?row:r):[...data.loads,row];const target=join(dir,'cement-loads.json'),temp=target+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);return row;
+ data.loads=old?data.loads.map(r=>r.id===old.id?row:r):[...data.loads,row];
+ if(databaseEnabled()){await writeDocument('cement',data);return row;}
+ const dir=join(root,'source-data');await mkdir(join(dir,'backups'),{recursive:true});await writeFile(join(dir,'backups','cement-'+randomUUID()+'.json'),JSON.stringify(data));const target=join(dir,'cement-loads.json'),temp=target+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);return row;
 }
 
 export async function readDiesel(root){if(databaseEnabled())return readDocument('diesel',{loads:[]});try{return JSON.parse(await readFile(join(root,'source-data/diesel-loads.json'),'utf8'));}catch(e){if(e.code==='ENOENT')return {loads:[]};throw e;}}
