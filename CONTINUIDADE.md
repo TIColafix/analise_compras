@@ -174,3 +174,12 @@ A migração para web está sendo desenvolvida exclusivamente na branch `web-mig
 O servidor passou a aceitar `PORT` e `HOST` por ambiente. Localmente, sem variáveis de nuvem, continua em `127.0.0.1:4173` com as mesmas restrições de Host/Origin. Em ambiente Railway, usa `0.0.0.0` e a porta fornecida pela plataforma. `APP_ORIGIN` será usada para restringir a origem pública quando o domínio definitivo for configurado. Não colocar dados de `dist/data.json` ou `source-data/` no Git.
 
 Regra operacional de estoque confirmada pelo usuário: análises de compras/MRP devem considerar exclusivamente o saldo do **Almoxarifado 1 (MATERIA PRIMA)** como disponível. Almoxarifado 2 representa material já em produção e não deve ser somado ao saldo disponível para compras.
+
+
+### Persistência PostgreSQL operacional — 05/10/2026
+
+Na branch `web-migration`, os módulos Cimento, Diesel, Prazos de entrega e Compras Manutenção/Cotações de MP passam a usar PostgreSQL quando `DATABASE_URL` estiver configurada. Sem essa variável, o comportamento local permanece nos JSON privados existentes, preservando a versão operacional.
+
+A tabela `app_documents` guarda documentos JSONB versionados por chave nesta primeira etapa, reduzindo o risco de alterar o formato consumido pela interface durante a migração. O comando `npm run db:migrate-operational` copia os quatro arquivos operacionais locais para o banco somente quando a respectiva chave ainda não existe; dados já existentes no PostgreSQL nunca são sobrescritos pelo migrador. Não adicionar `source-data/` nem `dist/data.json` ao Git.
+
+O MRP principal, snapshots ERP, ajustes de parâmetros e fluxo de importação diária ainda permanecem em `dist/data.json` nesta etapa e devem ser migrados separadamente antes do corte definitivo para web. A aplicação pública também continua sem autenticação e não deve ser liberada externamente até essa proteção estar implementada.
