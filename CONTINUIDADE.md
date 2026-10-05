@@ -192,3 +192,12 @@ A branch `web-migration` passou a proteger o serviço Railway com autenticação
 Foi criada a página temporária `/migration`, habilitada para gravação somente quando `ALLOW_DATA_MIGRATION=true`. Ela recebe os cinco documentos locais principais (base ERP `dist/data.json`, cimento, diesel, prazos e manutenção/MP) e grava no PostgreSQL em `app_documents` somente quando a chave ainda não existe; documentos remotos existentes são preservados e nunca sobrescritos. Após a carga inicial, definir `ALLOW_DATA_MIGRATION=false` ou remover a variável.
 
 Quando existe `main-data` no PostgreSQL, GET `/data.json` passa a servi-lo; sem documento remoto, o comportamento local continua usando `dist/data.json`. Ainda falta migrar as rotas que alteram a base principal (parâmetros e importação ERP) para persistirem `main-data` no PostgreSQL antes do corte operacional definitivo. Não usar a web para novas importações/edições da base principal até essa etapa ser concluída.
+
+
+## Persistência web após carga inicial (05/10/2026)
+
+Na branch `web-migration`, cimento (inclusive pedido mensal), diesel, prazos e manutenção/MP usam PostgreSQL quando `DATABASE_URL` está disponível. Foi corrigido um ponto em `saveLoad` que ainda gravava carga de cimento no filesystem efêmero mesmo com banco habilitado.
+
+A base principal `main-data` também passou a receber os ajustes manuais de parâmetros diretamente no PostgreSQL. O fluxo diário de Importações materializa temporariamente a versão atual de `main-data` em `dist/data.json` para manter compatibilidade com o parser Python, preserva as regras de duplicidade/conflito e, após um commit válido, grava a base resultante de volta em `main-data`. O arquivo no Railway é apenas temporário; a fonte persistente web é PostgreSQL.
+
+A página `/migration` é somente para carga inicial. Depois de confirmar os módulos e a base principal, remover ou definir `ALLOW_DATA_MIGRATION=false`. Manter `APP_USER`, `APP_PASSWORD`, `APP_ORIGIN` e `DATABASE_URL` no serviço Railway. Ainda validar no ambiente Railway a disponibilidade do Python + pypdf antes de considerar a importação diária ERP pronta para produção.
