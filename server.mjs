@@ -81,6 +81,13 @@ createServer(async(req,res)=>{try{
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
  if(path==='/api/maintenance'&&req.method==='GET')return reply(res,200,await readMaintenance(root));
  if(path==='/api/audit'&&req.method==='GET'){if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode consultar a auditoria.'});return reply(res,200,{ok:true,entries:await readAudit(300)});}
+ if(path.startsWith('/api/maintenance/')&&req.method==='DELETE'){
+  if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode excluir solicitações.'});
+  const id=decodeURIComponent(path.slice('/api/maintenance/'.length));
+  const removed=await deleteMaintenance(root,id);
+  await audit(req,'excluir','maintenance',{id:removed.id,number:removed.number||'',description:removed.description||'',category:removed.category||''});
+  return reply(res,200,{ok:true,removed:{id:removed.id,number:removed.number||''}});
+ }
  if(path==='/api/backup'&&req.method==='GET'){
   if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode baixar o backup completo.'});
   const [main,cement,diesel,deadlines,maintenance]=await Promise.all([
