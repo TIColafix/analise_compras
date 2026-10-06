@@ -251,3 +251,8 @@ Removido o fallback de autenticação HTTP Basic do fluxo protegido. Ele fazia o
 ### Tela administrativa de Auditoria (06/10/2026)
 
 Criada a aba **🛡️ Auditoria** no menu lateral, visível somente quando `/api/me` identifica o usuário como `admin` (Paulo). A tela consome a rota protegida `GET /api/audit`, lista data/hora, usuário, módulo, ação e detalhes identificadores, e permite filtrar por usuário, módulo e busca livre. O link de **Baixar backup** também passou a ficar visível somente ao administrador. Alisson/operator não vê esses atalhos e, mesmo tentando acessar `#auditoria`, é redirecionado ao Dashboard; a API de auditoria já retorna 403 para operador.
+
+
+### Preços e comparativo do cimento ensacado (06/10/2026)
+
+No módulo **Cimento ensacado**, ao lado de **Programação semanal** e **Todas as cargas**, foi criada a aba **📊 Preços e comparativo**. Ela permanece dentro do próprio módulo e reúne três blocos: preço vigente do cimento Pozosul, comparativo de frete por cliente e preço final por cliente. Os dados ficam em `bagPrices` dentro do documento `cement` no PostgreSQL e não alteram as cargas existentes. Bases antigas que ainda não possuem `bagPrices` recebem a estrutura padrão sem apagar `loads` ou `monthlyOrders`. A tela calcula média/menor/maior preço atual, permite alterar o período base e incluir, editar ou excluir registros dos três blocos. A gravação usa `POST /api/cement-bag-prices` e entra na auditoria como `cement-bag-prices`.
