@@ -1,5 +1,5 @@
 import {existsSync} from 'node:fs';
-import {readLoads,saveLoad,readDiesel,saveDiesel,readDeliveryDeadlines,saveDeliveryDeadline,saveMonthlyOrder} from './cement-store.mjs';
+import {readLoads,saveLoad,readDiesel,saveDiesel,readDeliveryDeadlines,saveDeliveryDeadline,saveMonthlyOrder,saveBagPrices} from './cement-store.mjs';
 import {readMaintenance,saveMaintenance,deleteMaintenance} from './maintenance-store.mjs';
 import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile,rename} from 'node:fs/promises';
@@ -113,7 +113,7 @@ createServer(async(req,res)=>{try{
     return reply(res,200,{ok:true,result,message:'Migração concluída sem sobrescrever documentos existentes.'});
    }
    if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
- if(path==='/api/cement'){const load=await saveLoad(root,input);await audit(req,'salvar','cement',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}if(path==='/api/cement-monthly-order'){const orders=await saveMonthlyOrder(root,input);await audit(req,'salvar','cement-monthly-order',{supplier:input.supplier||''});return reply(res,200,{ok:true,orders});}
+ if(path==='/api/cement'){const load=await saveLoad(root,input);await audit(req,'salvar','cement',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}if(path==='/api/cement-bag-prices'){const bagPrices=await saveBagPrices(root,input);await audit(req,'salvar','cement-bag-prices',{period:bagPrices.period||'',updatedAt:bagPrices.updatedAt||''});return reply(res,200,{ok:true,bagPrices});}if(path==='/api/cement-monthly-order'){const orders=await saveMonthlyOrder(root,input);await audit(req,'salvar','cement-monthly-order',{supplier:input.supplier||''});return reply(res,200,{ok:true,orders});}
    if(path==='/api/diesel'){const load=await saveDiesel(root,input);await audit(req,'salvar','diesel',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}
    if(path==='/api/deadlines'){const order=await saveDeliveryDeadline(root,input);await audit(req,'salvar','delivery-deadlines',{id:order?.id||input.id||'',purchaseOrder:order?.purchaseOrder||input.purchaseOrder||'',code:order?.code||input.code||''});return reply(res,200,{ok:true,order});}
    if(path==='/api/maintenance'){const request=await saveMaintenance(root,input);await audit(req,'salvar','maintenance',{id:request?.id||input.id||'',status:request?.status||input.status||''});return reply(res,200,{ok:true,request});}
