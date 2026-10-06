@@ -234,3 +234,10 @@ A autenticação web passou a aceitar dois usuários sem gravar senhas no Git. O
 Para ativar o acesso do Alisson no Railway, definir somente no ambiente `ALISSON_PASSWORD` e, se desejado outro login, `ALISSON_USER`. Nunca colocar a senha no repositório ou documentação. Para testar corretamente, usar navegadores/perfis separados, pois HTTP Basic pode manter a credencial em cache.
 
 Pendência: ainda implementar bloqueio otimista por versão para impedir sobrescrita silenciosa quando dois usuários editarem o mesmo documento/registro ao mesmo tempo. A auditoria identifica as alterações, mas sozinha não elimina corrida de gravação.
+
+
+### Tela de login e logout (06/10/2026)
+
+Substituído o fluxo normal de autenticação do navegador por uma tela própria em `/login`. O usuário informa login e senha e recebe um cookie de sessão `HttpOnly; Secure; SameSite=Strict` com duração máxima de 12 horas. A senha continua somente nas variáveis do Railway; não é gravada no navegador pelo aplicativo, no PostgreSQL ou no Git. O menu lateral ganhou **Sair**, que invalida a sessão no processo atual, limpa o cookie e volta para a tela de login. `/api/me` identifica Paulo/admin ou Alisson Santos/operator para o Dashboard e auditoria.
+
+Compatibilidade temporária: HTTP Basic ainda é aceito no backend para não interromper uma sessão antiga durante o deploy. O fluxo recomendado é usar **Sair** e entrar pela nova tela. Depois da validação dos dois usuários, remover o fallback Basic para eliminar o cache de credenciais do navegador. As sessões atuais ficam em memória do processo Railway e, portanto, um redeploy exige novo login; isso é aceitável nesta etapa e evita persistir tokens sensíveis.
