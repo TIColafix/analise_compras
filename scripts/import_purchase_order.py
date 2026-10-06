@@ -33,11 +33,15 @@ def parse(path):
     header_delivery=iso_date(one(r"PRAZO DE ENTREGA:\s*(\d{2}/\d{2}/\d{4})"))
     payment=one(r"Condição Pgto\.\s*:\s*([^\n]+)")
     items=[]
+    # RPDC0250 pode extrair a tabela em dois formatos: linha visual completa ou
+    # colunas agrupadas (códigos, descrições, UM, quantidades, datas). Primeiro
+    # tentamos o formato visual já suportado; se não houver itens, reconstruímos
+    # as linhas a partir da extração de texto simples do PDF.
     lines=pages[0].splitlines() if pages else []
     i=0
     while i<len(lines):
         line=lines[i]
-        m=re.match(r"\s*\d+\s+\d+\s+([A-Z]\d+)\s+(.+?)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line)
+        m=re.match(r"\s*\d+\s+\d+\s+([A-Z][A-Z0-9]+)\s+(.+?)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line)
         if not m:
             i+=1;continue
         code,desc,unit,qty=m.groups();desc=clean_spaces(desc);delivery="";j=i+1
@@ -45,7 +49,7 @@ def parse(path):
             nxt=lines[j]
             dm=re.search(r"(\d{2}/\d{2}/\d{2,4})",nxt)
             if dm: delivery=iso_date(dm.group(1))
-            elif nxt.strip() and not re.match(r"\s*\d+\s+\d+\s+[A-Z]\d+",nxt) and not any(x in nxt for x in ["Emp.","Obs.:","Preço","Qtde."]):
+            elif nxt.strip() and not re.match(r"\s*\d+\s+\d+\s+[A-Z][A-Z0-9]+",nxt) and not any(x in nxt for x in ["Emp.","Obs.:","Preço","Qtde."]):
                 continuation=clean_spaces(nxt)
                 continuation=re.sub(r"\s+\d+(?:\s+[\d.,]+){1,3}\s*$","",continuation).strip()
                 if continuation: desc=clean_spaces(desc+" "+continuation)
@@ -53,6 +57,36 @@ def parse(path):
             j+=1
         items.append({"code":code,"product":desc,"quantity":qty,"unit":unit,"deliveryDate":delivery or header_delivery})
         i=max(i+1,j)
+
+    if not items:
+        simple="\n".join((p.extract_text() or "") for p in PdfReader(path).pages)
+        raw=[clean_spaces(x) for x in simple.splitlines()]
+        # Neste layout, a seção de itens fica depois de "Linha" e antes de
+        # "Qtde. Atend.". Os grupos mantêm a mesma ordem entre si.
+        try:
+            a=next(i for i,x in enumerate(raw) if x=="Linha")+1
+            b=next(i for i,x in enumerate(raw[a:],a) if x.startswith("Qtde. Atend"))
+            section=raw[a:b]
+        except StopIteration:
+            section=[]
+        codes=[x for x in section if re.fullmatch(r"[A-Z]{1,4}\d{3,6}",x)]
+        units=[x for x in section if x in {"KG","UN","SC","MT","PC","CX","FD","L","TON","PCT","RL","BD","PAR"}]
+        dates=[iso_date(x) for x in section if re.fullmatch(r"\d{2}/\d{2}/\d{2,4}",x)]
+        nums=[x for x in section if re.fullmatch(r"[\d.]+,\d{3}",x)]
+        # Quantidades são o primeiro bloco numérico com uma entrada por item.
+        qtys=nums[:len(codes)]
+        descs=[]
+        if codes:
+            code_positions=[section.index(c) for c in codes]
+            last_code=max(code_positions)
+            first_qty=min((section.index(q) for q in qtys),default=len(section))
+            candidates=section[last_code+1:first_qty]
+            descs=[x for x in candidates if x and x not in units and not re.fullmatch(r"[\d.,]+",x)]
+        if codes and len(units)>=len(codes) and len(qtys)>=len(codes):
+            for n,code in enumerate(codes):
+                items.append({"code":code,"product":descs[n] if n<len(descs) else code,
+                              "quantity":qtys[n],"unit":units[n],
+                              "deliveryDate":dates[n] if n<len(dates) else header_delivery})
     if not order: raise ValueError("Não foi possível identificar o número do pedido.")
     if not supplier: raise ValueError("Não foi possível identificar o fornecedor.")
     if not items: raise ValueError("Não foi possível identificar os itens do pedido.")
