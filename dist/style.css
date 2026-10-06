@@ -280,3 +280,6 @@
 
 /* Mantém o botão Avançar da Manutenção compacto e sem quebra vertical */
 .mn-card-actions .advance{width:auto!important;min-width:54px!important;height:30px!important;padding:5px 9px!important;white-space:nowrap!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+
+/* Avançar ocupa toda a segunda linha do card de Manutenção */
+.mn-card-actions .advance{grid-column:1/-1!important;width:100%!important;min-width:0!important;height:32px!important;margin-top:1px!important;padding:6px 10px!important;white-space:nowrap!important}
