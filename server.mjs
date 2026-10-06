@@ -35,7 +35,7 @@ function cookies(req){return Object.fromEntries(String(req.headers.cookie||'').s
 function credentials(req){
  if(!process.env.RAILWAY_ENVIRONMENT)return {user:'local',name:'Local',role:'admin'};
  const token=cookies(req).colafix_session;if(token&&sessions.has(token))return sessions.get(token).account;
- const basic=parseBasic(req);return basic?accountFor(basic.user,basic.pass):null;
+ return null;
 }
 function authorized(req){return !!credentials(req);}
 function actor(req){return credentials(req)?.name||'desconhecido';}
