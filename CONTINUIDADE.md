@@ -246,3 +246,8 @@ Compatibilidade temporária: HTTP Basic ainda é aceito no backend para não int
 ### Correção do logout (06/10/2026)
 
 Removido o fallback de autenticação HTTP Basic do fluxo protegido. Ele fazia o navegador reenviar automaticamente a credencial antiga mesmo depois de `/logout` apagar a nova sessão, causando retorno imediato ao Dashboard. A partir deste ajuste, somente o cookie de sessão criado pela tela `/login` autentica o ambiente Railway. O botão **Sair** passa a encerrar a sessão e permanecer na tela de login. As credenciais continuam validadas contra as variáveis do Railway no POST de login.
+
+
+### Tela administrativa de Auditoria (06/10/2026)
+
+Criada a aba **🛡️ Auditoria** no menu lateral, visível somente quando `/api/me` identifica o usuário como `admin` (Paulo). A tela consome a rota protegida `GET /api/audit`, lista data/hora, usuário, módulo, ação e detalhes identificadores, e permite filtrar por usuário, módulo e busca livre. O link de **Baixar backup** também passou a ficar visível somente ao administrador. Alisson/operator não vê esses atalhos e, mesmo tentando acessar `#auditoria`, é redirecionado ao Dashboard; a API de auditoria já retorna 403 para operador.
