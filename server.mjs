@@ -4,7 +4,7 @@ import {readMaintenance,saveMaintenance} from './maintenance-store.mjs';
 import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile,rename} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
-import {randomUUID} from 'node:crypto';
+import {randomUUID,randomBytes,createHmac,timingSafeEqual} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {readDocument,writeDocument,appendAudit,readAudit} from './database.mjs';
@@ -13,30 +13,39 @@ const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache
 const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'python');
 const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/diesel.js':'diesel.js','/deadlines.js':'deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js','/migration':'migration.html','/migration.html':'migration.html'};
 const types={html:'text/html; charset=utf-8',css:'text/css',js:'text/javascript',svg:'image/svg+xml',json:'application/json; charset=utf-8'};
-const pending=new Map();let busy=false;
+const pending=new Map();const sessions=new Map();let busy=false;
 async function pythonReady(){return new Promise(resolve=>{const p=spawn(python,['-c','import sys,pypdf; print(sys.version.split()[0],pypdf.__version__)'],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',e=>resolve({ok:false,error:e.message}));p.on('close',c=>resolve(c===0?{ok:true,detail:out.trim()}:{ok:false,error:err.trim()||'Python indisponível'}));});}
 const port=Number(process.env.PORT)||4173;
 const host=process.env.HOST||(process.env.RAILWAY_ENVIRONMENT?'0.0.0.0':'127.0.0.1');
 const publicOrigin=(process.env.APP_ORIGIN||'').replace(/\/$/,'');
 const localOrigins=new Set(['http://127.0.0.1:4173','http://localhost:4173']);
 function allowedOrigin(origin){return localOrigins.has(origin)||!!publicOrigin&&origin===publicOrigin;}
+function parseBasic(req){
+ const h=req.headers.authorization||'';if(!h.startsWith('Basic '))return null;
+ try{const raw=Buffer.from(h.slice(6),'base64').toString(),i=raw.indexOf(':');if(i<0)return null;return {user:raw.slice(0,i),pass:raw.slice(i+1)}}catch{return null}
+}
+function accountFor(user,pass){
+ const adminUser=process.env.APP_USER||'',adminPass=process.env.APP_PASSWORD||'';
+ if(adminUser&&adminPass&&user===adminUser&&pass===adminPass)return {user,name:'Paulo',role:'admin'};
+ const au=process.env.ALISSON_USER||'alisson',ap=process.env.ALISSON_PASSWORD||'';
+ if(ap&&user===au&&pass===ap)return {user,name:'Alisson Santos',role:'operator'};
+ return null;
+}
+function cookies(req){return Object.fromEntries(String(req.headers.cookie||'').split(';').map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf('=');return i<0?[x,'']:[x.slice(0,i),decodeURIComponent(x.slice(i+1))]}));}
 function credentials(req){
  if(!process.env.RAILWAY_ENVIRONMENT)return {user:'local',name:'Local',role:'admin'};
- const h=req.headers.authorization||'';if(!h.startsWith('Basic '))return null;
- try{
-  const raw=Buffer.from(h.slice(6),'base64').toString(),i=raw.indexOf(':');if(i<0)return null;
-  const u=raw.slice(0,i),p=raw.slice(i+1);
-  if(process.env.APP_USER&&process.env.APP_PASSWORD&&u===process.env.APP_USER&&p===process.env.APP_PASSWORD)return {user:u,name:'Paulo',role:'admin'};
-  const au=process.env.ALISSON_USER||'alisson',ap=process.env.ALISSON_PASSWORD||'';
-  if(ap&&u===au&&p===ap)return {user:u,name:'Alisson Santos',role:'operator'};
- }catch{}
- return null;
+ const token=cookies(req).colafix_session;if(token&&sessions.has(token))return sessions.get(token).account;
+ const basic=parseBasic(req);return basic?accountFor(basic.user,basic.pass):null;
 }
 function authorized(req){return !!credentials(req);}
 function actor(req){return credentials(req)?.name||'desconhecido';}
 function isAdmin(req){return credentials(req)?.role==='admin';}
 function audit(req,action,key,detail={}){return appendAudit(actor(req),action,key,detail).catch(e=>console.error('Falha auditoria:',e.message));}
-function askLogin(res){const ready=!!(process.env.APP_USER&&process.env.APP_PASSWORD);res.writeHead(ready?401:503,{'WWW-Authenticate':'Basic realm="Colafix Compras"','Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});res.end(ready?'Login necessário.':'Acesso web bloqueado até configurar APP_USER e APP_PASSWORD.');}
+function loginPage(message=''){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Colafix · Login</title><style>body{margin:0;font-family:Arial,sans-serif;background:#eef1f5;color:#202b3c;min-height:100vh;display:grid;place-items:center}.card{width:min(390px,calc(100% - 40px));background:#fff;border-radius:16px;box-shadow:0 12px 40px #1f293733;padding:32px}.brand{font-size:38px;font-weight:800;margin-bottom:8px}.brand span{color:#ef3340}.sub{color:#667085;margin:0 0 24px}label{display:block;font-size:13px;font-weight:700;margin:14px 0 6px}input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:8px;font-size:16px}button{width:100%;margin-top:22px;padding:12px;border:0;border-radius:8px;background:#1677ff;color:#fff;font-weight:700;font-size:15px;cursor:pointer}.err{background:#fff0f0;color:#b42318;padding:10px;border-radius:8px;margin-bottom:12px}</style></head><body><form class="card" method="post" action="/login"><div class="brand"><span>Cola</span>fix</div><p class="sub">Gestão de Suprimentos · Acesso ao sistema</p>${message?'<div class="err">'+message+'</div>':''}<label>Usuário</label><input name="user" autocomplete="username" required autofocus><label>Senha</label><input name="password" type="password" autocomplete="current-password" required><button type="submit">Entrar</button></form></body></html>`;}
+async function formBody(req){let size=0,chunks=[];for await(const c of req){size+=c.length;if(size>8192)throw Error('Requisição inválida.');chunks.push(c)}return new URLSearchParams(Buffer.concat(chunks).toString())}
+function sessionCookie(token){return `colafix_session=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=43200`;}
+function clearSessionCookie(){return 'colafix_session=; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=0';}
+function askLogin(res){res.writeHead(302,{Location:'/login','Cache-Control':'no-store'});res.end();}
 function allowedHost(value){if(!value)return false;if(!process.env.RAILWAY_ENVIRONMENT)return value==='127.0.0.1:4173'||value==='localhost:4173';if(publicOrigin){try{return value===new URL(publicOrigin).host}catch{return false}}return true;}
 const names=['Necessidades de compra do dia.csv','PERFIL ITENS 27.04.pdf','SALDO ALMOXARIFADOS 27.04.pdf'];
 function runPurchasePdf(file){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_purchase_order.py'),file],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',reject);p.on('close',c=>c?reject(Error(err.trim()||(()=>{try{return JSON.parse(out).error}catch{return 'Falha ao ler pedido PDF.'}})())):resolve(out));});}
@@ -46,6 +55,9 @@ const reply=(res,status,value)=>{res.writeHead(status,{'Content-Type':'applicati
 createServer(async(req,res)=>{try{
  if(!allowedHost(req.headers.host))return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
+ if(path==='/login'&&req.method==='GET'){if(authorized(req)){res.writeHead(302,{Location:'/', 'Cache-Control':'no-store'});return res.end()}res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});return res.end(loginPage())}
+ if(path==='/login'&&req.method==='POST'){const f=await formBody(req),acc=accountFor(String(f.get('user')||''),String(f.get('password')||''));if(!acc){res.writeHead(401,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});return res.end(loginPage('Usuário ou senha inválidos.'))}const token=randomBytes(32).toString('hex');sessions.set(token,{account:acc,createdAt:Date.now()});res.writeHead(303,{Location:'/', 'Set-Cookie':sessionCookie(token),'Cache-Control':'no-store'});return res.end()}
+ if(path==='/logout'){const token=cookies(req).colafix_session;if(token)sessions.delete(token);res.writeHead(303,{Location:'/login','Set-Cookie':clearSessionCookie(),'Cache-Control':'no-store'});return res.end()}
  if(path!=='/api/health'&&!authorized(req))return askLogin(res);
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:2,database:!!process.env.DATABASE_URL});
  if(path==='/api/me'&&req.method==='GET'){const c=credentials(req);return reply(res,200,{ok:true,user:c?.user,name:c?.name,role:c?.role});}
