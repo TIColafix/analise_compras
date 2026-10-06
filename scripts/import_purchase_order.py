@@ -41,7 +41,9 @@ def parse(path):
     i=0
     while i<len(lines):
         line=lines[i]
-        m=re.match(r"\s*\d+\s+\d+\s+([A-Z][A-Z0-9]+)\s+(.+?)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line)
+        # Linha visual RPDC0250: alguns códigos começam por número
+        # (311196AIR, 317782ALR), outros por letras (MP0410).
+        m=re.match(r"\s*\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line)
         if not m:
             i+=1;continue
         code,desc,unit,qty=m.groups();desc=clean_spaces(desc);delivery="";j=i+1
