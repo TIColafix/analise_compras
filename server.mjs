@@ -7,7 +7,7 @@ import {spawn} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
-import {readDocument,writeDocument} from './database.mjs';
+import {readDocument,writeDocument,appendAudit,readAudit} from './database.mjs';
 const root=fileURLToPath(new URL('.',import.meta.url));
 const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
 const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'python');
@@ -27,6 +27,8 @@ function authorized(req){
  const h=req.headers.authorization||'';if(!h.startsWith('Basic '))return false;
  try{const [u,p]=Buffer.from(h.slice(6),'base64').toString().split(':');return u===user&&p===pass}catch{return false}
 }
+function actor(req){const h=req.headers.authorization||'';try{return h.startsWith('Basic ')?Buffer.from(h.slice(6),'base64').toString().split(':')[0]||'desconhecido':'local'}catch{return 'desconhecido'}}
+function audit(req,action,key,detail={}){return appendAudit(actor(req),action,key,detail).catch(e=>console.error('Falha auditoria:',e.message));}
 function askLogin(res){res.writeHead(process.env.APP_USER&&process.env.APP_PASSWORD?401:503,{'WWW-Authenticate':'Basic realm="Colafix Compras"','Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});res.end(process.env.APP_USER&&process.env.APP_PASSWORD?'Login necessário.':'Acesso web bloqueado até configurar APP_USER e APP_PASSWORD.');}
 function allowedHost(value){if(!value)return false;if(!process.env.RAILWAY_ENVIRONMENT)return value==='127.0.0.1:4173'||value==='localhost:4173';if(publicOrigin){try{return value===new URL(publicOrigin).host}catch{return false}}return true;}
 const names=['Necessidades de compra do dia.csv','PERFIL ITENS 27.04.pdf','SALDO ALMOXARIFADOS 27.04.pdf'];
@@ -58,6 +60,7 @@ createServer(async(req,res)=>{try{
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
  if(path==='/api/maintenance'&&req.method==='GET')return reply(res,200,await readMaintenance(root));
+ if(path==='/api/audit'&&req.method==='GET')return reply(res,200,{ok:true,entries:await readAudit(300)});
  if(path==='/api/backup'&&req.method==='GET'){
   const [main,cement,diesel,deadlines,maintenance]=await Promise.all([
    readDocument('main-data',null),readLoads(root),readDiesel(root),readDeliveryDeadlines(root),readMaintenance(root)
@@ -81,10 +84,10 @@ createServer(async(req,res)=>{try{
     return reply(res,200,{ok:true,result,message:'Migração concluída sem sobrescrever documentos existentes.'});
    }
    if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
- if(path==='/api/cement')return reply(res,200,{ok:true,load:await saveLoad(root,input)});if(path==='/api/cement-monthly-order')return reply(res,200,{ok:true,orders:await saveMonthlyOrder(root,input)});
-   if(path==='/api/diesel')return reply(res,200,{ok:true,load:await saveDiesel(root,input)});
-   if(path==='/api/deadlines')return reply(res,200,{ok:true,order:await saveDeliveryDeadline(root,input)});
-   if(path==='/api/maintenance')return reply(res,200,{ok:true,request:await saveMaintenance(root,input)});
+ if(path==='/api/cement'){const load=await saveLoad(root,input);await audit(req,'salvar','cement',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}if(path==='/api/cement-monthly-order'){const orders=await saveMonthlyOrder(root,input);await audit(req,'salvar','cement-monthly-order',{supplier:input.supplier||''});return reply(res,200,{ok:true,orders});}
+   if(path==='/api/diesel'){const load=await saveDiesel(root,input);await audit(req,'salvar','diesel',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}
+   if(path==='/api/deadlines'){const order=await saveDeliveryDeadline(root,input);await audit(req,'salvar','delivery-deadlines',{id:order?.id||input.id||'',purchaseOrder:order?.purchaseOrder||input.purchaseOrder||'',code:order?.code||input.code||''});return reply(res,200,{ok:true,order});}
+   if(path==='/api/maintenance'){const request=await saveMaintenance(root,input);await audit(req,'salvar','maintenance',{id:request?.id||input.id||'',status:request?.status||input.status||''});return reply(res,200,{ok:true,request});}
    if(path==='/api/parameters'){
     const target=join(root,'dist/data.json');let data,raw;
     if(process.env.DATABASE_URL){data=await readDocument('main-data',null);if(!data)throw Error('Base principal não encontrada no PostgreSQL.');raw=JSON.stringify(data);}else{raw=await readFile(target,'utf8');data=JSON.parse(raw);}
@@ -93,7 +96,7 @@ createServer(async(req,res)=>{try{
     if(!values||typeof values!=='object'||!Object.keys(values).length||Object.entries(values).some(([k,v])=>!allowed.includes(k)||typeof v!=='number'||!Number.isFinite(v)||v<0||v>1e12))throw Error('Informe números válidos e não negativos.');
     const edit={id:input.id,date:input.date,values,savedAt:new Date().toISOString(),knownDates:[...new Set((data.paramSnapshots||[]).map(r=>r.date))]};
     data.parameterEdits??=[];data.parameterEdits.push(edit);
-    if(process.env.DATABASE_URL){await writeDocument('main-data',data);}else{const backup=join(root,'source-data/backups');await mkdir(backup,{recursive:true});await writeFile(join(backup,'parameters-'+randomUUID()+'.json'),raw);const temp=target+'.'+randomUUID()+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);}
+    if(process.env.DATABASE_URL){await writeDocument('main-data',data);await audit(req,'alterar-parametros','main-data',{id:input.id,date:input.date,values});}else{const backup=join(root,'source-data/backups');await mkdir(backup,{recursive:true});await writeFile(join(backup,'parameters-'+randomUUID()+'.json'),raw);const temp=target+'.'+randomUUID()+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);}
     return reply(res,200,{ok:true,edit});
    }
    if(path==='/api/deadlines/import-pdf'){
@@ -115,7 +118,7 @@ createServer(async(req,res)=>{try{
    }
    if(path==='/api/import/commit'){
     const entry=pending.get(input.id);if(!entry)throw Error('Confira os arquivos novamente antes de importar.');if(entry.result.conflict)throw Error('Já existe um lote diferente nesta data; histórico preservado.');
-    if(!entry.result.duplicate){await run('commit',entry.folder);if(process.env.DATABASE_URL){const updated=JSON.parse(await readFile(join(root,'dist/data.json'),'utf8'));await writeDocument('main-data',updated);}}
+    if(!entry.result.duplicate){await run('commit',entry.folder);if(process.env.DATABASE_URL){const updated=JSON.parse(await readFile(join(root,'dist/data.json'),'utf8'));await writeDocument('main-data',updated);await audit(req,'importar-erp','main-data',{date:entry.result.date});}}
     await writeFile(join(entry.folder,'resultado.json'),JSON.stringify({...entry.result,importedAt:new Date().toISOString()},null,2));pending.delete(input.id);
     return reply(res,200,{ok:true,duplicate:entry.result.duplicate,date:entry.result.date});
    }
