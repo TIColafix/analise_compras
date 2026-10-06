@@ -20,16 +20,23 @@ const host=process.env.HOST||(process.env.RAILWAY_ENVIRONMENT?'0.0.0.0':'127.0.0
 const publicOrigin=(process.env.APP_ORIGIN||'').replace(/\/$/,'');
 const localOrigins=new Set(['http://127.0.0.1:4173','http://localhost:4173']);
 function allowedOrigin(origin){return localOrigins.has(origin)||!!publicOrigin&&origin===publicOrigin;}
-function authorized(req){
- if(!process.env.RAILWAY_ENVIRONMENT)return true;
- const user=process.env.APP_USER||'',pass=process.env.APP_PASSWORD||'';
- if(!user||!pass)return false;
- const h=req.headers.authorization||'';if(!h.startsWith('Basic '))return false;
- try{const [u,p]=Buffer.from(h.slice(6),'base64').toString().split(':');return u===user&&p===pass}catch{return false}
+function credentials(req){
+ if(!process.env.RAILWAY_ENVIRONMENT)return {user:'local',name:'Local',role:'admin'};
+ const h=req.headers.authorization||'';if(!h.startsWith('Basic '))return null;
+ try{
+  const raw=Buffer.from(h.slice(6),'base64').toString(),i=raw.indexOf(':');if(i<0)return null;
+  const u=raw.slice(0,i),p=raw.slice(i+1);
+  if(process.env.APP_USER&&process.env.APP_PASSWORD&&u===process.env.APP_USER&&p===process.env.APP_PASSWORD)return {user:u,name:'Paulo',role:'admin'};
+  const au=process.env.ALISSON_USER||'alisson',ap=process.env.ALISSON_PASSWORD||'';
+  if(ap&&u===au&&p===ap)return {user:u,name:'Alisson Santos',role:'operator'};
+ }catch{}
+ return null;
 }
-function actor(req){const h=req.headers.authorization||'';try{return h.startsWith('Basic ')?Buffer.from(h.slice(6),'base64').toString().split(':')[0]||'desconhecido':'local'}catch{return 'desconhecido'}}
+function authorized(req){return !!credentials(req);}
+function actor(req){return credentials(req)?.name||'desconhecido';}
+function isAdmin(req){return credentials(req)?.role==='admin';}
 function audit(req,action,key,detail={}){return appendAudit(actor(req),action,key,detail).catch(e=>console.error('Falha auditoria:',e.message));}
-function askLogin(res){res.writeHead(process.env.APP_USER&&process.env.APP_PASSWORD?401:503,{'WWW-Authenticate':'Basic realm="Colafix Compras"','Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});res.end(process.env.APP_USER&&process.env.APP_PASSWORD?'Login necessário.':'Acesso web bloqueado até configurar APP_USER e APP_PASSWORD.');}
+function askLogin(res){const ready=!!(process.env.APP_USER&&process.env.APP_PASSWORD);res.writeHead(ready?401:503,{'WWW-Authenticate':'Basic realm="Colafix Compras"','Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});res.end(ready?'Login necessário.':'Acesso web bloqueado até configurar APP_USER e APP_PASSWORD.');}
 function allowedHost(value){if(!value)return false;if(!process.env.RAILWAY_ENVIRONMENT)return value==='127.0.0.1:4173'||value==='localhost:4173';if(publicOrigin){try{return value===new URL(publicOrigin).host}catch{return false}}return true;}
 const names=['Necessidades de compra do dia.csv','PERFIL ITENS 27.04.pdf','SALDO ALMOXARIFADOS 27.04.pdf'];
 function runPurchasePdf(file){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_purchase_order.py'),file],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',reject);p.on('close',c=>c?reject(Error(err.trim()||(()=>{try{return JSON.parse(out).error}catch{return 'Falha ao ler pedido PDF.'}})())):resolve(out));});}
@@ -41,6 +48,7 @@ createServer(async(req,res)=>{try{
  const path=new URL(req.url,'http://localhost').pathname;
  if(path!=='/api/health'&&!authorized(req))return askLogin(res);
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:2,database:!!process.env.DATABASE_URL});
+ if(path==='/api/me'&&req.method==='GET'){const c=credentials(req);return reply(res,200,{ok:true,user:c?.user,name:c?.name,role:c?.role});}
  if(path==='/api/import/runtime'&&req.method==='GET')return reply(res,200,await pythonReady());
  if(path==='/api/external-summary'&&req.method==='GET'){
   const get=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
@@ -60,8 +68,9 @@ createServer(async(req,res)=>{try{
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
  if(path==='/api/maintenance'&&req.method==='GET')return reply(res,200,await readMaintenance(root));
- if(path==='/api/audit'&&req.method==='GET')return reply(res,200,{ok:true,entries:await readAudit(300)});
+ if(path==='/api/audit'&&req.method==='GET'){if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode consultar a auditoria.'});return reply(res,200,{ok:true,entries:await readAudit(300)});}
  if(path==='/api/backup'&&req.method==='GET'){
+  if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode baixar o backup completo.'});
   const [main,cement,diesel,deadlines,maintenance]=await Promise.all([
    readDocument('main-data',null),readLoads(root),readDiesel(root),readDeliveryDeadlines(root),readMaintenance(root)
   ]);
@@ -78,6 +87,7 @@ createServer(async(req,res)=>{try{
   if(busy)return reply(res,409,{error:'Uma importação está em andamento. Aguarde.'});
   busy=true;try{const input=await body(req);
    if(path==='/api/admin/migrate'){
+    if(!isAdmin(req))throw Error('Somente o administrador pode executar migração.');
     if(process.env.ALLOW_DATA_MIGRATION!=='true')throw Error('Migração desativada.');
     const docs=input.documents||{},map={main:'main-data',cement:'cement',diesel:'diesel',deadlines:'delivery-deadlines',maintenance:'maintenance'},result={};
     for(const [name,key] of Object.entries(map)){if(!(name in docs))continue;const current=await readDocument(key,null);if(current!==null){result[name]='preservado: já existe';continue;}await writeDocument(key,docs[name]);result[name]='migrado';}
