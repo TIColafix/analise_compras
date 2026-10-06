@@ -69,10 +69,21 @@ def parse(path):
         # Neste layout, a seção de itens fica depois de "Linha" e antes de
         # "Qtde. Atend.". Os grupos mantêm a mesma ordem entre si.
         try:
-            a=next(i for i,x in enumerate(raw) if x=="Linha")+1
-            b=next(i for i,x in enumerate(raw[a:],a) if x.startswith("Qtde. Atend"))
-            section=raw[a:b]
-        except StopIteration:
+            # O pypdf pode juntar cabeçalhos; localizamos a região da tabela
+            # pelos próprios dados, sem exigir uma linha exatamente "Linha".
+            b=next(i for i,x in enumerate(raw) if x.startswith("Qtde. Atend"))
+            unit_tokens={"KG","UN","SC","MT","PC","CX","FD","L","TON","PCT","RL","BD","PAR"}
+            unit_idxs=[i for i,x in enumerate(raw[:b]) if x in unit_tokens]
+            if not unit_idxs: raise StopIteration
+            # O bloco de UMs da tabela é o maior bloco consecutivo antes do fim.
+            runs=[];run=[]
+            for idx in unit_idxs:
+                if run and idx!=run[-1]+1:runs.append(run);run=[]
+                run.append(idx)
+            if run:runs.append(run)
+            best=max(runs,key=len)
+            section=raw[best[0]:b]
+        except (StopIteration,ValueError):
             section=[]
         allowed_units={"KG","UN","SC","MT","PC","CX","FD","L","TON","PCT","RL","BD","PAR"}
         # Layout agrupado do RPDC0250: na seção de itens o pypdf entrega um
