@@ -218,3 +218,10 @@ A versão web possui agora o link **Baixar backup** no menu lateral. A rota aute
 ### Pedido FoccoERP RPDC0250 com tabela extraída por colunas (06/10/2026)
 
 O pedido 7459 da MC Química revelou uma segunda forma de extração de texto do mesmo relatório RPDC0250: o PDF visualmente contém três linhas de itens, mas o pypdf pode devolver códigos, descrições, unidades, quantidades e datas em blocos de colunas, em vez de uma linha textual completa por item. O importador de pedidos foi ampliado com fallback para reconstruir os itens mantendo a ordem das colunas. O padrão anterior continua sendo tentado primeiro. Exemplo validado visualmente no arquivo do usuário: MP0029 / ADITIVO INCORPORADOR DE AR / 25,000 KG; KOLAFLUX 540P / ADITIVO POLICARBOXILATO / 400,000 KG; MP0400 / ADITIVO KOLACEL 70 M / 4.300,000 KG, todos com entrega 09/10/2026. A alteração não modifica pedidos já persistidos.
+
+
+## Auditoria para uso simultâneo (06/10/2026)
+
+Iniciada a proteção para uso por mais de uma pessoa na versão web. O PostgreSQL cria a tabela `app_audit`, separada dos documentos operacionais, e registra usuário autenticado, data/hora, ação, módulo/documento e detalhes identificadores das gravações. Nesta primeira etapa são auditadas gravações de cimento, pedido mensal de cimento, diesel, prazos de entrega, manutenção/MP, alterações manuais de parâmetros e novas importações ERP. A rota autenticada somente leitura `GET /api/audit` retorna as 300 entradas mais recentes. Nenhum dado operacional existente é alterado pela criação da auditoria.
+
+Pendência importante: o login atual continua sendo HTTP Basic com um único `APP_USER/APP_PASSWORD`; portanto, enquanto os dois operadores usarem a mesma credencial, a auditoria registrará o mesmo nome. A próxima etapa deve criar autenticação individual (Paulo administrador + segundo operador), permissões por função e controle otimista de versão para impedir sobrescrita silenciosa quando duas pessoas editarem o mesmo registro simultaneamente. Não criar credenciais fictícias nem gravar senhas no Git.
