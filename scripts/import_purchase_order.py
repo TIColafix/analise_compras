@@ -75,27 +75,38 @@ def parse(path):
         except StopIteration:
             section=[]
         allowed_units={"KG","UN","SC","MT","PC","CX","FD","L","TON","PCT","RL","BD","PAR"}
-        # Na extração agrupada do RPDC0250, o primeiro bloco após "Linha" é a
-        # unidade de cada item; logo depois vêm exatamente os códigos, inclusive
-        # códigos externos como 311196AIR e nomes com espaço como KOLAFLUX 540P.
-        unit_start=next((i for i,x in enumerate(section) if x in allowed_units),None)
-        units=[]
-        if unit_start is not None:
-            j=unit_start
-            while j<len(section) and section[j] in allowed_units:
-                units.append(section[j]);j+=1
-        n=len(units)
-        codes=section[j:j+n] if n else []
-        dates=[iso_date(x) for x in section if re.fullmatch(r"\d{2}/\d{2}/\d{2,4}",x)]
-        descs=section[j+n:j+(2*n)] if n else []
-        tail=section[j+(2*n):] if n else []
-        nums=[x for x in tail if re.fullmatch(r"[\d.]+,\d{3}",x)]
-        qtys=nums[:n]
-        valid_codes=[bool(re.fullmatch(r"[A-Z0-9][A-Z0-9 ._/-]{1,30}",x)) for x in codes]
-        if n and len(codes)==n and all(valid_codes) and len(descs)>=n and len(qtys)>=n:
+        # A extração simples do pypdf pode manter "Linha" e o primeiro "KG" na
+        # mesma linha. Por isso não dependemos mais de posições relativas ao
+        # marcador: detectamos os blocos consecutivos de UM, códigos, descrições,
+        # quantidades e datas dentro da página.
+        all_units=[x for x in raw if x in allowed_units]
+        n=len(all_units)
+        # Códigos do RPDC0250: MP0410, 311196AIR e também KOLAFLUX 540P.
+        code_re=re.compile(r"^(?:[A-Z]{1,6}\d{2,8}[A-Z0-9]*|[A-Z][A-Z0-9]+(?: [A-Z0-9]+)+)$")
+        code_positions=[i for i,x in enumerate(raw) if code_re.fullmatch(x)]
+        codes=[]
+        if n:
+            # Escolhe um bloco consecutivo de n códigos; evita cabeçalho/empresa.
+            for z in range(len(code_positions)-n+1):
+                pos=code_positions[z:z+n]
+                if pos==list(range(pos[0],pos[0]+n)):
+                    codes=raw[pos[0]:pos[0]+n];code_end=pos[0]+n;break
+        dates=[iso_date(x) for x in raw if re.fullmatch(r"\d{2}/\d{2}/\d{2,4}",x)]
+        descs=[]
+        qtys=[]
+        if codes:
+            # Descrições são o bloco textual imediatamente após os códigos.
+            for x in raw[code_end:]:
+                if re.fullmatch(r"[\d.]+,\d{3}",x):break
+                if x and x not in allowed_units and not re.fullmatch(r"\d{2}/\d{2}/\d{2,4}",x):
+                    descs.append(x)
+                if len(descs)>=n:break
+            after_desc=raw[code_end+n:]
+            qtys=[x for x in after_desc if re.fullmatch(r"[\d.]+,\d{3}",x)][:n]
+        if n and len(codes)==n and len(descs)>=n and len(qtys)>=n:
             for k,code in enumerate(codes):
                 grouped_items.append({"code":code,"product":descs[k],
-                              "quantity":qtys[k],"unit":units[k],
+                              "quantity":qtys[k],"unit":all_units[k],
                               "deliveryDate":dates[k] if k<len(dates) else header_delivery})
     items=grouped_items if len(grouped_items)>len(row_items) else row_items
     if not order: raise ValueError("Não foi possível identificar o número do pedido.")
