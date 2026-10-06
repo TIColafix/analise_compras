@@ -69,24 +69,29 @@ def parse(path):
             section=raw[a:b]
         except StopIteration:
             section=[]
-        codes=[x for x in section if re.fullmatch(r"[A-Z]{1,4}\d{3,6}",x)]
-        units=[x for x in section if x in {"KG","UN","SC","MT","PC","CX","FD","L","TON","PCT","RL","BD","PAR"}]
+        allowed_units={"KG","UN","SC","MT","PC","CX","FD","L","TON","PCT","RL","BD","PAR"}
+        # Na extração agrupada do RPDC0250, o primeiro bloco após "Linha" é a
+        # unidade de cada item; logo depois vêm exatamente os códigos, inclusive
+        # códigos externos como 311196AIR e nomes com espaço como KOLAFLUX 540P.
+        unit_start=next((i for i,x in enumerate(section) if x in allowed_units),None)
+        units=[]
+        if unit_start is not None:
+            j=unit_start
+            while j<len(section) and section[j] in allowed_units:
+                units.append(section[j]);j+=1
+        n=len(units)
+        codes=section[j:j+n] if n else []
         dates=[iso_date(x) for x in section if re.fullmatch(r"\d{2}/\d{2}/\d{2,4}",x)]
-        nums=[x for x in section if re.fullmatch(r"[\d.]+,\d{3}",x)]
-        # Quantidades são o primeiro bloco numérico com uma entrada por item.
-        qtys=nums[:len(codes)]
-        descs=[]
-        if codes:
-            code_positions=[section.index(c) for c in codes]
-            last_code=max(code_positions)
-            first_qty=min((section.index(q) for q in qtys),default=len(section))
-            candidates=section[last_code+1:first_qty]
-            descs=[x for x in candidates if x and x not in units and not re.fullmatch(r"[\d.,]+",x)]
-        if codes and len(units)>=len(codes) and len(qtys)>=len(codes):
-            for n,code in enumerate(codes):
-                items.append({"code":code,"product":descs[n] if n<len(descs) else code,
-                              "quantity":qtys[n],"unit":units[n],
-                              "deliveryDate":dates[n] if n<len(dates) else header_delivery})
+        descs=section[j+n:j+(2*n)] if n else []
+        tail=section[j+(2*n):] if n else []
+        nums=[x for x in tail if re.fullmatch(r"[\d.]+,\d{3}",x)]
+        qtys=nums[:n]
+        valid_codes=[bool(re.fullmatch(r"[A-Z0-9][A-Z0-9 ._/-]{1,30}",x)) for x in codes]
+        if n and len(codes)==n and all(valid_codes) and len(descs)>=n and len(qtys)>=n:
+            for k,code in enumerate(codes):
+                items.append({"code":code,"product":descs[k],
+                              "quantity":qtys[k],"unit":units[k],
+                              "deliveryDate":dates[k] if k<len(dates) else header_delivery})
     if not order: raise ValueError("Não foi possível identificar o número do pedido.")
     if not supplier: raise ValueError("Não foi possível identificar o fornecedor.")
     if not items: raise ValueError("Não foi possível identificar os itens do pedido.")
