@@ -225,3 +225,12 @@ O pedido 7459 da MC Química revelou uma segunda forma de extração de texto do
 Iniciada a proteção para uso por mais de uma pessoa na versão web. O PostgreSQL cria a tabela `app_audit`, separada dos documentos operacionais, e registra usuário autenticado, data/hora, ação, módulo/documento e detalhes identificadores das gravações. Nesta primeira etapa são auditadas gravações de cimento, pedido mensal de cimento, diesel, prazos de entrega, manutenção/MP, alterações manuais de parâmetros e novas importações ERP. A rota autenticada somente leitura `GET /api/audit` retorna as 300 entradas mais recentes. Nenhum dado operacional existente é alterado pela criação da auditoria.
 
 Pendência importante: o login atual continua sendo HTTP Basic com um único `APP_USER/APP_PASSWORD`; portanto, enquanto os dois operadores usarem a mesma credencial, a auditoria registrará o mesmo nome. A próxima etapa deve criar autenticação individual (Paulo administrador + segundo operador), permissões por função e controle otimista de versão para impedir sobrescrita silenciosa quando duas pessoas editarem o mesmo registro simultaneamente. Não criar credenciais fictícias nem gravar senhas no Git.
+
+
+### Acessos individuais — Paulo e Alisson (06/10/2026)
+
+A autenticação web passou a aceitar dois usuários sem gravar senhas no Git. O acesso já existente por `APP_USER/APP_PASSWORD` representa **Paulo**, função `admin`. O segundo acesso usa `ALISSON_USER` (padrão `alisson`) e a senha obrigatória `ALISSON_PASSWORD`, função `operator`. A rota autenticada `GET /api/me` permite conferir nome e função do usuário atual. Auditoria (`/api/audit`), backup completo e migração ficam restritos ao administrador; o operador continua podendo usar os módulos operacionais. A auditoria grava os nomes **Paulo** e **Alisson Santos** conforme a credencial utilizada.
+
+Para ativar o acesso do Alisson no Railway, definir somente no ambiente `ALISSON_PASSWORD` e, se desejado outro login, `ALISSON_USER`. Nunca colocar a senha no repositório ou documentação. Para testar corretamente, usar navegadores/perfis separados, pois HTTP Basic pode manter a credencial em cache.
+
+Pendência: ainda implementar bloqueio otimista por versão para impedir sobrescrita silenciosa quando dois usuários editarem o mesmo documento/registro ao mesmo tempo. A auditoria identifica as alterações, mas sozinha não elimina corrida de gravação.
