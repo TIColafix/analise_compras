@@ -2,9 +2,27 @@ import {readFile,writeFile,mkdir,rename} from 'node:fs/promises';
 import {join} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {databaseEnabled,readDocument,writeDocument} from './database.mjs';
+const defaultBagPrices=()=>({period:'2026-09',updatedAt:'2026-10-05',products:[
+ {id:'p1',product:'CPIV 32 - POZOSUL (50 KG) - 640 SC',unitPrice:'27,70',supplierFreightPerBag:'4,50',loadTotal:'17728,00',supplierFreightTotal:'2880,00',carrierFreightPerBag:'4,50',carrierFreightTotal:'2880,00',finalPrice:'36,70'},
+ {id:'p2',product:'CPIV - POZOSUL (25KG) - 1280 SC',unitPrice:'13,85',supplierFreightPerBag:'2,25',loadTotal:'17728,00',supplierFreightTotal:'2880,00',carrierFreightPerBag:'2,25',carrierFreightTotal:'1440,00',finalPrice:'18,35'},
+ {id:'p3',product:'CPV - POZOSUL (40 KG) - 720 SC',unitPrice:'30,22',supplierFreightPerBag:'4,50',loadTotal:'21758,40',supplierFreightTotal:'2880,00',carrierFreightPerBag:'4,50',carrierFreightTotal:'3240,00',finalPrice:'39,22'}],
+freights:[
+ {id:'f1',client:'SHOPING DA CONSTRUÇÃO (640 sc)',city:'PAROBÉ',address:'ESTRADA RS 239, 7980 PAROBÉ - INTEGRAÇÃO/CENTRO',seller:'JOÃO',freightTotal:'2880,00',freightPerBag:'4,50'},
+ {id:'f2',client:'DANICAFFER (640 sc)',city:'NOVO HAMBURGO',address:'RUA BARTOLOMEU DE GUSMAO, 3148 NOVO HAMBURGO - CANUDOS',seller:'LUCIANO',freightTotal:'3200,00',freightPerBag:'5,00'},
+ {id:'f3',client:'CASAROLLI (640 sc)',city:'PORTO ALEGRE',address:'AV. BALTAZAR DE OLIVEIRA GARCIA, 641 - PORTO ALEGRE',seller:'GIOVANI',freightTotal:'2880,00',freightPerBag:'4,50'},
+ {id:'f4',client:'MABEL (640 sc)',city:'LAJEADO',address:'ERS-130-KM 72,701 AO KM 74, 2175',seller:'JOÃO',freightTotal:'3104,00',freightPerBag:'4,85'},
+ {id:'f5',client:'LAJOPISOS (640 sc)',city:'TEUTONIA',address:'AV 1 OESTE,397 CENTRO ADMINISTRATIVO,95890-000 - TEUTONIA',seller:'JOÃO',freightTotal:'3104,00',freightPerBag:'4,85'}],
+clientPrices:[
+ {id:'c1',product:'CPV - POZOSUL (40 KG) (720 SC)',client:'GUAIBA CONSTRUTORA',unitPrice:'34,82',freight:'4,15',finalPrice:'38,97'},
+ {id:'c2',product:'CPIV - POZOSUL (40 KG) (640 SC)',client:'COLAFIX',unitPrice:'34,82',freight:'4,50',finalPrice:'39,32'},
+ {id:'c3',product:'CPIV - POZOSUL (50 KG) (640 SC)',client:'COLAFIX',unitPrice:'30,50',freight:'4,50',finalPrice:'35,00'},
+ {id:'c4',product:'CPIV - POZOSUL (50 KG) (640 SC)',client:'SHOPING DA CONSTRUÇÃO',unitPrice:'30,50',freight:'4,50',finalPrice:'35,00'},
+ {id:'c5',product:'CPIV - POZOSUL (50 KG) (640 SC)',client:'DANICAFFER',unitPrice:'30,50',freight:'5,00',finalPrice:'35,50'}]});
 export const companies=['Colafix','Fixcol','Argamazza','Cassaroli'],suppliers=['Votorantim','Intercement'],carriers=['Itamar','Marielo','CHAPELÃO','IVAN FREDERICO'],statuses=['Agendado','Carregado','Descarregado','Entregue','Cancelado'];
-export async function readLoads(root){if(databaseEnabled())return readDocument('cement',{loads:[],monthlyOrders:{}});try{const data=JSON.parse(await readFile(join(root,'source-data/cement-loads.json'),'utf8'));return {...data,monthlyOrders:data.monthlyOrders||{}};}catch(e){if(e.code==='ENOENT')return {loads:[],monthlyOrders:{}};throw e;}}
+export async function readLoads(root){if(databaseEnabled())return readDocument('cement',{loads:[],monthlyOrders:{},bagPrices:defaultBagPrices()});try{const data=JSON.parse(await readFile(join(root,'source-data/cement-loads.json'),'utf8'));return {...data,monthlyOrders:data.monthlyOrders||{},bagPrices:data.bagPrices||defaultBagPrices()};}catch(e){if(e.code==='ENOENT')return {loads:[],monthlyOrders:{}};throw e;}}
 async function saveCementData(root,data){if(databaseEnabled()){await writeDocument('cement',data);return;}const dir=join(root,'source-data');await mkdir(join(dir,'backups'),{recursive:true});const target=join(dir,'cement-loads.json');try{const raw=await readFile(target,'utf8');await writeFile(join(dir,'backups','cement-'+randomUUID()+'.json'),raw);}catch(e){if(e.code!=='ENOENT')throw e;}const temp=target+'.'+randomUUID()+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);}
+
+export async function saveBagPrices(root,input){const data=await readLoads(root);data.bagPrices={...defaultBagPrices(),...(data.bagPrices||{}),...(input||{}),updatedAt:new Date().toISOString().slice(0,10)};await saveCementData(root,data);return data.bagPrices;}
 export async function saveMonthlyOrder(root,input){const data=await readLoads(root),supplier=String(input.supplier||'').trim(),month=String(input.month||'').trim(),systemOrder=String(input.systemOrder||'').trim();if(!suppliers.includes(supplier))throw Error('Fornecedor inválido.');if(!/^\d{4}-\d{2}$/.test(month))throw Error('Mês inválido.');if(!systemOrder)throw Error('Informe o pedido do sistema.');data.monthlyOrders=data.monthlyOrders||{};data.monthlyOrders[month]=data.monthlyOrders[month]||{};data.monthlyOrders[month][supplier]=systemOrder;await saveCementData(root,data);return data.monthlyOrders[month];}
 export async function saveLoad(root,input){const data=await readLoads(root),old=input.id?data.loads.find(r=>r.id===input.id):null;
  if(input.id&&!old)throw Error('Carga não encontrada.');if(old&&input.version!==old.version)throw Error('Esta carga foi alterada em outra janela. Recarregue antes de salvar.');
