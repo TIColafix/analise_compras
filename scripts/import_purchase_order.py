@@ -58,7 +58,12 @@ def parse(path):
         items.append({"code":code,"product":desc,"quantity":qty,"unit":unit,"deliveryDate":delivery or header_delivery})
         i=max(i+1,j)
 
-    if not items:
+    # A extração visual pode reconhecer apenas parte das linhas quando alguns
+    # códigos do fornecedor não seguem o padrão MPxxxx. Se isso acontecer,
+    # reconstruímos a tabela agrupada e usamos o resultado mais completo.
+    row_items=items
+    grouped_items=[]
+    if True:
         simple="\n".join((p.extract_text() or "") for p in PdfReader(path).pages)
         raw=[clean_spaces(x) for x in simple.splitlines()]
         # Neste layout, a seção de itens fica depois de "Linha" e antes de
@@ -89,9 +94,10 @@ def parse(path):
         valid_codes=[bool(re.fullmatch(r"[A-Z0-9][A-Z0-9 ._/-]{1,30}",x)) for x in codes]
         if n and len(codes)==n and all(valid_codes) and len(descs)>=n and len(qtys)>=n:
             for k,code in enumerate(codes):
-                items.append({"code":code,"product":descs[k],
+                grouped_items.append({"code":code,"product":descs[k],
                               "quantity":qtys[k],"unit":units[k],
                               "deliveryDate":dates[k] if k<len(dates) else header_delivery})
+    items=grouped_items if len(grouped_items)>len(row_items) else row_items
     if not order: raise ValueError("Não foi possível identificar o número do pedido.")
     if not supplier: raise ValueError("Não foi possível identificar o fornecedor.")
     if not items: raise ValueError("Não foi possível identificar os itens do pedido.")
