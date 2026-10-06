@@ -213,3 +213,8 @@ Antes do primeiro lote ERP real no Railway: confirmar deploy do Dockerfile, abri
 ## Backup completo baixável (05/10/2026)
 
 A versão web possui agora o link **Baixar backup** no menu lateral. A rota autenticada `GET /api/backup` gera no momento do clique um JSON com nome `backup-colafix-AAAA-MM-DD.json`, contendo os documentos persistentes `main-data`, cimento, diesel, prazos de entrega e manutenção/MP. O download é somente leitura: não altera o PostgreSQL nem os registros operacionais. O arquivo inclui formato, versão e data/hora de geração para futura validação/restauração. Não existe restauração automática nesta etapa; ela deve ser implementada separadamente com validação e confirmação explícita para evitar sobrescrita acidental da produção.
+
+
+### Pedido FoccoERP RPDC0250 com tabela extraída por colunas (06/10/2026)
+
+O pedido 7459 da MC Química revelou uma segunda forma de extração de texto do mesmo relatório RPDC0250: o PDF visualmente contém três linhas de itens, mas o pypdf pode devolver códigos, descrições, unidades, quantidades e datas em blocos de colunas, em vez de uma linha textual completa por item. O importador de pedidos foi ampliado com fallback para reconstruir os itens mantendo a ordem das colunas. O padrão anterior continua sendo tentado primeiro. Exemplo validado visualmente no arquivo do usuário: MP0029 / ADITIVO INCORPORADOR DE AR / 25,000 KG; KOLAFLUX 540P / ADITIVO POLICARBOXILATO / 400,000 KG; MP0400 / ADITIVO KOLACEL 70 M / 4.300,000 KG, todos com entrega 09/10/2026. A alteração não modifica pedidos já persistidos.
