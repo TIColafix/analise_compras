@@ -1,6 +1,6 @@
 import {existsSync} from 'node:fs';
 import {readLoads,saveLoad,readDiesel,saveDiesel,readDeliveryDeadlines,saveDeliveryDeadline,saveMonthlyOrder} from './cement-store.mjs';
-import {readMaintenance,saveMaintenance} from './maintenance-store.mjs';
+import {readMaintenance,saveMaintenance,deleteMaintenance} from './maintenance-store.mjs';
 import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile,rename} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
