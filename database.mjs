@@ -16,8 +16,7 @@ export async function initDatabase(){
     version bigint not null default 1,
     updated_at timestamptz not null default now()
   )`);
-  return true;
-}
+  await p.query(`create table if not exists app_audit (\n    id bigserial primary key,\n    created_at timestamptz not null default now(),\n    actor text not null,\n    action text not null,\n    document_key text,\n    detail jsonb not null default '{}'::jsonb\n  )`);\n  return true;\n}
 export async function readDocument(key,fallback){
   const p=getPool(); if(!p)return fallback;
   await initDatabase();
@@ -31,4 +30,4 @@ export async function writeDocument(key,data){
     on conflict(key) do update set data=excluded.data,version=app_documents.version+1,updated_at=now()`,[key,JSON.stringify(data)]);
   return data;
 }
-export async function closeDatabase(){if(pool){await pool.end();pool=null;}}
+export async function appendAudit(actor,action,documentKey=null,detail={}){\n  const p=getPool();if(!p)return null;await initDatabase();\n  await p.query('insert into app_audit(actor,action,document_key,detail) values($1,$2,$3,$4::jsonb)',[actor,action,documentKey,JSON.stringify(detail)]);\n}\nexport async function readAudit(limit=200){\n  const p=getPool();if(!p)return [];await initDatabase();\n  const n=Math.max(1,Math.min(500,Number(limit)||200));\n  const r=await p.query('select id,created_at,actor,action,document_key,detail from app_audit order by id desc limit $1',[n]);return r.rows;\n}\nexport async function closeDatabase(){if(pool){await pool.end();pool=null;}}
