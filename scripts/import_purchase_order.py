@@ -75,39 +75,35 @@ def parse(path):
         except StopIteration:
             section=[]
         allowed_units={"KG","UN","SC","MT","PC","CX","FD","L","TON","PCT","RL","BD","PAR"}
-        # A extração simples do pypdf pode manter "Linha" e o primeiro "KG" na
-        # mesma linha. Por isso não dependemos mais de posições relativas ao
-        # marcador: detectamos os blocos consecutivos de UM, códigos, descrições,
-        # quantidades e datas dentro da página.
-        all_units=[x for x in raw if x in allowed_units]
-        n=len(all_units)
-        # Códigos do RPDC0250: MP0410, 311196AIR e também KOLAFLUX 540P.
-        code_re=re.compile(r"^(?:[A-Z]{1,6}\d{2,8}[A-Z0-9]*|[A-Z][A-Z0-9]+(?: [A-Z0-9]+)+)$")
-        code_positions=[i for i,x in enumerate(raw) if code_re.fullmatch(x)]
-        codes=[]
+        # Layout agrupado do RPDC0250: na seção de itens o pypdf entrega um
+        # bloco de UMs, seguido pelo mesmo número de códigos, descrições,
+        # quantidades e datas. O número de itens vem do bloco consecutivo de UMs
+        # (não do total de "KG" da página, que pode conter cabeçalhos).
+        unit_runs=[]
+        run=[]
+        for idx,x in enumerate(section):
+            if x in allowed_units:
+                run.append((idx,x))
+            elif run:
+                unit_runs.append(run);run=[]
+        if run: unit_runs.append(run)
+        unit_run=max(unit_runs,key=len,default=[])
+        n=len(unit_run)
         if n:
-            # Escolhe um bloco consecutivo de n códigos; evita cabeçalho/empresa.
-            for z in range(len(code_positions)-n+1):
-                pos=code_positions[z:z+n]
-                if pos==list(range(pos[0],pos[0]+n)):
-                    codes=raw[pos[0]:pos[0]+n];code_end=pos[0]+n;break
-        dates=[iso_date(x) for x in raw if re.fullmatch(r"\d{2}/\d{2}/\d{2,4}",x)]
-        descs=[]
-        qtys=[]
-        if codes:
-            # Descrições são o bloco textual imediatamente após os códigos.
-            for x in raw[code_end:]:
-                if re.fullmatch(r"[\d.]+,\d{3}",x):break
-                if x and x not in allowed_units and not re.fullmatch(r"\d{2}/\d{2}/\d{2,4}",x):
-                    descs.append(x)
-                if len(descs)>=n:break
-            after_desc=raw[code_end+n:]
-            qtys=[x for x in after_desc if re.fullmatch(r"[\d.]+,\d{3}",x)][:n]
-        if n and len(codes)==n and len(descs)>=n and len(qtys)>=n:
-            for k,code in enumerate(codes):
-                grouped_items.append({"code":code,"product":descs[k],
-                              "quantity":qtys[k],"unit":all_units[k],
-                              "deliveryDate":dates[k] if k<len(dates) else header_delivery})
+            unit_end=unit_run[-1][0]+1
+            units=[x for _,x in unit_run]
+            codes=section[unit_end:unit_end+n]
+            descs=section[unit_end+n:unit_end+(2*n)]
+            tail=section[unit_end+(2*n):]
+            qtys=[x for x in tail if re.fullmatch(r"[\d.]+,\d{3}",x)][:n]
+            dates=[iso_date(x) for x in tail if re.fullmatch(r"\d{2}/\d{2}/\d{2,4}",x)][:n]
+            # Não restringir o formato do código: fornecedores podem usar
+            # 311196AIR, MP0410 ou KOLAFLUX 540P. A posição da coluna é a fonte.
+            if len(codes)==n and len(descs)==n and len(qtys)==n:
+                for k in range(n):
+                    grouped_items.append({"code":codes[k],"product":descs[k],
+                                          "quantity":qtys[k],"unit":units[k],
+                                          "deliveryDate":dates[k] if k<len(dates) else header_delivery})
     items=grouped_items if len(grouped_items)>len(row_items) else row_items
     if not order: raise ValueError("Não foi possível identificar o número do pedido.")
     if not supplier: raise ValueError("Não foi possível identificar o fornecedor.")
