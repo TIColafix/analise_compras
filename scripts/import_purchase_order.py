@@ -37,7 +37,11 @@ def parse(path):
     # colunas agrupadas (códigos, descrições, UM, quantidades, datas). Primeiro
     # tentamos o formato visual já suportado; se não houver itens, reconstruímos
     # as linhas a partir da extração de texto simples do PDF.
-    # Pedidos maiores podem continuar a tabela nas páginas seguintes.\n    # Varremos todas as páginas, preservando a ordem do relatório.\n    lines=[]\n    for page_text in pages:\n        lines.extend(page_text.splitlines())
+    # Pedidos maiores podem continuar a tabela nas páginas seguintes.
+    # Varremos todas as páginas, preservando a ordem do relatório.
+    lines=[]
+    for page_text in pages:
+        lines.extend(page_text.splitlines())
     i=0
     while i<len(lines):
         line=lines[i]
