@@ -37,7 +37,8 @@ def parse(path):
     i=0
     while i<len(lines):
         line=lines[i]
-        m=re.match(r"\s*\d+\s+\d+\s+([A-Z]\d+)\s+(.+?)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line)
+        # Aceita códigos alfanuméricos e também somente numéricos (ex.: código 2 = GESSO).
+        m=re.match(r"\s*\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line,re.I)
         if not m:
             i+=1;continue
         code,desc,unit,qty=m.groups();desc=clean_spaces(desc);delivery="";j=i+1
@@ -45,7 +46,7 @@ def parse(path):
             nxt=lines[j]
             dm=re.search(r"(\d{2}/\d{2}/\d{2,4})",nxt)
             if dm: delivery=iso_date(dm.group(1))
-            elif nxt.strip() and not re.match(r"\s*\d+\s+\d+\s+[A-Z]\d+",nxt) and not any(x in nxt for x in ["Emp.","Obs.:","Preço","Qtde."]):
+            elif nxt.strip() and not re.match(r"\s*\d+\s+\d+\s+[A-Z0-9][A-Z0-9._/-]*\s+",nxt,re.I) and not any(x in nxt for x in ["Emp.","Obs.:","Preço","Qtde."]):
                 continuation=clean_spaces(nxt)
                 continuation=re.sub(r"\s+\d+(?:\s+[\d.,]+){1,3}\s*$","",continuation).strip()
                 if continuation: desc=clean_spaces(desc+" "+continuation)
