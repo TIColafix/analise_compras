@@ -37,13 +37,16 @@ def parse(path):
     # colunas agrupadas (códigos, descrições, UM, quantidades, datas). Primeiro
     # tentamos o formato visual já suportado; se não houver itens, reconstruímos
     # as linhas a partir da extração de texto simples do PDF.
-    lines=pages[0].splitlines() if pages else []
+    # Pedidos maiores podem continuar a tabela nas páginas seguintes.\n    # Varremos todas as páginas, preservando a ordem do relatório.\n    lines=[]\n    for page_text in pages:\n        lines.extend(page_text.splitlines())
     i=0
     while i<len(lines):
         line=lines[i]
         # Linha visual RPDC0250: alguns códigos começam por número
         # (311196AIR, 317782ALR), outros por letras (MP0410).
-        m=re.match(r"\s*\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line)
+        m=re.match(r"\s*\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*(?:\s+[A-Z0-9][A-Z0-9._/-]*)?)\s{2,}(.+?)\s{2,}(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line)
+        if not m:
+            # Variante sem espaçamento de coluna suficiente: código simples.
+            m=re.match(r"\s*\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line)
         if not m:
             i+=1;continue
         code,desc,unit,qty=m.groups();desc=clean_spaces(desc);delivery="";j=i+1
