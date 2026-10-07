@@ -52,8 +52,14 @@ def parse(path):
             # Variante sem espaçamento de coluna suficiente: código simples.
             m=re.match(r"\s*\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line)
         if not m:
-            i+=1;continue
-        code,desc,unit,qty=m.groups();desc=clean_spaces(desc);delivery="";j=i+1
+            compact=re.match(r"\s*\d+\s+\d+\s+(\S+)\s{2,}(.+?)\s{2,}([\d.]+,\d{3})(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+[\d.]+,\d+",line)
+            if compact:
+                code,desc,qty,unit=compact.groups()
+            else:
+                i+=1;continue
+        else:
+            code,desc,unit,qty=m.groups()
+        desc=clean_spaces(desc);delivery="";j=i+1
         while j<len(lines) and j<=i+4:
             nxt=lines[j]
             dm=re.search(r"(\d{2}/\d{2}/\d{2,4})",nxt)
