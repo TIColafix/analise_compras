@@ -34,26 +34,38 @@ def parse(path):
     payment=one(r"Condição Pgto\.\s*:\s*([^\n]+)")
     items=[]
     lines=pages[0].splitlines() if pages else []
-    i=0
-    while i<len(lines):
-        line=lines[i]
-        # Aceita códigos alfanuméricos e também somente numéricos (ex.: código 2 = GESSO).
-        m=re.match(r"\s*\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line,re.I)
+    # O RPDC0250 pode desmontar as colunas da tabela durante a extração.
+    # Normalizamos cada linha e procuramos o item pelo conjunto codigo/descricao/UM/quantidade.
+    units="KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR"
+    for i,line in enumerate(lines):
+        s=clean_spaces(line)
+        # Layout comum: Emp Linha Codigo Descricao UM Quantidade ...
+        m=re.search(r"^\\d+\\s+\\d+\\s+([A-Z0-9][A-Z0-9._/-]*)\\s+(.+?)\\s+("+units+r")\\s+([\\d.]+,\\d+)(?:\\s|$)",s,re.I)
+        # Alguns PDFs perdem a coluna Emp durante a extração.
         if not m:
-            i+=1;continue
-        code,desc,unit,qty=m.groups();desc=clean_spaces(desc);delivery="";j=i+1
-        while j<len(lines) and j<=i+4:
-            nxt=lines[j]
-            dm=re.search(r"(\d{2}/\d{2}/\d{2,4})",nxt)
-            if dm: delivery=iso_date(dm.group(1))
-            elif nxt.strip() and not re.match(r"\s*\d+\s+\d+\s+[A-Z0-9][A-Z0-9._/-]*\s+",nxt,re.I) and not any(x in nxt for x in ["Emp.","Obs.:","Preço","Qtde."]):
-                continuation=clean_spaces(nxt)
-                continuation=re.sub(r"\s+\d+(?:\s+[\d.,]+){1,3}\s*$","",continuation).strip()
-                if continuation: desc=clean_spaces(desc+" "+continuation)
-            if dm: break
-            j+=1
-        items.append({"code":code,"product":desc,"quantity":qty,"unit":unit,"deliveryDate":delivery or header_delivery})
-        i=max(i+1,j)
+            m=re.search(r"^\\d+\\s+([A-Z0-9][A-Z0-9._/-]*)\\s+(.+?)\\s+("+units+r")\\s+([\\d.]+,\\d+)(?:\\s|$)",s,re.I)
+        if not m: continue
+        code,desc,unit,qty=m.groups()
+        delivery=""
+        for nxt in lines[i+1:i+7]:
+            dm=re.search(r"\\b(\\d{2}/\\d{2}/\\d{2,4})\\b",nxt)
+            if dm:
+                delivery=iso_date(dm.group(1));break
+        items.append({"code":code,"product":clean_spaces(desc),"quantity":qty,"unit":unit.upper(),"deliveryDate":delivery or header_delivery})
+
+    # Fallback específico para extrações em que o Focco separa cabeçalho e valores.
+    if not items:
+        flat=clean_spaces(" ".join(lines))
+        # Limita a busca à região da tabela para não confundir totais/cabeçalhos.
+        pos=flat.find("Qtde Total")
+        tail=flat[pos:] if pos>=0 else flat
+        m=re.search(r"(?:^|\\s)\\d+\\s+\\d+\\s+([A-Z0-9][A-Z0-9._/-]*)\\s+(.+?)\\s+("+units+r")\\s+([\\d.]+,\\d+)(?:\\s|$)",tail,re.I)
+        if m:
+            code,desc,unit,qty=m.groups()
+            dm=re.search(r"\\b(\\d{2}/\\d{2}/\\d{2,4})\\b",tail[m.end():])
+            delivery=iso_date(dm.group(1)) if dm else header_delivery
+            items.append({"code":code,"product":clean_spaces(desc),"quantity":qty,"unit":unit.upper(),"deliveryDate":delivery})
+
     if not order: raise ValueError("Não foi possível identificar o número do pedido.")
     if not supplier: raise ValueError("Não foi possível identificar o fornecedor.")
     if not items: raise ValueError("Não foi possível identificar os itens do pedido.")
