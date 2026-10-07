@@ -33,104 +33,45 @@ def parse(path):
     header_delivery=iso_date(one(r"PRAZO DE ENTREGA:\s*(\d{2}/\d{2}/\d{4})"))
     payment=one(r"Condição Pgto\.\s*:\s*([^\n]+)")
     items=[]
-    # RPDC0250 pode extrair a tabela em dois formatos: linha visual completa ou
-    # colunas agrupadas (códigos, descrições, UM, quantidades, datas). Primeiro
-    # tentamos o formato visual já suportado; se não houver itens, reconstruímos
-    # as linhas a partir da extração de texto simples do PDF.
-    # Pedidos maiores podem continuar a tabela nas páginas seguintes.
-    # Varremos todas as páginas, preservando a ordem do relatório.
-    lines=[]
-    for page_text in pages:
-        lines.extend(page_text.splitlines())
-    i=0
-    while i<len(lines):
-        line=lines[i]
-        # Linha visual RPDC0250: alguns códigos começam por número
-        # (311196AIR, 317782ALR), outros por letras (MP0410).
-        m=re.match(r"\s*\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*(?:\s+[A-Z0-9][A-Z0-9._/-]*)?)\s{2,}(.+?)\s{2,}(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line)
-        if not m:
-            # Variante sem espaçamento de coluna suficiente: código simples.
-            m=re.match(r"\s*\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+([\d.]+,\d+)\s+",line)
-        if not m:
-            compact=re.match(r"\s*\d+\s+\d+\s+(\S+)\s{2,}(.+?)\s{2,}([\d.]+,\d{3})(KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR)\s+[\d.]+,\d+",line)
-            if compact:
-                code,desc,qty,unit=compact.groups()
-            else:
-                i+=1;continue
-        else:
-            code,desc,unit,qty=m.groups()
-        desc=clean_spaces(desc);delivery="";j=i+1
-        while j<len(lines) and j<=i+4:
-            nxt=lines[j]
-            dm=re.search(r"(\d{2}/\d{2}/\d{2,4})",nxt)
-            if dm: delivery=iso_date(dm.group(1))
-            elif nxt.strip() and not re.match(r"\s*\d+\s+\d+\s+[A-Z][A-Z0-9]+",nxt) and not any(x in nxt for x in ["Emp.","Obs.:","Preço","Qtde."]):
-                continuation=clean_spaces(nxt)
-                continuation=re.sub(r"\s+\d+(?:\s+[\d.,]+){1,3}\s*$","",continuation).strip()
-                if continuation: desc=clean_spaces(desc+" "+continuation)
-            if dm: break
-            j+=1
-        items.append({"code":code,"product":desc,"quantity":qty,"unit":unit,"deliveryDate":delivery or header_delivery})
-        i=max(i+1,j)
+    lines=pages[0].splitlines() if pages else []
+    units="KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR"
 
-    # A extração visual pode reconhecer apenas parte das linhas quando alguns
-    # códigos do fornecedor não seguem o padrão MPxxxx. Se isso acontecer,
-    # reconstruímos a tabela agrupada e usamos o resultado mais completo.
-    row_items=items
-    grouped_items=[]
-    if True:
-        simple="\n".join((p.extract_text() or "") for p in PdfReader(path).pages)
-        raw=[clean_spaces(x) for x in simple.splitlines()]
-        # Neste layout, a seção de itens fica depois de "Linha" e antes de
-        # "Qtde. Atend.". Os grupos mantêm a mesma ordem entre si.
-        try:
-            # O pypdf pode juntar cabeçalhos; localizamos a região da tabela
-            # pelos próprios dados, sem exigir uma linha exatamente "Linha".
-            b=next(i for i,x in enumerate(raw) if x.startswith("Qtde. Atend"))
-            unit_tokens={"KG","UN","SC","MT","PC","CX","FD","L","TON","PCT","RL","BD","PAR"}
-            unit_idxs=[i for i,x in enumerate(raw[:b]) if x in unit_tokens]
-            if not unit_idxs: raise StopIteration
-            # O bloco de UMs da tabela é o maior bloco consecutivo antes do fim.
-            runs=[];run=[]
-            for idx in unit_idxs:
-                if run and idx!=run[-1]+1:runs.append(run);run=[]
-                run.append(idx)
-            if run:runs.append(run)
-            best=max(runs,key=len)
-            section=raw[best[0]:b]
-        except (StopIteration,ValueError):
-            section=[]
-        allowed_units={"KG","UN","SC","MT","PC","CX","FD","L","TON","PCT","RL","BD","PAR"}
-        # Layout agrupado do RPDC0250: na seção de itens o pypdf entrega um
-        # bloco de UMs, seguido pelo mesmo número de códigos, descrições,
-        # quantidades e datas. O número de itens vem do bloco consecutivo de UMs
-        # (não do total de "KG" da página, que pode conter cabeçalhos).
-        unit_runs=[]
-        run=[]
-        for idx,x in enumerate(section):
-            if x in allowed_units:
-                run.append((idx,x))
-            elif run:
-                unit_runs.append(run);run=[]
-        if run: unit_runs.append(run)
-        unit_run=max(unit_runs,key=len,default=[])
-        n=len(unit_run)
-        if n:
-            unit_end=unit_run[-1][0]+1
-            units=[x for _,x in unit_run]
-            codes=section[unit_end:unit_end+n]
-            descs=section[unit_end+n:unit_end+(2*n)]
-            tail=section[unit_end+(2*n):]
-            qtys=[x for x in tail if re.fullmatch(r"[\d.]+,\d{3}",x)][:n]
-            dates=[iso_date(x) for x in tail if re.fullmatch(r"\d{2}/\d{2}/\d{2,4}",x)][:n]
-            # Não restringir o formato do código: fornecedores podem usar
-            # 311196AIR, MP0410 ou KOLAFLUX 540P. A posição da coluna é a fonte.
-            if len(codes)==n and len(descs)==n and len(qtys)==n:
-                for k in range(n):
-                    grouped_items.append({"code":codes[k],"product":descs[k],
-                                          "quantity":qtys[k],"unit":units[k],
-                                          "deliveryDate":dates[k] if k<len(dates) else header_delivery})
-    items=grouped_items if len(grouped_items)>len(row_items) else row_items
+    # Layout normal do Focco: Emp / Linha / Codigo / Descricao / UM / Quantidade.
+    for i,line in enumerate(lines):
+        s=clean_spaces(line)
+        patterns=[
+            r"^\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+("+units+r")\s+([\d.]+,\d+)(?:\s|$)",
+            r"^\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+("+units+r")\s+([\d.]+,\d+)(?:\s|$)"
+        ]
+        m=None
+        for pattern in patterns:
+            m=re.search(pattern,s,re.I)
+            if m: break
+        if not m: continue
+        code,desc,unit,qty=m.groups()
+        delivery=""
+        for nxt in lines[i+1:i+8]:
+            dm=re.search(r"\b(\d{2}/\d{2}/\d{2,4})\b",nxt)
+            if dm:
+                delivery=iso_date(dm.group(1));break
+        items.append({"code":code,"product":clean_spaces(desc),"quantity":qty,"unit":unit.upper(),"deliveryDate":delivery or header_delivery})
+
+    # Fallback: alguns RPDC0250 saem com a tabela desmontada pelo pypdf.
+    # Procura explicitamente blocos como "2 GESSO SC 150,000" no texto extraido.
+    if not items:
+        flat=clean_spaces(" ".join(lines))
+        table_pos=flat.find("Qtde Total")
+        tail=flat[table_pos:] if table_pos>=0 else flat
+        pattern=r"(?:^|\s)([A-Z0-9][A-Z0-9._/-]*)\s+([A-Z][A-Z0-9 ._/-]{1,80}?)\s+("+units+r")\s+([\d.]+,\d+)(?:\s|$)"
+        for m in re.finditer(pattern,tail,re.I):
+            code,desc,unit,qty=m.groups()
+            if code.upper() in {"TOTAL","EMP","LINHA","PEDIDO","CODIGO"}: continue
+            after=tail[m.end():m.end()+250]
+            dm=re.search(r"\b(\d{2}/\d{2}/\d{2,4})\b",after)
+            delivery=iso_date(dm.group(1)) if dm else header_delivery
+            items.append({"code":code,"product":clean_spaces(desc),"quantity":qty,"unit":unit.upper(),"deliveryDate":delivery})
+            break
+
     if not order: raise ValueError("Não foi possível identificar o número do pedido.")
     if not supplier: raise ValueError("Não foi possível identificar o fornecedor.")
     if not items: raise ValueError("Não foi possível identificar os itens do pedido.")
