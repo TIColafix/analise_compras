@@ -286,3 +286,9 @@
 
 /* Edição estilo planilha no comparativo do cimento ensacado */
 .price-edit-row td{padding:4px!important;background:#fffbe8!important}.price-cell-input{width:100%;min-width:90px;padding:7px 8px!important;border:1px solid #60a5fa!important;border-radius:3px!important;background:#fff!important;font-size:12px!important}.price-block.current .price-edit-row td:first-child .price-cell-input{min-width:240px}.price-block.freight .price-edit-row td:nth-child(3) .price-cell-input{min-width:300px}.price-actions button[title="Salvar"]{border-color:#86d7a6;background:#ecfdf3}.price-actions button[title="Cancelar"]{border-color:#f3a3a8;background:#fff1f2}
+
+/* Cards encerrados compactos */
+.mn-closed-card{padding:7px 9px!important;min-height:0!important;margin-bottom:6px!important}
+.mn-closed-line{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:11px;line-height:1.15}
+.mn-closed-line strong{font-size:12px}
+.mn-closed-line span,.mn-closed-line b{white-space:nowrap}
