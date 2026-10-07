@@ -34,37 +34,43 @@ def parse(path):
     payment=one(r"Condição Pgto\.\s*:\s*([^\n]+)")
     items=[]
     lines=pages[0].splitlines() if pages else []
-    # O RPDC0250 pode desmontar as colunas da tabela durante a extração.
-    # Normalizamos cada linha e procuramos o item pelo conjunto codigo/descricao/UM/quantidade.
     units="KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR"
+
+    # Layout normal do Focco: Emp / Linha / Codigo / Descricao / UM / Quantidade.
     for i,line in enumerate(lines):
         s=clean_spaces(line)
-        # Layout comum: Emp Linha Codigo Descricao UM Quantidade ...
-        m=re.search(r"^\\d+\\s+\\d+\\s+([A-Z0-9][A-Z0-9._/-]*)\\s+(.+?)\\s+("+units+r")\\s+([\\d.]+,\\d+)(?:\\s|$)",s,re.I)
-        # Alguns PDFs perdem a coluna Emp durante a extração.
-        if not m:
-            m=re.search(r"^\\d+\\s+([A-Z0-9][A-Z0-9._/-]*)\\s+(.+?)\\s+("+units+r")\\s+([\\d.]+,\\d+)(?:\\s|$)",s,re.I)
+        patterns=[
+            r"^\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+("+units+r")\s+([\d.]+,\d+)(?:\s|$)",
+            r"^\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+("+units+r")\s+([\d.]+,\d+)(?:\s|$)"
+        ]
+        m=None
+        for pattern in patterns:
+            m=re.search(pattern,s,re.I)
+            if m: break
         if not m: continue
         code,desc,unit,qty=m.groups()
         delivery=""
-        for nxt in lines[i+1:i+7]:
-            dm=re.search(r"\\b(\\d{2}/\\d{2}/\\d{2,4})\\b",nxt)
+        for nxt in lines[i+1:i+8]:
+            dm=re.search(r"\b(\d{2}/\d{2}/\d{2,4})\b",nxt)
             if dm:
                 delivery=iso_date(dm.group(1));break
         items.append({"code":code,"product":clean_spaces(desc),"quantity":qty,"unit":unit.upper(),"deliveryDate":delivery or header_delivery})
 
-    # Fallback específico para extrações em que o Focco separa cabeçalho e valores.
+    # Fallback: alguns RPDC0250 saem com a tabela desmontada pelo pypdf.
+    # Procura explicitamente blocos como "2 GESSO SC 150,000" no texto extraido.
     if not items:
         flat=clean_spaces(" ".join(lines))
-        # Limita a busca à região da tabela para não confundir totais/cabeçalhos.
-        pos=flat.find("Qtde Total")
-        tail=flat[pos:] if pos>=0 else flat
-        m=re.search(r"(?:^|\\s)\\d+\\s+\\d+\\s+([A-Z0-9][A-Z0-9._/-]*)\\s+(.+?)\\s+("+units+r")\\s+([\\d.]+,\\d+)(?:\\s|$)",tail,re.I)
-        if m:
+        table_pos=flat.find("Qtde Total")
+        tail=flat[table_pos:] if table_pos>=0 else flat
+        pattern=r"(?:^|\s)([A-Z0-9][A-Z0-9._/-]*)\s+([A-Z][A-Z0-9 ._/-]{1,80}?)\s+("+units+r")\s+([\d.]+,\d+)(?:\s|$)"
+        for m in re.finditer(pattern,tail,re.I):
             code,desc,unit,qty=m.groups()
-            dm=re.search(r"\\b(\\d{2}/\\d{2}/\\d{2,4})\\b",tail[m.end():])
+            if code.upper() in {"TOTAL","EMP","LINHA","PEDIDO","CODIGO"}: continue
+            after=tail[m.end():m.end()+250]
+            dm=re.search(r"\b(\d{2}/\d{2}/\d{2,4})\b",after)
             delivery=iso_date(dm.group(1)) if dm else header_delivery
             items.append({"code":code,"product":clean_spaces(desc),"quantity":qty,"unit":unit.upper(),"deliveryDate":delivery})
+            break
 
     if not order: raise ValueError("Não foi possível identificar o número do pedido.")
     if not supplier: raise ValueError("Não foi possível identificar o fornecedor.")
