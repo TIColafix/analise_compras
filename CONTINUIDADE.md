@@ -264,3 +264,7 @@ A lista de produtos usada no agendamento do cimento ensacado passou a ser persis
 
 ### Edição em linha do comparativo de cimento — 07/10/2026
 Na aba **Cimento ensacado > Preços e comparativo**, inclusão e edição deixaram de usar prompts sucessivos. Ao clicar em **+ Produto/preço**, **+ Frete por cliente**, **+ Preço por cliente** ou no lápis de uma linha, a própria linha da tabela vira campos editáveis, no estilo planilha/Excel. O usuário preenche todas as colunas de uma vez e confirma em 💾 ou cancela em ✖️. A persistência continua usando `/api/cement-bag-prices` e PostgreSQL, preservando a auditoria existente.
+
+
+### Ajuste do importador de pedidos em 07/10/2026
+O leitor RPDC0250 passou a aceitar também linhas em que quantidade e unidade são extraídas juntas pelo PDF, preservando compatibilidade com os formatos anteriores.
