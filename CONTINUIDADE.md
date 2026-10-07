@@ -256,3 +256,7 @@ Criada a aba **🛡️ Auditoria** no menu lateral, visível somente quando `/ap
 ### Preços e comparativo do cimento ensacado (06/10/2026)
 
 No módulo **Cimento ensacado**, ao lado de **Programação semanal** e **Todas as cargas**, foi criada a aba **📊 Preços e comparativo**. Ela permanece dentro do próprio módulo e reúne três blocos: preço vigente do cimento Pozosul, comparativo de frete por cliente e preço final por cliente. Os dados ficam em `bagPrices` dentro do documento `cement` no PostgreSQL e não alteram as cargas existentes. Bases antigas que ainda não possuem `bagPrices` recebem a estrutura padrão sem apagar `loads` ou `monthlyOrders`. A tela calcula média/menor/maior preço atual, permite alterar o período base e incluir, editar ou excluir registros dos três blocos. A gravação usa `POST /api/cement-bag-prices` e entra na auditoria como `cement-bag-prices`.
+
+
+## Cadastro de produtos do cimento ensacado — 07/10/2026
+A lista de produtos usada no agendamento do cimento ensacado passou a ser persistida no documento `cement` do PostgreSQL (`bagProducts`). Foi incluído `63360 - CPV 40KG` como produto padrão adicional. Na própria área **Produtos do pedido**, o botão **Gerenciar produtos** permite ao usuário adicionar, renomear ou remover opções da lista sem alterar o código. As cargas históricas continuam preservando o texto do produto salvo em cada agendamento.
