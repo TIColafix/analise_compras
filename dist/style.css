@@ -324,3 +324,5 @@
 .deadline-report-footer>div{display:flex;gap:8px}
 .deadline-report-footer button{padding:9px 12px;border:1px solid #cbd5e1;border-radius:5px;background:#fff;cursor:pointer}
 @media(max-width:850px){.deadline-report-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.deadline-report-footer{flex-wrap:wrap}}
+
+.deadline-multi{position:relative;min-width:0}.deadline-multi>button{display:block;width:100%;text-align:left;padding:9px;border:1px solid #cbd5e1;border-radius:5px;background:white;cursor:pointer}.deadline-multi-options{position:absolute;z-index:50;top:100%;left:0;right:0;min-width:200px;background:white;border:1px solid #cbd5e1;border-radius:5px;box-shadow:0 8px 18px #0002;padding:6px;max-height:260px;overflow-y:auto}.deadline-multi-options[hidden]{display:none}.deadline-multi-options label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:7px;font-weight:400;cursor:pointer}.deadline-multi-options label:hover{background:#f1f5f9}.deadline-multi-options input{width:auto;margin:0}
