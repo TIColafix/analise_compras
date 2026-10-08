@@ -292,3 +292,5 @@
 .mn-closed-line{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:11px;line-height:1.15}
 .mn-closed-line strong{font-size:12px}
 .mn-closed-line span,.mn-closed-line b{white-space:nowrap}
+
+.mn-order-dot{color:#e11d48;font-size:19px;line-height:1;margin-right:4px;vertical-align:middle}.mn-order-warning{font-size:11px;color:#b91c1c;font-weight:600;padding:5px 2px}
