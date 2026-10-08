@@ -329,3 +329,26 @@
 
 /* Histórico de dólar no painel */
 .dash-live-market:has(.dollar-history){min-width:220px;align-items:flex-start}.dollar-history{margin-top:8px;padding-top:7px;border-top:1px solid #e2e8f0;display:flex;flex-direction:column;gap:5px;font-size:11px}.dollar-history>strong{font-size:11px;color:#475569}.dollar-history span{display:flex;justify-content:space-between;gap:10px;white-space:nowrap}.dollar-history span b{font-size:11px;color:#0f172a}.dollar-history time{color:#64748b}
+
+/* Dashboard modelo 3: cartões compactos sem sobreposição */
+#dashboard-view .dash-live-v3{display:grid;grid-template-columns:minmax(350px,1.45fr) minmax(170px,.65fr) minmax(390px,1.7fr);gap:10px;align-items:stretch;margin-bottom:12px}
+#dashboard-view .dash-live-v3 .dash-live-market,#dashboard-view .dash-live-v3 .dash-weather{min-width:0;min-height:118px;box-sizing:border-box;box-shadow:0 2px 8px #1f304b0d}
+#dashboard-view .dash-live-v3 .dash-dollar-v3{display:grid;grid-template-columns:32px minmax(105px,1fr) minmax(90px,1fr) minmax(100px,1fr);align-items:center;gap:9px;padding:10px;background:#f5fff9}
+#dashboard-view .dash-live-v3 .dash-dollar-v3>.dash-live-icon{width:30px;height:30px}
+#dashboard-view .dash-live-v3 .dash-dollar-v3>div:nth-child(2){min-width:0;display:grid;gap:4px}
+#dashboard-view .dash-live-v3 .dash-dollar-v3 strong{font-size:16px;white-space:nowrap}
+#dashboard-view .dash-live-v3 .dash-dollar-chart{min-width:0;display:block;height:48px}
+#dashboard-view .dash-live-v3 .dash-dollar-chart svg{width:100%;height:100%;display:block}
+#dashboard-view .dash-live-v3 .dollar-history{min-width:0;margin:0;padding:0 0 0 8px;border-top:0;border-left:1px solid #d6e9dc;display:flex;gap:3px}
+#dashboard-view .dash-live-v3 .dollar-history>strong{font-size:10px;white-space:nowrap}
+#dashboard-view .dash-live-v3 .dollar-history span{gap:5px;font-size:10px}
+#dashboard-view .dash-live-v3 .dollar-history span b{font-size:10px}
+#dashboard-view .dash-live-v3 .dash-diesel-v3{padding:10px;gap:9px;background:#fffaf5}
+#dashboard-view .dash-live-v3 .dash-diesel-v3 strong{white-space:nowrap;font-size:17px}
+#dashboard-view .dash-live-v3 .dash-weather-v3{display:flex;min-width:0;background:#f4f9ff}
+#dashboard-view .dash-live-v3 .dash-weather-title{min-width:125px;padding:8px}
+#dashboard-view .dash-live-v3 .dash-weather-days{grid-template-columns:repeat(5,minmax(0,1fr));min-width:0}
+#dashboard-view .dash-live-v3 .dash-weather-days>span{padding:5px 2px}
+#dashboard-view .dash-live-v3 .dash-weather-days small{font-size:8px}
+@media(max-width:1200px){#dashboard-view .dash-live-v3{grid-template-columns:minmax(0,1fr) minmax(180px,.6fr)}#dashboard-view .dash-live-v3 .dash-weather-v3{grid-column:1/-1}}
+@media(max-width:700px){#dashboard-view .dash-live-v3{grid-template-columns:minmax(0,1fr)}#dashboard-view .dash-live-v3 .dash-weather-v3{grid-column:auto}#dashboard-view .dash-live-v3 .dash-dollar-v3{grid-template-columns:30px minmax(0,1fr) minmax(100px,1fr)}#dashboard-view .dash-live-v3 .dash-dollar-chart{display:none}#dashboard-view .dash-live-v3 .dash-weather-days{overflow-x:auto;grid-template-columns:repeat(5,minmax(58px,1fr))}}
