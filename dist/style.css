@@ -352,3 +352,36 @@
 #dashboard-view .dash-live-v3 .dash-weather-days small{font-size:8px}
 @media(max-width:1200px){#dashboard-view .dash-live-v3{grid-template-columns:minmax(0,1fr) minmax(180px,.6fr)}#dashboard-view .dash-live-v3 .dash-weather-v3{grid-column:1/-1}}
 @media(max-width:700px){#dashboard-view .dash-live-v3{grid-template-columns:minmax(0,1fr)}#dashboard-view .dash-live-v3 .dash-weather-v3{grid-column:auto}#dashboard-view .dash-live-v3 .dash-dollar-v3{grid-template-columns:30px minmax(0,1fr) minmax(100px,1fr)}#dashboard-view .dash-live-v3 .dash-dollar-chart{display:none}#dashboard-view .dash-live-v3 .dash-weather-days{overflow-x:auto;grid-template-columns:repeat(5,minmax(58px,1fr))}}
+
+/* Modelo 3 definitivo: faixa horizontal de 82px como na referencia */
+.dash-live.dash-live-v3{display:grid!important;grid-template-columns:minmax(0,1.15fr) minmax(0,.55fr) minmax(0,1.25fr)!important;gap:8px!important;margin-bottom:10px!important;align-items:stretch!important}
+.dash-live-v3>.dash-live-market,.dash-live-v3>.dash-weather{height:82px!important;min-height:0!important;max-height:82px!important;min-width:0!important;overflow:hidden!important;border-radius:8px!important;box-sizing:border-box!important}
+.dash-live-v3>.dash-dollar-v3{display:grid!important;grid-template-columns:22px minmax(95px,1fr) minmax(80px,.8fr) minmax(94px,.8fr)!important;gap:5px!important;padding:7px!important;align-items:center!important;background:#f0f7f2!important}
+.dash-live-v3>.dash-dollar-v3>.dash-live-icon{width:21px!important;height:21px!important;font-size:14px!important}
+.dash-live-v3>.dash-dollar-v3>div:nth-child(2){display:flex!important;flex-direction:column!important;gap:2px!important;min-width:0!important}
+.dash-live-v3>.dash-dollar-v3>div:nth-child(2)>small{font-size:9px!important;white-space:nowrap!important}
+.dash-live-v3>.dash-dollar-v3>div:nth-child(2)>strong{font-size:15px!important;line-height:1.1!important;white-space:nowrap!important}
+.dash-live-v3>.dash-dollar-v3>div:nth-child(2)>em{font-size:7px!important;line-height:1.15!important;max-height:18px!important;overflow:hidden!important}
+.dash-live-v3 .dash-dollar-chart{display:block!important;height:35px!important;min-width:0!important}
+.dash-live-v3 .dash-dollar-chart svg{width:100%!important;height:35px!important}
+.dash-live-v3 .dollar-history{display:flex!important;flex-direction:column!important;gap:1px!important;margin:0!important;padding:0 0 0 5px!important;min-width:0!important;border-left:1px solid #dbe7dc!important;border-top:0!important}
+.dash-live-v3 .dollar-history>strong{display:none!important}
+.dash-live-v3 .dollar-history span{display:flex!important;justify-content:space-between!important;gap:3px!important;white-space:nowrap!important;line-height:1.05!important}
+.dash-live-v3 .dollar-history span time,.dash-live-v3 .dollar-history span b{font-size:8px!important;font-weight:500!important}
+.dash-live-v3>.dash-diesel-v3{display:flex!important;align-items:center!important;gap:7px!important;padding:7px!important;background:#f8f4ee!important}
+.dash-live-v3>.dash-diesel-v3>.dash-live-icon{width:24px!important;height:26px!important;font-size:16px!important;flex-shrink:0!important}
+.dash-live-v3>.dash-diesel-v3 strong{font-size:15px!important;white-space:nowrap!important}
+.dash-live-v3>.dash-diesel-v3 em{font-size:8px!important;line-height:1.1!important}
+.dash-live-v3>.dash-weather-v3{display:flex!important;align-items:stretch!important;grid-column:auto!important;background:#eef4fc!important}
+.dash-live-v3>.dash-weather-v3>.dash-weather-title{min-width:110px!important;width:120px!important;box-sizing:border-box!important;padding:5px!important;gap:4px!important}
+.dash-live-v3 .dash-weather-title>span{font-size:20px!important}
+.dash-live-v3 .dash-weather-title small{font-size:8px!important}
+.dash-live-v3 .dash-weather-title strong{font-size:9px!important}
+.dash-live-v3 .dash-weather-days{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;flex:1!important;min-width:0!important;overflow:hidden!important}
+.dash-live-v3 .dash-weather-days>span{display:grid!important;place-items:center!important;gap:1px!important;padding:4px 1px!important}
+.dash-live-v3 .dash-weather-days b{font-size:8px!important}
+.dash-live-v3 .dash-weather-days i{font-size:15px!important}
+.dash-live-v3 .dash-weather-days strong{font-size:12px!important}
+.dash-live-v3 .dash-weather-days small{font-size:7px!important}
+@media(max-width:1000px){.dash-live.dash-live-v3{grid-template-columns:minmax(0,1fr) minmax(0,.65fr)!important}.dash-live-v3>.dash-weather-v3{grid-column:1/-1!important}}
+@media(max-width:600px){.dash-live.dash-live-v3{grid-template-columns:minmax(0,1fr)!important}.dash-live-v3>.dash-weather-v3{grid-column:auto!important}.dash-live-v3>.dash-dollar-v3{grid-template-columns:20px minmax(85px,1fr) minmax(55px,.6fr) minmax(85px,.8fr)!important}}
