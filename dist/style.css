@@ -312,3 +312,15 @@
 .cement-price-panel .price-block.price-previous h3{background:#e5e7eb!important;color:#374151!important}
 .cement-price-panel .price-block.price-latest h3{background:#5ee69a!important;color:#064e3b!important}
 .cement-price-panel .price-block.price-previous .final-price{background:#f3f4f6!important;color:#374151!important}
+
+/* Relatório de prazos de entrega */
+.deadline-report{margin-bottom:14px}
+.deadline-report h3{display:flex;align-items:center;gap:12px}
+.deadline-report h3 small{font-size:11px;font-weight:400;color:#64748b}
+.deadline-report-filters{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:10px;margin:12px 0}
+.deadline-report-filters label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600}
+.deadline-report-filters input,.deadline-report-filters select{width:100%;min-width:0;padding:9px;border:1px solid #cbd5e1;border-radius:5px;background:#fff}
+.deadline-report-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#64748b}
+.deadline-report-footer>div{display:flex;gap:8px}
+.deadline-report-footer button{padding:9px 12px;border:1px solid #cbd5e1;border-radius:5px;background:#fff;cursor:pointer}
+@media(max-width:850px){.deadline-report-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.deadline-report-footer{flex-wrap:wrap}}
