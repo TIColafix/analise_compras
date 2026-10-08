@@ -1,4 +1,4 @@
-function initBulkPrices(){
+export function initBulkPrices(){
 const root=document.getElementById('bulk-prices-root');
 if(!root||root.dataset.bulkReady)return false;
 {
