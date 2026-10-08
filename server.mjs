@@ -65,10 +65,26 @@ createServer(async(req,res)=>{try{
  if(path==='/api/external-summary'&&req.method==='GET'){
   const get=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
   let dollar=null,weather=[];
+  const validRate=x=>Number.isFinite(Number(x))&&Number(x)>0;
   try{
    const j=await get('https://economia.awesomeapi.com.br/json/last/USD-BRL');
-   const x=j.USDBRL;if(x)dollar={value:Number(x.bid),high:Number(x.high),low:Number(x.low),updated:x.create_date||''};
+   const x=j.USDBRL;if(x&&validRate(x.bid))dollar={value:Number(x.bid),high:Number(x.high),low:Number(x.low),updated:x.create_date||'',source:'AwesomeAPI'};
   }catch{}
+  if(!dollar)try{
+   const j=await get('https://open.er-api.com/v6/latest/USD');
+   if(validRate(j.rates?.BRL))dollar={value:Number(j.rates.BRL),updated:j.time_last_update_utc||'',source:'ExchangeRate-API'};
+  }catch{}
+  const history=[];
+  const utcNow=new Date(),day=new Date(Date.UTC(utcNow.getUTCFullYear(),utcNow.getUTCMonth(),utcNow.getUTCDate()));
+  for(let daysAgo=0;daysAgo<=4;daysAgo++){
+   const d=new Date(day);d.setUTCDate(d.getUTCDate()-daysAgo);
+   const date=d.toISOString().slice(0,10);
+   try{
+    const j=await get('https://api.frankfurter.dev/v1/'+date+'?base=USD&symbols=BRL');
+    if(validRate(j.rates?.BRL))history.push({date:j.date||date,value:Number(j.rates.BRL)});
+   }catch{}
+  }
+  if(dollar)dollar.history=history;
   try{
    const j=await get('https://api.open-meteo.com/v1/forecast?latitude=-29.9514&longitude=-51.0939&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FSao_Paulo&forecast_days=7');
    weather=(j.daily?.time||[]).map((date,i)=>({date,code:j.daily.weather_code[i],max:j.daily.temperature_2m_max[i],min:j.daily.temperature_2m_min[i],rain:j.daily.precipitation_probability_max[i]}));
