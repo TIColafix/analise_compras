@@ -294,3 +294,16 @@
 .mn-closed-line span,.mn-closed-line b{white-space:nowrap}
 
 .mn-order-dot{color:#e11d48;font-size:19px;line-height:1;margin-right:4px;vertical-align:middle}.mn-order-warning{font-size:11px;color:#b91c1c;font-weight:600;padding:5px 2px}
+
+/* Mantém todas as colunas da lista de manutenção visíveis sem alargar a página */
+.mn-list .table-scroll{max-width:100%;overflow-x:auto}
+.mn-list table{width:100%;table-layout:fixed;min-width:760px}
+.mn-list th:nth-child(1){width:90px}
+.mn-list th:nth-child(2){width:34%}
+.mn-list th:nth-child(3){width:17%}
+.mn-list th:nth-child(4){width:12%}
+.mn-list th:nth-child(5){width:11%}
+.mn-list th:nth-child(6){width:11%}
+.mn-list th:nth-child(7){width:118px}
+.mn-list td.mn-description-cell{max-width:0;overflow:hidden}
+.mn-description-truncate{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
