@@ -396,3 +396,16 @@
 .dash-live-v3>.dash-dollar-v3>.dash-dollar-chart{grid-column:3!important;grid-row:1/4!important;align-self:center!important}
 .dash-live-v3>.dash-dollar-v3>.dollar-history{grid-column:4!important;grid-row:1/4!important;align-self:center!important;display:flex!important;flex-direction:column!important;visibility:visible!important;max-height:76px!important;overflow:hidden!important}
 @media(max-width:600px){.dash-live-v3>.dash-dollar-v3{grid-template-columns:20px minmax(80px,1fr) minmax(48px,.5fr) minmax(108px,1fr)!important}}
+
+/* Dólar: composição fiel ao modelo 3, sem posicionamento quebrado */
+.dash-live-v3>.dash-dollar-v3{display:grid!important;grid-template-columns:24px minmax(90px,1fr) minmax(75px,.85fr) minmax(108px,.9fr)!important;grid-template-rows:1fr!important;align-items:center!important;gap:6px!important;padding:7px 9px!important}
+.dash-live-v3>.dash-dollar-v3>.dash-live-icon{grid-column:1!important;grid-row:1!important;display:flex!important;align-items:center!important;justify-content:center!important;background:transparent!important;font-size:22px!important;width:24px!important;height:30px!important}
+.dash-live-v3>.dash-dollar-v3>.dash-dollar-info{grid-column:2!important;grid-row:1!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:3px!important;min-width:0!important}
+.dash-live-v3>.dash-dollar-v3>.dash-dollar-info>small{font-size:9px!important;line-height:1.1!important;white-space:nowrap!important}
+.dash-live-v3>.dash-dollar-v3>.dash-dollar-info>strong{font-size:16px!important;line-height:1.15!important;white-space:nowrap!important}
+.dash-live-v3>.dash-dollar-v3>.dash-dollar-info>em{font-size:8px!important;line-height:1.1!important;max-height:18px!important;overflow:hidden!important}
+.dash-live-v3>.dash-dollar-v3>.dash-dollar-chart{grid-column:3!important;grid-row:1!important;display:block!important;height:39px!important;align-self:center!important}
+.dash-live-v3>.dash-dollar-v3>.dollar-history{grid-column:4!important;grid-row:1!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:2px!important;align-self:stretch!important;border-left:1px solid #dbe7dc!important;padding-left:5px!important;overflow:hidden!important}
+.dash-live-v3>.dash-dollar-v3>.dollar-history>strong{display:none!important}
+.dash-live-v3>.dash-dollar-v3>.dollar-history span{line-height:1.1!important}
+.dash-live-v3>.dash-dollar-v3>.dollar-history time,.dash-live-v3>.dash-dollar-v3>.dollar-history b{font-size:8px!important}
