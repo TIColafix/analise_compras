@@ -307,3 +307,8 @@
 .mn-list th:nth-child(7){width:118px}
 .mn-list td.mn-description-cell{max-width:0;overflow:hidden}
 .mn-description-truncate{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+
+/* Apenas a tabela de preços mais recente recebe destaque verde */
+.cement-price-panel .price-block.price-previous h3{background:#e5e7eb!important;color:#374151!important}
+.cement-price-panel .price-block.price-latest h3{background:#5ee69a!important;color:#064e3b!important}
+.cement-price-panel .price-block.price-previous .final-price{background:#f3f4f6!important;color:#374151!important}
