@@ -1,5 +1,8 @@
+function initBulkPrices(){
 const root=document.getElementById('bulk-prices-root');
-if(root){
+if(!root||root.dataset.bulkReady)return false;
+root.dataset.bulkReady='1';
+{
 const key='colafix-bulk-prices-v1',money=v=>'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let data;try{data=JSON.parse(localStorage.getItem(key))}catch{}if(!data||!Array.isArray(data.quotes)||!Array.isArray(data.contracts))data={quotes:[],contracts:[]};
 let tab='prices',range=6;
@@ -16,3 +19,10 @@ root.querySelectorAll('[data-bulk-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset
 const qf=root.querySelector('#bulk-quote-form');if(qf)qf.onsubmit=e=>{e.preventDefault();const o=Object.fromEntries(new FormData(qf));data.quotes=data.quotes.filter(x=>!(x.date===o.date&&x.supplier===o.supplier));data.quotes.push({...o,price:Number(o.price)});save();draw()};
 const cf=root.querySelector('#bulk-contract-form');if(cf)cf.onsubmit=e=>{e.preventDefault();const o=Object.fromEntries(new FormData(cf));data.contracts.push({...o,price:Number(o.price)});save();draw()};}
 draw();}
+return true;
+}
+if(!initBulkPrices()){
+ const observer=new MutationObserver(()=>{if(initBulkPrices())observer.disconnect()});
+ observer.observe(document.body,{childList:true,subtree:true});
+ document.addEventListener('DOMContentLoaded',()=>{if(initBulkPrices())observer.disconnect()},{once:true});
+}
