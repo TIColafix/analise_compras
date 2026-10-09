@@ -491,3 +491,18 @@
 #bulk-prices-root .bulk-price-bottom{margin-top:22px}
 #bulk-prices-root .bulk-price-current strong{font-size:26px}
 @media(max-width:700px){#bulk-prices-root .bulk-official-logo{max-width:50%}#bulk-prices-root .bulk-price-current strong{font-size:22px}}
+
+/* Areia Amigos — modelo 2 */
+#areiaamigos-view{font-size:13px;color:#172a44}#areiaamigos-view *{box-sizing:border-box}
+.aa-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px}.aa-head h2{font-size:26px;margin:0}.aa-head p{margin:4px 0;color:#718197}
+.aa-head button,#areiaamigos-view .aa-primary{background:#0874ef!important;color:#fff!important;border-color:#0874ef!important}
+#areiaamigos-view button{padding:9px 13px;border:1px solid #d5e0ed;border-radius:6px;background:#fff;color:#19334e;cursor:pointer}#areiaamigos-view button:disabled{opacity:.5;cursor:not-allowed}
+.aa-tabs{display:flex;margin-bottom:10px}.aa-tabs button{min-width:130px;border-radius:5px 5px 0 0!important}.aa-tabs button.active{color:#0869e4!important;border-bottom:3px solid #0869e4!important;font-weight:700}
+.aa-columns{display:grid;grid-template-columns:1.08fr 1.35fr .9fr;gap:10px;align-items:stretch}.aa-card{background:#fff;border:1px solid #dce5ef;border-radius:9px;padding:14px;margin-bottom:12px;min-width:0}.aa-card h3{font-size:15px;margin:0 0 14px}.aa-card h4{margin:15px 0 8px}
+.aa-image-box{height:390px;display:flex;align-items:center;justify-content:center;border:1px dashed #c6dbf5;border-radius:7px;overflow:hidden;background:#f9fbfe}.aa-receipt-img{width:100%;height:100%;object-fit:contain}.aa-drop{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#126ce2;font-size:28px;cursor:pointer}.aa-drop strong{font-size:15px}.aa-drop small{font-size:12px;color:#76869a}
+.aa-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.aa-right{justify-content:flex-end}.aa-info{background:#e8f8ef;border:1px solid #c4ead4;color:#13613d;padding:11px;border-radius:6px;margin-bottom:8px}
+#areiaamigos-view label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#334960;margin:8px 0}#areiaamigos-view input,#areiaamigos-view select{padding:9px;border:1px solid #d0ddeb;border-radius:6px;min-width:0;width:100%;background:#fff;color:#19334e}
+.aa-fields{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:8px}.aa-items{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.aa-preview{height:260px;background:#f4f8fc;border-radius:7px;display:flex;justify-content:center;align-items:center;color:#7e8a99;overflow:hidden}.aa-preview img{height:100%;max-width:100%;object-fit:contain}.aa-details{background:#f7f9fc;padding:10px;border-radius:7px}.aa-details p{margin:8px 0}
+.aa-filters{display:grid;grid-template-columns:2fr 1.3fr 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:12px}.aa-table{width:100%;border-collapse:collapse;font-size:11px;white-space:nowrap}.aa-table th,.aa-table td{border:1px solid #dfe6ee;padding:9px;text-align:center}.aa-table th{background:#eff4fa}.aa-table tbody tr:nth-child(even){background:#fafcff}
+@media(max-width:1350px){.aa-columns{grid-template-columns:1fr 1fr}.aa-columns>.aa-card:last-child{grid-column:1/-1}.aa-filters{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:760px){.aa-columns,.aa-fields,.aa-items,.aa-filters{grid-template-columns:1fr}.aa-columns>.aa-card:last-child{grid-column:auto}.aa-head{flex-wrap:wrap}}
