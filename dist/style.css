@@ -666,3 +666,14 @@
 @media (max-width:1199px){
  #manutencao-view .maintenance-board{grid-template-columns:repeat(6,minmax(190px,1fr))!important;overflow-x:auto!important}
 }
+
+/* Areia Amigos: cadastro em duas colunas; prévia apenas no histórico */
+#areiaamigos-view .aa-columns{grid-template-columns:minmax(0,1fr) minmax(0,1.45fr)!important}
+#areiaamigos-view .aa-saved-overlay{position:fixed;inset:0;z-index:9999;background:rgba(13,28,48,.65);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+#areiaamigos-view .aa-saved-modal{width:min(550px,100%);max-height:calc(100vh - 40px);overflow-y:auto;background:#fff;box-shadow:0 18px 65px #0005;border-radius:15px;padding:18px}
+#areiaamigos-view .aa-saved-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+#areiaamigos-view .aa-saved-header h3{margin:0}
+#areiaamigos-view .aa-saved-content .aa-preview{max-height:330px;display:flex;align-items:center;justify-content:center}
+#areiaamigos-view .aa-saved-content .aa-preview img{max-height:320px;width:auto;max-width:100%;object-fit:contain}
+#areiaamigos-view .aa-saved-content .aa-share-grid{margin-top:15px}
+@media(max-width:850px){#areiaamigos-view .aa-columns{grid-template-columns:1fr!important}}
