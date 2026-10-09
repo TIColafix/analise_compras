@@ -31,17 +31,19 @@ const info=root.querySelector('#aa-info');info.textContent='Lendo regiões do re
 try{
  if(!window.Tesseract){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=resolve;s.onerror=()=>reject(Error('Biblioteca OCR indisponível.'));document.head.appendChild(s)})}
  const img=new Image();img.src=photo;await img.decode();
- const regions={receipt:[.65,.17,.34,.12],client:[.12,.23,.61,.09],plate:[.03,.33,.37,.07],date:[.39,.33,.29,.07],time:[.68,.33,.31,.07],items:[.02,.38,.54,.32],total:[.60,.72,.39,.13]};
+ const regions={receipt:[.73,.145,.25,.065],client:[.15,.225,.72,.065],plate:[.07,.328,.35,.052],date:[.43,.328,.27,.052],time:[.76,.328,.22,.052],items:[.015,.383,.18,.29],total:[.69,.795,.29,.095]};
  const crop=([x,y,w,h])=>{const canvas=document.createElement('canvas');const scale=3;canvas.width=Math.round(img.naturalWidth*w*scale);canvas.height=Math.round(img.naturalHeight*h*scale);const ctx=canvas.getContext('2d');ctx.filter='grayscale(1) contrast(1.65)';ctx.drawImage(img,img.naturalWidth*x,img.naturalHeight*y,img.naturalWidth*w,img.naturalHeight*h,0,0,canvas.width,canvas.height);return canvas};
  const out={};for(const [key,rect] of Object.entries(regions)){info.textContent='Lendo '+({receipt:'número',client:'cliente',plate:'placa',date:'data',time:'hora',items:'materiais',total:'valor'}[key])+'...';try{out[key]=(await Tesseract.recognize(crop(rect),'por',{logger:()=>{}})).data.text.trim()}catch{out[key]=''}}
- const n=out.receipt.match(/\b(\d{4,6})\b/);if(n)draft.receipt=n[1];
+ const n=out.receipt.match(/\b(\d{5,6})\b/);if(n)draft.receipt=n[1];
  const date=out.date.match(/(\d{1,2})\s*[\/.|\-]\s*(\d{1,2})\s*[\/.|\-]\s*(20\d{2}|\d{2})/);if(date){const year=date[3].length===2?'20'+date[3]:date[3];const day=Number(date[1]),month=Number(date[2]);if(day>=1&&day<=31&&month>=1&&month<=12)draft.date=year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0')}
  const time=out.time.match(/\b([01]?\d|2[0-3])\s*[:h.]\s*([0-5]\d)\b/);if(time)draft.time=time[1].padStart(2,'0')+':'+time[2];
  const plate=out.plate.toUpperCase().replace(/[^A-Z0-9]/g,'').match(/[A-Z]{3}[0-9][A-Z0-9][0-9]{2}/);if(plate)draft.plate=plate[0];
  const client=out.client.replace(/^(?:cliente|cllente)\s*[:.]?/i,'').replace(/[^A-Za-zÀ-ÿ\s]/g,' ').replace(/\s+/g,' ').trim();if(client.length>=4&&client.length<=55&&!/^(cliente|cnpj|cidade)$/i.test(client))draft.client=client;
- const amount=out.total.match(/(\d{1,5})\s*[,\.]\s*(\d{2})/);if(amount)draft.total=amount[1]+','+amount[2];
- // A tabela tem cinco linhas fixas. Só atribuir quantidade quando houver número isolado à esquerda da linha correspondente.
- const rows=out.items.split(/\n/).filter(Boolean);for(const line of rows){const m=line.match(/^\s*(\d{1,3})(?:\s*m[³3])?\s+(areia\s*fina\s*branca|areia\s*fina\s*amarelinha|areia\s*m[eé]dia|aterro|areia)\b/i);if(!m)continue;const label=m[2].toLowerCase();const index=label.includes('branca')?0:label.includes('amarelinha')?1:label.includes('média')||label.includes('media')?2:label.includes('aterro')?3:4;draft.quantities[index]=Number(m[1])}
+ const amount=out.total.match(/(?:^|\s)(\d{2,5})\s*[,\.]\s*(\d{2})(?:\s|$)/);if(amount)draft.total=amount[1]+','+amount[2];
+ // Ler cada quantidade na coluna esquerda, por linha física do formulário; nunca usar texto impresso de materiais como quantidade.
+ const itemBands=[[.385,.418],[.419,.450],[.451,.483],[.484,.516],[.517,.549]];
+ for(let i=0;i<itemBands.length;i++){const band=itemBands[i];try{const line=(await Tesseract.recognize(crop([.015,band[0],.19,band[1]-band[0]]),'eng',{logger:()=>{}})).data.text.trim();const match=line.match(/^\s*(\d{1,2})\s*$/);if(match&&Number(match[1])>0)draft.quantities[i]=Number(match[1])}catch{}}
+
  draw();root.querySelector('#aa-info').textContent='Leitura por regiões concluída. Confira especialmente os campos manuscritos e as quantidades; campos não reconhecidos foram preservados para correção manual.';
 }catch(err){info.textContent='Não foi possível concluir o OCR: '+err.message+'. Preencha manualmente.'}
 }
