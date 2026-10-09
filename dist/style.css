@@ -677,3 +677,8 @@
 #areiaamigos-view .aa-saved-content .aa-preview img{max-height:320px;width:auto;max-width:100%;object-fit:contain}
 #areiaamigos-view .aa-saved-content .aa-share-grid{margin-top:15px}
 @media(max-width:850px){#areiaamigos-view .aa-columns{grid-template-columns:1fr!important}}
+
+/* Histórico > Ver: painel lateral como no layout original, sem modal */
+@media(min-width:1101px){#areiaamigos-view .aa-columns:has(.aa-inline-saved){grid-template-columns:minmax(0,1.05fr) minmax(0,1.35fr) minmax(260px,.9fr)!important}#areiaamigos-view .aa-columns:has(.aa-inline-saved)>.aa-card:last-child{grid-column:auto}}
+@media(min-width:761px) and (max-width:1100px){#areiaamigos-view .aa-columns:has(.aa-inline-saved){grid-template-columns:1fr 1fr!important}#areiaamigos-view .aa-columns:has(.aa-inline-saved)>.aa-card:last-child{grid-column:1/-1}}
+#areiaamigos-view .aa-inline-saved .aa-preview img{max-width:100%;max-height:330px;object-fit:contain}
