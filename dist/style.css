@@ -595,3 +595,19 @@
 #areiaamigos-view .aa-report-track span{background:linear-gradient(90deg,#238dff,#0065ed)}
 @media(max-width:1150px){#areiaamigos-view .aa-report-layout{grid-template-columns:1fr}#areiaamigos-view .aa-report-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}#areiaamigos-view .aa-report-kpi{padding:15px;gap:9px}#areiaamigos-view .aa-report-kpi strong{font-size:21px}#areiaamigos-view .aa-report-kpi .aa-kpi-icon{width:48px;height:48px;min-width:48px}#areiaamigos-view .aa-report-kpi .aa-kpi-icon .aa-r-icon{width:28px;height:28px}}
 @media(max-width:720px){#areiaamigos-view .aa-report-kpis{grid-template-columns:1fr}#areiaamigos-view .aa-report-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}#areiaamigos-view .aa-report-actions button{padding:12px 8px;font-size:12px}#areiaamigos-view .aa-report-toolbar h3{font-size:22px}#areiaamigos-view .aa-report{padding:14px}#areiaamigos-view .aa-report-materials{padding:12px}}
+
+/* Fidelidade visual: cartões compactos e ícones ilustrados do modelo aprovado */
+#areiaamigos-view .aa-report-kpi{padding:13px 20px!important;min-height:112px!important;gap:15px!important;border-radius:16px!important}
+#areiaamigos-view .aa-report-kpi .aa-kpi-icon{width:62px!important;height:62px!important;min-width:62px!important;border-radius:15px!important;background:rgba(255,255,255,.38)!important}
+#areiaamigos-view .aa-report-kpi .aa-kpi-icon .aa-r-icon{width:43px!important;height:43px!important;filter:drop-shadow(0 2px 3px #0001)}
+#areiaamigos-view .aa-kpi-blue .aa-kpi-icon .aa-r-icon{color:#076af5}
+#areiaamigos-view .aa-kpi-green .aa-kpi-icon .aa-r-icon{color:#00b45e}
+#areiaamigos-view .aa-kpi-purple .aa-kpi-icon .aa-r-icon{color:#7626ee}
+#areiaamigos-view .aa-report-kpi>div{font-size:14px!important;font-weight:600!important}
+#areiaamigos-view .aa-report-kpi strong{font-size:27px!important;font-weight:800!important}
+#areiaamigos-view .aa-report-materials td:first-child{display:table-cell!important;white-space:nowrap!important}
+#areiaamigos-view .aa-sand-art{width:42px;height:34px;display:inline-block;vertical-align:middle;margin-right:7px;overflow:visible}
+#areiaamigos-view .aa-report-materials td{padding-top:7px!important;padding-bottom:7px!important}
+#areiaamigos-view .aa-report-materials td:first-child span:not(.aa-sand-pile){vertical-align:middle}
+#areiaamigos-view .aa-report-materials h4{background:#f2f4f8;padding:10px 12px;margin:-1px 0 12px}
+@media(max-width:1150px){#areiaamigos-view .aa-report-kpi{min-height:105px!important}#areiaamigos-view .aa-report-kpi .aa-kpi-icon{width:50px!important;height:50px!important;min-width:50px!important}#areiaamigos-view .aa-report-kpi strong{font-size:21px!important}}
