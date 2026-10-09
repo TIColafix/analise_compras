@@ -461,3 +461,24 @@
 
 /* Painel Cimento a Granel — modelo 2 */
 #bulk-prices-root{padding:16px 8px;color:#162941}#bulk-prices-root .bulk-head h2{font-size:24px;margin:0 0 4px}#bulk-prices-root .bulk-head small{color:#60718b}#bulk-prices-root .bulk-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}#bulk-prices-root button{cursor:pointer;border:1px solid #ccd8e7;border-radius:8px;background:#fff;color:#153457;padding:10px 16px;font-weight:600}#bulk-prices-root button.active,#bulk-prices-root form button{background:#23364b;color:#fff}#bulk-prices-root .bulk-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}#bulk-prices-root .bulk-grid-two{grid-template-columns:1fr 1fr}#bulk-prices-root .bulk-panel{border:1px solid #d6e3f1;background:#fff;border-radius:13px;padding:17px;min-width:0;margin-bottom:14px}#bulk-prices-root .bulk-panel h2{font-size:21px;margin:0 0 17px}#bulk-prices-root .bulk-panel h1{font-size:30px;margin:7px 0}#bulk-prices-root .bulk-panel h3{font-size:16px;margin:0 0 14px}#bulk-prices-root .bulk-blue{color:#0876c7}#bulk-prices-root .bulk-red{color:#d5222b}#bulk-prices-root .bulk-scroll{overflow:auto}#bulk-prices-root table{width:100%;border-collapse:collapse;font-size:12px}#bulk-prices-root th,#bulk-prices-root td{border:1px solid #e2e9f1;padding:10px;text-align:left}#bulk-prices-root th{background:#f2f7fc}#bulk-prices-root .bulk-form{display:flex;gap:9px;flex-wrap:wrap}#bulk-prices-root .bulk-form input,#bulk-prices-root .bulk-form select{min-width:135px;flex:1;padding:10px;border:1px solid #ccd8e7;border-radius:7px;background:#fff;color:#162941}@media(max-width:1050px){#bulk-prices-root .bulk-grid{grid-template-columns:1fr 1fr}#bulk-prices-root .bulk-grid-two{grid-template-columns:1fr}}@media(max-width:650px){#bulk-prices-root .bulk-grid{grid-template-columns:1fr}}
+
+/* Cartões compactos conforme referência visual: logotipo, preço, variação e linha */
+#bulk-prices-root .bulk-price-card{padding:13px 15px!important;min-height:120px!important;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
+#bulk-prices-root .bulk-price-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#bulk-prices-root .bulk-logo{display:flex;align-items:center;gap:6px;min-width:0;font-size:17px;font-weight:800;line-height:1;color:#1374c5}
+#bulk-prices-root .bulk-logo span:last-child{display:flex;flex-direction:column}
+#bulk-prices-root .bulk-logo small{font-size:11px;font-weight:700}
+#bulk-prices-root .bulk-logo-symbol{font-size:29px;line-height:1}
+#bulk-prices-root .bulk-logo-i{color:#e02a32}
+#bulk-prices-root .bulk-price-current{display:flex;flex-direction:column;align-items:flex-end;text-align:right;white-space:nowrap;gap:3px}
+#bulk-prices-root .bulk-price-current small{font-size:10px;color:#5d6a7c}
+#bulk-prices-root .bulk-price-current strong{font-size:22px;color:#102c50;line-height:1.2}
+#bulk-prices-root .bulk-price-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+#bulk-prices-root .bulk-price-change{min-width:0;display:flex;flex-direction:column;gap:2px;padding:7px 9px;border-radius:6px;background:#e4f8ec;color:#008a4b}
+#bulk-prices-root .bulk-price-change.up{background:#fff0f1;color:#d52c34}
+#bulk-prices-root .bulk-price-change.neutral{background:#f1f5fa;color:#52657a}
+#bulk-prices-root .bulk-price-change strong{font-size:14px}
+#bulk-prices-root .bulk-price-change small{font-size:9px}
+#bulk-prices-root .bulk-spark{width:45%;height:44px;flex:none}
+#bulk-prices-root .bulk-spark-empty{font-size:10px;color:#8493a4;text-align:right}
+@media(max-width:1200px){#bulk-prices-root .bulk-price-top{flex-wrap:wrap}#bulk-prices-root .bulk-price-current{align-items:flex-start;text-align:left}}
