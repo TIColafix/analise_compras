@@ -691,3 +691,10 @@
 #areiaamigos-view .aa-inline-saved .aa-share-card strong{font-size:clamp(11px,1vw,15px)!important;line-height:1.2!important;overflow-wrap:anywhere}
 #areiaamigos-view .aa-inline-saved .aa-share-card small{font-size:10px!important;line-height:1.2!important}
 #areiaamigos-view .aa-inline-saved .aa-share-action{font-size:11px!important;padding:7px 3px!important}
+
+/* Compartilhar solicitação e cotações de manutenção */
+#manutencao-view .mn-quote-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+#manutencao-view .mn-share-quotes-wa,#manutencao-view .mn-share-quotes-mail{color:#fff!important;border:0!important;border-radius:8px!important;padding:10px 16px!important;font-weight:700;cursor:pointer}
+#manutencao-view .mn-share-quotes-wa{background:#08b85d!important}
+#manutencao-view .mn-share-quotes-mail{background:#1479e6!important}
+#manutencao-view .mn-share-quotes-wa:hover,#manutencao-view .mn-share-quotes-mail:hover{filter:brightness(.92)}
