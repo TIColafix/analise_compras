@@ -138,7 +138,7 @@ createServer(async(req,res)=>{try{
   const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),55000);
   try{
    const instruction='Leia apenas esta foto do recibo Areia dos Amigos. Extraia JSON com receipt, date (YYYY-MM-DD), time (HH:MM), client, plate, quantities (array de 5 valores na ordem Areia Fina Branca, Areia Fina Amarelinha, Areia Média, Aterro, Areia), total (valor numérico em reais), warnings (array de strings). Use null se um campo manuscrito não estiver legível. O número do recibo está no cabeçalho ao lado de Nº e NÃO é o número da rua. Leia cliente, placa, data e hora nos respectivos campos. Leia as quantidades na coluna à esquerda de cada linha de material. O total é o valor manuscrito no canto inferior direito, NÃO valores do rodapé impresso. Não copie dados de outros recibos. Não invente.';
-   const model=process.env.GEMINI_MODEL||'gemini-2.5-flash';
+   const model=process.env.GEMINI_MODEL||'gemini-3.8-flash';
    const response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',headers:{'x-goog-api-key':process.env.GEMINI_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:instruction},{inlineData:{mimeType:match[1],data:match[2]}}]}],generationConfig:{responseMimeType:'application/json',temperature:0}}),signal:ctrl.signal});
    const j=await response.json();if(!response.ok)throw Error('Gemini: '+(j.error?.message||'erro '+response.status));
    const raw=j.candidates?.[0]?.content?.parts?.filter(p=>typeof p.text==='string').map(p=>p.text).join('');if(!raw)throw Error('Gemini não retornou texto para o recibo.');
