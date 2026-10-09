@@ -702,3 +702,9 @@
 /* Ícone de e-mail nos cartões do Kanban de Compras Manutenção */
 #manutencao-view .mn-card-actions .mn-card-mail{display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;padding:5px;border:1px solid #8abaff;border-radius:6px;color:#1269d3;background:#eff6ff;cursor:pointer}
 #manutencao-view .mn-card-actions .mn-card-mail:hover{background:#dbeafe}
+
+/* Edição explícita das cargas na programação semanal de cimento */
+.cement-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.cement-card-actions .cement-edit-load{background:#fff;border:1px solid #9cb5d4;border-radius:6px;color:#174777;font-weight:700;padding:9px 6px;cursor:pointer}
+.cement-card-actions .cement-edit-load:hover{background:#e9f2ff}
+.cement-card-actions .cement-whatsapp{margin:0;width:100%;min-width:0}
