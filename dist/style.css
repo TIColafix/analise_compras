@@ -482,3 +482,12 @@
 #bulk-prices-root .bulk-spark{width:45%;height:44px;flex:none}
 #bulk-prices-root .bulk-spark-empty{font-size:10px;color:#8493a4;text-align:right}
 @media(max-width:1200px){#bulk-prices-root .bulk-price-top{flex-wrap:wrap}#bulk-prices-root .bulk-price-current{align-items:flex-start;text-align:left}}
+
+/* Identidade visual validada na prévia HTML */
+#bulk-prices-root .bulk-price-card{background:linear-gradient(130deg,#fff,#f7faff)!important;min-height:132px!important;padding:18px!important}
+#bulk-prices-root .bulk-official-logo{display:block;height:43px;width:auto;max-width:55%;object-fit:contain;object-position:left center}
+#bulk-prices-root .bulk-inter-logo{display:flex;align-items:center;color:#e32632;font-size:23px;font-weight:800;letter-spacing:-1px;white-space:nowrap}
+#bulk-prices-root .bulk-inter-logo i{display:inline-block;width:27px;height:27px;border:6px solid #e32632;border-right-color:#5c6670;border-radius:50%;margin-right:7px;flex-shrink:0}
+#bulk-prices-root .bulk-price-bottom{margin-top:22px}
+#bulk-prices-root .bulk-price-current strong{font-size:26px}
+@media(max-width:700px){#bulk-prices-root .bulk-official-logo{max-width:50%}#bulk-prices-root .bulk-price-current strong{font-size:22px}}
