@@ -698,3 +698,7 @@
 #manutencao-view .mn-share-quotes-wa{background:#08b85d!important}
 #manutencao-view .mn-share-quotes-mail{background:#1479e6!important}
 #manutencao-view .mn-share-quotes-wa:hover,#manutencao-view .mn-share-quotes-mail:hover{filter:brightness(.92)}
+
+/* Ícone de e-mail nos cartões do Kanban de Compras Manutenção */
+#manutencao-view .mn-card-actions .mn-card-mail{display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;padding:5px;border:1px solid #8abaff;border-radius:6px;color:#1269d3;background:#eff6ff;cursor:pointer}
+#manutencao-view .mn-card-actions .mn-card-mail:hover{background:#dbeafe}
