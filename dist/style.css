@@ -517,3 +517,5 @@
 #areiaamigos-view button.aa-share-card strong,#areiaamigos-view button.aa-share-card small{color:white!important}
 #areiaamigos-view button.aa-share-card .aa-share-action{background:#fff!important;color:#078b50!important}
 #areiaamigos-view button.aa-share-mail .aa-share-action{color:#0751dc!important}
+
+#areiaamigos-view .aa-whatsapp-logo{display:block;width:42px;height:42px;object-fit:contain;filter:invert(1)}
