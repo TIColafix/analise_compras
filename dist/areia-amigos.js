@@ -27,25 +27,15 @@ root.querySelectorAll('[data-aa-tab]').forEach(b=>b.onclick=()=>{collect();setTa
 root.addEventListener('input',e=>{if(['aa-search','aa-material','aa-from','aa-to'].includes(e.target.id))renderRows()});
 root.addEventListener('click',e=>{if(e.target.id!=='aa-export')return;const head=['Data','Hora','Recibo','Cliente','Placa',...materials,'Total'];const lines=records.map(r=>[r.date,r.time,r.receipt,r.client,r.plate,...r.quantities,r.total]);const csv=[head,...lines].map(a=>a.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));a.download='areia-amigos.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)});
 async function extract(){
-const info=root.querySelector('#aa-info');info.textContent='Lendo regiões do recibo (número, cliente, placa, data, hora, materiais e total)...';
-try{
- if(!window.Tesseract){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=resolve;s.onerror=()=>reject(Error('Biblioteca OCR indisponível.'));document.head.appendChild(s)})}
- const img=new Image();img.src=photo;await img.decode();
- const regions={receipt:[.73,.145,.25,.065],client:[.15,.225,.72,.065],plate:[.07,.328,.35,.052],date:[.43,.328,.27,.052],time:[.76,.328,.22,.052],items:[.015,.383,.18,.29],total:[.69,.795,.29,.095]};
- const crop=([x,y,w,h])=>{const canvas=document.createElement('canvas');const scale=3;canvas.width=Math.round(img.naturalWidth*w*scale);canvas.height=Math.round(img.naturalHeight*h*scale);const ctx=canvas.getContext('2d');ctx.filter='grayscale(1) contrast(1.65)';ctx.drawImage(img,img.naturalWidth*x,img.naturalHeight*y,img.naturalWidth*w,img.naturalHeight*h,0,0,canvas.width,canvas.height);return canvas};
- const out={};for(const [key,rect] of Object.entries(regions)){info.textContent='Lendo '+({receipt:'número',client:'cliente',plate:'placa',date:'data',time:'hora',items:'materiais',total:'valor'}[key])+'...';try{out[key]=(await Tesseract.recognize(crop(rect),'por',{logger:()=>{}})).data.text.trim()}catch{out[key]=''}}
- const n=out.receipt.match(/\b(\d{5,6})\b/);if(n)draft.receipt=n[1];
- const date=out.date.match(/(\d{1,2})\s*[\/.|\-]\s*(\d{1,2})\s*[\/.|\-]\s*(20\d{2}|\d{2})/);if(date){const year=date[3].length===2?'20'+date[3]:date[3];const day=Number(date[1]),month=Number(date[2]);if(day>=1&&day<=31&&month>=1&&month<=12)draft.date=year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0')}
- const time=out.time.match(/\b([01]?\d|2[0-3])\s*[:h.]\s*([0-5]\d)\b/);if(time)draft.time=time[1].padStart(2,'0')+':'+time[2];
- const plate=out.plate.toUpperCase().replace(/[^A-Z0-9]/g,'').match(/[A-Z]{3}[0-9][A-Z0-9][0-9]{2}/);if(plate)draft.plate=plate[0];
- const client=out.client.replace(/^(?:cliente|cllente)\s*[:.]?/i,'').replace(/[^A-Za-zÀ-ÿ\s]/g,' ').replace(/\s+/g,' ').trim();if(client.length>=4&&client.length<=55&&!/^(cliente|cnpj|cidade)$/i.test(client))draft.client=client;
- const amount=out.total.match(/(?:^|\s)(\d{2,5})\s*[,\.]\s*(\d{2})(?:\s|$)/);if(amount)draft.total=amount[1]+','+amount[2];
- // Ler cada quantidade na coluna esquerda, por linha física do formulário; nunca usar texto impresso de materiais como quantidade.
- const itemBands=[[.385,.418],[.419,.450],[.451,.483],[.484,.516],[.517,.549]];
- for(let i=0;i<itemBands.length;i++){const band=itemBands[i];try{const line=(await Tesseract.recognize(crop([.015,band[0],.19,band[1]-band[0]]),'eng',{logger:()=>{}})).data.text.trim();const match=line.match(/^\s*(\d{1,2})\s*$/);if(match&&Number(match[1])>0)draft.quantities[i]=Number(match[1])}catch{}}
-
- draw();root.querySelector('#aa-info').textContent='Leitura por regiões concluída. Confira especialmente os campos manuscritos e as quantidades; campos não reconhecidos foram preservados para correção manual.';
-}catch(err){info.textContent='Não foi possível concluir o OCR: '+err.message+'. Preencha manualmente.'}
+ collect();const info=root.querySelector('#aa-info');info.textContent='IA analisando a escrita do recibo...';
+ try{
+  const response=await fetch('/api/areia-amigos/extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:photo})});
+  const result=await response.json();if(!response.ok)throw Error(result.error||'Falha na leitura');
+  const d=result.data||{};if(d.receipt)draft.receipt=d.receipt;if(d.date)draft.date=d.date;if(d.time)draft.time=d.time;if(d.client)draft.client=d.client;if(d.plate)draft.plate=d.plate;
+  if(d.total!=null&&Number.isFinite(d.total))draft.total=d.total.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if(Array.isArray(d.quantities))d.quantities.forEach((v,i)=>{if(v!=null&&Number.isFinite(v)&&v>=0)draft.quantities[i]=v});
+  draw();root.querySelector('#aa-info').textContent='Leitura por IA concluída. Confira os dados manuscritos antes de salvar.'+(d.warnings?.length?' Observações: '+d.warnings.join('; '):'');
+ }catch(e){info.textContent='Não foi possível ler com IA: '+e.message+'. Confira a configuração e preencha manualmente.'}
 }
 load();
 }
