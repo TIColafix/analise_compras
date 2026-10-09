@@ -82,7 +82,7 @@ function usersPage(){return `<!doctype html><html lang="pt-BR"><head><meta chars
 const $=s=>document.querySelector(s),escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&#39;'}[c]));
 async function api(path,method='GET',data){const r=await fetch(path,{method,headers:data?{'Content-Type':'application/json'}:{},body:data?JSON.stringify(data):undefined,credentials:'same-origin'});const j=await r.json();if(!r.ok)throw Error(j.error||'Falha na operação.');return j;}
 function message(t,error=false){$('#message').innerHTML='<div class="msg '+(error?'error':'')+'">'+escapeHtml(t)+'</div>';}
-async function load(){try{const j=await api('/api/users');$('#users').innerHTML=j.users.length?j.users.map(u=>'<div class="row"><div><strong>'+escapeHtml(u.name)+'</strong> · <code>'+escapeHtml(u.user)+'</code><p class="hint">Permissões: Areia Amigos · '+(u.enabled?'🟢 Liberado':'🔴 Bloqueado')+'</p></div><div class="actions"><button data-user="'+escapeHtml(u.user)+'" data-action="password" class="secondary">🔑 Definir senha</button><button data-user="'+escapeHtml(u.user)+'" data-action="toggle" data-enabled="'+u.enabled+'" class="'+(u.enabled?'danger':'')+'">'+(u.enabled?'🔒 Bloquear':'🔓 Liberar')+'</button></div></div>').join(''):'<p>Nenhum usuário cadastrado.</p>';}catch(e){message(e.message,true)}}
+async function load(){try{const j=await api('/api/users');$('#users').innerHTML=j.users.length?j.users.map(u=>'<div class="row"><div><strong>'+escapeHtml(u.name)+'</strong> · <code>'+escapeHtml(u.user)+'</code><p class="hint">Permissões: '+(u.role==='admin'?'Administrador · todas as abas':u.role==='operator'?'Operacional':(u.permissions||[]).includes('areiaamigos')?'Areia Amigos':'Restrito')+' · '+(u.enabled?'🟢 Liberado':'🔴 Bloqueado')+'</p></div><div class="actions">'+(u.protected?'<span class="hint">🔐 Conta existente · gerenciada no Railway</span>':'<button data-user="'+escapeHtml(u.user)+'" data-action="password" class="secondary">🔑 Definir senha</button><button data-user="'+escapeHtml(u.user)+'" data-action="toggle" data-enabled="'+u.enabled+'" class="'+(u.enabled?'danger':'')+'">'+(u.enabled?'🔒 Bloquear':'🔓 Liberar')+'</button>')+'</div></div>').join(''):'<p>Nenhum usuário cadastrado.</p>';}catch(e){message(e.message,true)}}
 $('#new').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);try{await api('/api/users','POST',{name:f.get('name'),user:f.get('user'),password:f.get('password')});e.target.reset();message('Usuário criado.');load()}catch(err){message(err.message,true)}};
 function askPassword(user){return new Promise(resolve=>{const layer=document.createElement('div');layer.style.cssText='position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:99999;padding:16px';layer.innerHTML='<form style="width:min(430px,100%);background:white;border-radius:12px;padding:24px;box-sizing:border-box"><h2>Definir senha de '+escapeHtml(user)+'</h2><label>Nova senha (mínimo 6 caracteres)</label><input type="password" required minlength="6" autocomplete="new-password" style="width:100%"><div style="display:flex;gap:8px;margin-top:18px"><button type="submit">Salvar senha</button><button type="button" class="secondary">Cancelar</button></div></form>';document.body.appendChild(layer);const form=layer.querySelector('form'),input=layer.querySelector('input');input.focus();form.onsubmit=e=>{e.preventDefault();const password=input.value;layer.remove();resolve(password)};layer.querySelector('button[type=button]').onclick=()=>{layer.remove();resolve(null)};layer.onkeydown=e=>{if(e.key==='Escape'){layer.remove();resolve(null)}};});}
 $('#users').onclick=async e=>{const b=e.target.closest('button[data-user]');if(!b)return;const user=b.dataset.user;try{if(b.dataset.action==='password'){const password=await askPassword(user);if(password===null)return;await api('/api/users/'+encodeURIComponent(user),'PATCH',{password});message('Senha definida. Sessões anteriores foram encerradas.');}else{const enabled=b.dataset.enabled!=='true';if(!confirm((enabled?'Liberar':'Bloquear')+' o usuário '+user+'?'))return;await api('/api/users/'+encodeURIComponent(user),'PATCH',{enabled});message('Acesso atualizado.')}load()}catch(err){message(err.message,true)}};
@@ -118,7 +118,11 @@ createServer(async(req,res)=>{try{
    users.push({user:'gelson.osorio',name:'Gelson Osorio',enabled:false,permissions:['areiaamigos'],passwordHash:'',sessionVersion:0,createdAt:new Date().toISOString()});
    await writeDocument('app-users',users);
   }
-  return reply(res,200,{users:users.map(({passwordHash,...u})=>u)});
+  const builtin=[
+   {user:process.env.APP_USER||'admin',name:'Paulo',enabled:true,role:'admin',permissions:['*'],source:'environment',protected:true},
+   {user:process.env.ALISSON_USER||'alisson',name:'Alisson Santos',enabled:!!process.env.ALISSON_PASSWORD,role:'operator',permissions:['operacional'],source:'environment',protected:true}
+  ];
+  return reply(res,200,{users:[...builtin,...users.map(({passwordHash,...u})=>u)]});
  }
  if(path==='/api/users'&&req.method==='POST'){
   if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
@@ -138,7 +142,7 @@ createServer(async(req,res)=>{try{
   if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
   if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
   const user=decodeURIComponent(path.slice('/api/users/'.length)),input=await body(req),users=await managedUsers(),found=users.find(x=>x.user===user);
-  if(!found)return reply(res,404,{error:'Usuário não encontrado.'});
+  if(!found)return reply(res,404,{error:'Conta existente gerenciada pelas variáveis do Railway. Para alterar seu acesso ou senha, atualize as variáveis correspondentes.'});
   if(Object.hasOwn(input,'password')){
    if(typeof input.password!=='string'||input.password.length<6)return reply(res,400,{error:'Senha deve ter pelo menos 6 caracteres.'});
    found.passwordHash=hashPassword(input.password);found.sessionVersion=(found.sessionVersion||0)+1;
