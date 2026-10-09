@@ -708,3 +708,9 @@
 .cement-card-actions .cement-edit-load{background:#fff;border:1px solid #9cb5d4;border-radius:6px;color:#174777;font-weight:700;padding:9px 6px;cursor:pointer}
 .cement-card-actions .cement-edit-load:hover{background:#e9f2ff}
 .cement-card-actions .cement-whatsapp{margin:0;width:100%;min-width:0}
+
+/* Ações de envio de cotações - links diretos, sempre visíveis */
+#manutencao-view .mn-quote-actions{display:flex!important;flex-wrap:wrap!important;gap:8px!important;align-items:center!important}
+#manutencao-view .mn-quote-actions a.mn-share-quotes-wa,#manutencao-view .mn-quote-actions a.mn-share-quotes-mail{display:inline-flex!important;align-items:center;justify-content:center;text-decoration:none!important;color:#fff!important;font-weight:700!important;font-size:13px!important;line-height:1.25!important;border:0!important;border-radius:6px!important;padding:10px 14px!important;min-height:36px;visibility:visible!important;opacity:1!important}
+#manutencao-view .mn-quote-actions a.mn-share-quotes-wa{background:#08b85d!important}
+#manutencao-view .mn-quote-actions a.mn-share-quotes-mail{background:#1479e6!important}
