@@ -42,6 +42,18 @@ export async function saveLoad(root,input){const data=await readLoads(root),old=
  const dir=join(root,'source-data');await mkdir(join(dir,'backups'),{recursive:true});await writeFile(join(dir,'backups','cement-'+randomUUID()+'.json'),JSON.stringify(data));const target=join(dir,'cement-loads.json'),temp=target+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);return row;
 }
 
+export async function deleteCementLoad(root,id){
+ const data=await readLoads(root);
+ const item=data.loads.find(r=>r.id===id);
+ if(!item)throw Error('Carga não encontrada.');
+ data.loads=data.loads.filter(r=>r.id!==id);
+ if(databaseEnabled()){await writeDocument('cement',data);return item;}
+ const dir=join(root,'source-data');await mkdir(join(dir,'backups'),{recursive:true});
+ await writeFile(join(dir,'backups','cement-'+randomUUID()+'.json'),JSON.stringify(await readLoads(root)));
+ const target=join(dir,'cement-loads.json'),temp=target+'.tmp';
+ await writeFile(temp,JSON.stringify(data));await rename(temp,target);
+ return item;
+}
 export async function readDiesel(root){if(databaseEnabled())return readDocument('diesel',{loads:[]});try{return JSON.parse(await readFile(join(root,'source-data/diesel-loads.json'),'utf8'));}catch(e){if(e.code==='ENOENT')return {loads:[]};throw e;}}
 export async function saveDiesel(root,input){const data=await readDiesel(root),old=input.id?data.loads.find(r=>r.id===input.id):null;if(input.id&&!old)throw Error('Agendamento não encontrado.');if(old&&input.version!==old.version)throw Error('Este agendamento foi alterado em outra janela. Recarregue antes de salvar.');const fields=['scheduledDate','company','fuel','liters','paymentTerms','price','invoice','purchaseOrder','status','notes'],v={};for(const key of fields){const raw=input[key]??'';if(typeof raw!=='string')throw Error('Campo inválido: '+key);v[key]=raw.trim();if(v[key].length>(key==='notes'?2000:160))throw Error('Texto muito longo: '+key);}if(!companies.includes(v.company)||!statuses.includes(v.status))throw Error('Seleção inválida.');if(!/^\d{4}-\d{2}-\d{2}$/.test(v.scheduledDate)||Number.isNaN(Date.parse(v.scheduledDate)))throw Error('Data agendada inválida.');if(!v.fuel)throw Error('Informe o combustível.');if(!v.liters)throw Error('Informe os litros.');if(!v.paymentTerms)throw Error('Informe a condição de pagamento.');if(!v.price)throw Error('Informe o preço.');if(!old)v.status='Agendado';const now=new Date().toISOString(),changes=Object.fromEntries(fields.filter(k=>!old||old[k]!==v[k]).map(k=>[k,{before:old?.[k]??null,after:v[k]}]));if(old&&!Object.keys(changes).length)return old;const row={...v,id:old?.id||randomUUID(),version:(old?.version||0)+1,createdAt:old?.createdAt||now,updatedAt:now,history:[...(old?.history||[]),{at:now,changes}]};data.loads=old?data.loads.map(r=>r.id===old.id?row:r):[...data.loads,row];if(databaseEnabled()){await writeDocument('diesel',data);return row;}const dir=join(root,'source-data');await mkdir(join(dir,'backups'),{recursive:true});await writeFile(join(dir,'backups','diesel-'+randomUUID()+'.json'),JSON.stringify(data));const target=join(dir,'diesel-loads.json'),temp=target+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);return row;}
 
