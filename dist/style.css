@@ -519,3 +519,36 @@
 #areiaamigos-view button.aa-share-mail .aa-share-action{color:#0751dc!important}
 
 #areiaamigos-view .aa-whatsapp-logo{display:block;width:42px;height:42px;object-fit:contain;filter:invert(1)}
+
+/* Areia Amigos — relatório analítico, opção 3 */
+#areiaamigos-view .aa-report{padding:20px}
+.aa-report-toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:16px}
+.aa-report-toolbar h3{margin:0 0 4px;font-size:20px;color:#112e53}
+.aa-report-toolbar small{color:#667c94}
+.aa-report-actions{display:flex;gap:8px;flex-wrap:wrap}
+#areiaamigos-view .aa-report-actions button{font-weight:700;border-radius:9px;padding:11px 14px}
+#areiaamigos-view #aa-report-print{background:#20334b;color:#fff;border-color:#20334b}
+#areiaamigos-view #aa-report-pdf{background:#7340e8;color:#fff;border-color:#7340e8}
+#areiaamigos-view #aa-report-wa{background:#09b85a;color:#fff;border-color:#09b85a}
+#areiaamigos-view #aa-report-mail{background:#0874ed;color:#fff;border-color:#0874ed}
+.aa-report-filter{display:flex;align-items:end;gap:10px;flex-wrap:wrap;padding:13px;background:#f2f7fd;border:1px solid #e0eaf6;border-radius:12px;margin-bottom:16px}
+.aa-report-filter label{font-size:12px;font-weight:700;color:#405c7a;display:flex;flex-direction:column;gap:5px}
+.aa-report-filter input{padding:9px 10px;border:1px solid #c9d8ea;border-radius:8px;background:#fff;color:#20334b}
+.aa-report-layout{display:grid;grid-template-columns:minmax(245px,1fr) minmax(0,2fr);gap:15px;align-items:stretch}
+.aa-report-kpis{display:flex;flex-direction:column;gap:12px}
+.aa-report-kpi{display:flex;align-items:center;gap:14px;padding:18px;border-radius:13px;flex:1}
+.aa-report-kpi>span{font-size:26px;min-width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:#ffffffa6}
+.aa-report-kpi>div{display:flex;flex-direction:column;gap:6px;color:#24405d;font-size:13px}
+.aa-report-kpi strong{font-size:23px;color:#102a4b;white-space:nowrap}
+.aa-kpi-blue{background:#e7f3ff}.aa-kpi-green{background:#e1faed}.aa-kpi-purple{background:#f1e8ff}
+.aa-report-materials{border:1px solid #e1e9f3;border-radius:13px;padding:14px;min-width:0;background:#fff}
+.aa-report-materials h4{margin:0 0 12px;font-size:15px;color:#143255}
+.aa-report-materials table{width:100%;border-collapse:collapse;font-size:13px}
+.aa-report-materials th{background:#eff5fc;color:#274766;text-align:left}
+.aa-report-materials th,.aa-report-materials td{border-bottom:1px solid #e5edf5;padding:11px 9px}
+.aa-report-materials td:nth-child(2),.aa-report-materials td:nth-child(3){font-variant-numeric:tabular-nums;white-space:nowrap}
+.aa-report-material-icon{color:#bd8d32;font-size:18px}
+.aa-report-track{height:10px;border-radius:99px;background:#e7edf5;min-width:70px;overflow:hidden}
+.aa-report-track span{height:100%;display:block;background:#0874ef;border-radius:99px}
+@media(max-width:950px){.aa-report-layout{grid-template-columns:1fr}.aa-report-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.aa-report-kpi{padding:12px;gap:8px}.aa-report-kpi strong{font-size:17px}}
+@media(max-width:620px){.aa-report-kpis{grid-template-columns:1fr}.aa-report-toolbar{align-items:stretch}.aa-report-actions{display:grid;grid-template-columns:1fr 1fr}.aa-report-filter label{flex:1 1 130px}}
