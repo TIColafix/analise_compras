@@ -133,14 +133,14 @@ createServer(async(req,res)=>{try{
  if(path==='/api/areia-amigos/extract'){
   if(!process.env.OPENAI_API_KEY)return reply(res,503,{error:'Configure OPENAI_API_KEY nas variáveis do Railway para ativar a leitura por IA.'});
   const image=String(input.image||'');
-  if(!/^data:image\\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(image)||image.length>7e6)return reply(res,400,{error:'Imagem inválida ou acima de 5 MB.'});
+  if(!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(image)||image.length>7e6)return reply(res,400,{error:'Imagem inválida ou acima de 5 MB.'});
   const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),55000);
   try{
    const instruction='Leia somente este recibo Areia dos Amigos. Retorne JSON: receipt, date YYYY-MM-DD, time HH:MM, client, plate, quantities array de 5 valores na ordem Areia Fina Branca, Areia Fina Amarelinha, Areia Média, Aterro, Areia; total; warnings array. Use null se não conseguir ler. Número do recibo ao lado de Nº no cabeçalho, não o número da rua. Quantidade na coluna esquerda da tabela por linha. Total manuscrito no canto inferior direito, nunca o rodapé impresso. Não invente.';
    const response=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{Authorization:'Bearer '+process.env.OPENAI_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({model:process.env.OPENAI_VISION_MODEL||'gpt-4.1-mini',response_format:{type:'json_object'},messages:[{role:'system',content:instruction},{role:'user',content:[{type:'text',text:'Extraia os dados desta foto. Campos incertos devem ser null.'},{type:'image_url',image_url:{url:image,detail:'high'}}]}]}),signal:ctrl.signal});
    const j=await response.json();if(!response.ok)throw Error(j.error?.message||'Erro na IA: '+response.status);
    const d=JSON.parse(j.choices?.[0]?.message?.content||'{}');
-   const clean={receipt:d.receipt==null?null:String(d.receipt).replace(/\\D/g,''),date:/^\\d{4}-\\d{2}-\\d{2}$/.test(d.date||'')?d.date:null,time:/^\\d{2}:\\d{2}$/.test(d.time||'')?d.time:null,client:d.client==null?null:String(d.client).slice(0,150),plate:d.plate==null?null:String(d.plate).toUpperCase().replace(/[^A-Z0-9]/g,''),quantities:Array.from({length:5},(_,i)=>d.quantities?.[i]==null?null:Number(d.quantities[i])),total:d.total==null?null:Number(d.total),warnings:Array.isArray(d.warnings)?d.warnings.slice(0,5):[]};
+   const clean={receipt:d.receipt==null?null:String(d.receipt).replace(/\D/g,''),date:/^\d{4}-\d{2}-\d{2}$/.test(d.date||'')?d.date:null,time:/^\d{2}:\d{2}$/.test(d.time||'')?d.time:null,client:d.client==null?null:String(d.client).slice(0,150),plate:d.plate==null?null:String(d.plate).toUpperCase().replace(/[^A-Z0-9]/g,''),quantities:Array.from({length:5},(_,i)=>d.quantities?.[i]==null?null:Number(d.quantities[i])),total:d.total==null?null:Number(d.total),warnings:Array.isArray(d.warnings)?d.warnings.slice(0,5):[]};
    return reply(res,200,{ok:true,data:clean});
   }catch(e){return reply(res,502,{error:e.name==='AbortError'?'Tempo limite excedido.':e.message})}finally{clearTimeout(timer)}
  }
