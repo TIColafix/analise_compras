@@ -552,3 +552,46 @@
 .aa-report-track span{height:100%;display:block;background:#0874ef;border-radius:99px}
 @media(max-width:950px){.aa-report-layout{grid-template-columns:1fr}.aa-report-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.aa-report-kpi{padding:12px;gap:8px}.aa-report-kpi strong{font-size:17px}}
 @media(max-width:620px){.aa-report-kpis{grid-template-columns:1fr}.aa-report-toolbar{align-items:stretch}.aa-report-actions{display:grid;grid-template-columns:1fr 1fr}.aa-report-filter label{flex:1 1 130px}}
+
+/* Relatórios Areia Amigos — fidelidade ao modelo visual aprovado */
+#areiaamigos-view .aa-report{padding:22px 24px;background:linear-gradient(140deg,#fff 65%,#f9fbff);border:1px solid #dbe6f6;border-radius:18px;box-shadow:0 8px 28px #1a4a8510}
+#areiaamigos-view .aa-r-sprites{position:absolute;width:0;height:0;overflow:hidden}
+#areiaamigos-view .aa-r-icon{width:22px;height:22px;fill:currentColor;vertical-align:middle;flex-shrink:0}
+#areiaamigos-view .aa-report-toolbar h3{display:flex;align-items:center;gap:12px;font-size:27px;font-weight:800;letter-spacing:-.5px;color:#102c5d}
+#areiaamigos-view .aa-report-toolbar h3 .aa-r-icon{width:34px;height:34px;fill:#086cf3}
+#areiaamigos-view .aa-report-toolbar small{font-size:14px;color:#2d5d9c}
+#areiaamigos-view .aa-report-actions{gap:12px}
+#areiaamigos-view .aa-report-actions button{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:15px 18px;border:0!important;border-radius:11px;font-size:14px;font-weight:750;box-shadow:0 3px 9px #142e5715;white-space:nowrap;color:white!important}
+#areiaamigos-view .aa-report-actions button .aa-r-icon{width:23px;height:23px}
+#areiaamigos-view #aa-report-print{background:linear-gradient(180deg,#213d61,#0e2543)!important}
+#areiaamigos-view #aa-report-pdf{background:linear-gradient(180deg,#8d42fa,#6b20dc)!important}
+#areiaamigos-view #aa-report-wa{background:linear-gradient(180deg,#09cf74,#00a753)!important}
+#areiaamigos-view #aa-report-mail{background:linear-gradient(180deg,#168aff,#0061e5)!important}
+#areiaamigos-view .aa-report-filter{background:linear-gradient(120deg,#e7f3ff,#f0f6ff);border:1px solid #d0e4ff;padding:19px 21px;border-radius:14px;margin-bottom:22px}
+#areiaamigos-view .aa-report-filter label{font-size:14px;color:#0d2b55}
+#areiaamigos-view .aa-report-filter input{font-size:15px;font-weight:650;border-radius:10px;border:1px solid #c4d9f5;min-height:45px}
+#areiaamigos-view #aa-report-clear{display:flex;align-items:center;gap:8px;background:#fff!important;color:#0869e8!important;border:1px solid #a7ccff!important;border-radius:9px;padding:11px 16px;font-weight:700}
+#areiaamigos-view .aa-report-layout{grid-template-columns:minmax(260px,1fr) minmax(0,2fr);gap:16px}
+#areiaamigos-view .aa-report-kpis{gap:14px}
+#areiaamigos-view .aa-report-kpi{padding:20px 24px;border-radius:17px;gap:20px}
+#areiaamigos-view .aa-kpi-blue{background:linear-gradient(120deg,#e9f5ff,#dceeff)}
+#areiaamigos-view .aa-kpi-green{background:linear-gradient(120deg,#e1faf0,#d8f8e9)}
+#areiaamigos-view .aa-kpi-purple{background:linear-gradient(120deg,#f1e6ff,#e9e1ff)}
+#areiaamigos-view .aa-report-kpi .aa-kpi-icon{display:grid;place-items:center;width:66px;height:66px;min-width:66px;border-radius:16px;background:#ffffffb0;color:#076df3}
+#areiaamigos-view .aa-report-kpi .aa-kpi-icon .aa-r-icon{width:39px;height:39px}
+#areiaamigos-view .aa-kpi-green .aa-kpi-icon{color:#00ae67}
+#areiaamigos-view .aa-kpi-purple .aa-kpi-icon{color:#8134e7}
+#areiaamigos-view .aa-report-kpi>div{font-size:15px;color:#143766}
+#areiaamigos-view .aa-report-kpi strong{font-size:30px;letter-spacing:-.6px;color:#0d2d60}
+#areiaamigos-view .aa-report-materials{border:1px solid #d5e4f8;border-radius:17px;padding:18px 20px;box-shadow:0 2px 8px #174d7910}
+#areiaamigos-view .aa-report-materials h4{display:flex;align-items:center;gap:9px;font-size:20px;margin:0 0 15px;color:#102c5d}
+#areiaamigos-view .aa-report-materials h4 .aa-r-icon{fill:#086af0}
+#areiaamigos-view .aa-report-materials th{background:#e7f2ff;color:#143966;font-size:14px}
+#areiaamigos-view .aa-report-materials td{font-size:14px;color:#092c60}
+#areiaamigos-view .aa-report-materials td:first-child{display:flex;align-items:center;gap:10px;min-width:190px}
+#areiaamigos-view .aa-report-materials td:nth-child(2),#areiaamigos-view .aa-report-materials td:nth-child(3){font-weight:700}
+#areiaamigos-view .aa-sand-pile{display:inline-block;position:relative;flex-shrink:0;width:30px;height:24px;border-radius:3px 3px 8px 8px;background:linear-gradient(130deg,#ffffff77,transparent 45%),var(--sand);clip-path:polygon(43% 6%,57% 6%,95% 80%,88% 96%,10% 96%,3% 80%);filter:drop-shadow(0 2px 1px #0002)}
+#areiaamigos-view .aa-report-track{height:17px;background:#e0eaf6}
+#areiaamigos-view .aa-report-track span{background:linear-gradient(90deg,#238dff,#0065ed)}
+@media(max-width:1150px){#areiaamigos-view .aa-report-layout{grid-template-columns:1fr}#areiaamigos-view .aa-report-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}#areiaamigos-view .aa-report-kpi{padding:15px;gap:9px}#areiaamigos-view .aa-report-kpi strong{font-size:21px}#areiaamigos-view .aa-report-kpi .aa-kpi-icon{width:48px;height:48px;min-width:48px}#areiaamigos-view .aa-report-kpi .aa-kpi-icon .aa-r-icon{width:28px;height:28px}}
+@media(max-width:720px){#areiaamigos-view .aa-report-kpis{grid-template-columns:1fr}#areiaamigos-view .aa-report-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}#areiaamigos-view .aa-report-actions button{padding:12px 8px;font-size:12px}#areiaamigos-view .aa-report-toolbar h3{font-size:22px}#areiaamigos-view .aa-report{padding:14px}#areiaamigos-view .aa-report-materials{padding:12px}}
