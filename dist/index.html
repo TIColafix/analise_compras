@@ -31,31 +31,38 @@
     const candidates=[...document.querySelectorAll('button')].filter(b=>/analisar cotações/i.test(b.textContent||''));
     for(const analyze of candidates){
       const actions=analyze.parentElement;
-      if(!actions)continue;
-      const scope=analyze.closest('section')||analyze.closest('.panel')||actions.parentElement;
-      if(!scope)continue;
+      if(!actions)return;
+      const panel=actions.closest('section,.panel,.card')||actions.parentElement;
       let row=actions.nextElementSibling;
       if(!row||!row.classList.contains('mn-share-center-fixed')){
         row=document.createElement('div');row.className='mn-share-center-fixed';
         actions.insertAdjacentElement('afterend',row);
       }
-      // Corrige também as versões anteriores que renderizavam botões dentro da barra de ações.
+      row.style.cssText='display:flex!important;justify-content:center!important;align-items:center!important;gap:24px!important;width:100%!important;box-sizing:border-box!important;padding:22px 16px!important;background:#edf5ff!important;border-radius:12px!important;flex-wrap:wrap!important;margin:8px 0 0!important;';
       [...actions.querySelectorAll('a[data-quote-share-fallback],a.mn-share-quotes-wa,a.mn-share-quotes-mail')].forEach(a=>a.remove());
-      if(row.children.length===2)continue;
+      if(row.querySelectorAll('.mn-share-fixed-button').length===2)continue;
       row.replaceChildren();
       for(const channel of ['whatsapp','email']){
         const button=document.createElement('button');
-        button.type='button';button.className='mn-share-fixed-button '+channel;
-        button.innerHTML=icons[channel]+'<span>'+(channel==='whatsapp'?'Enviar por WhatsApp':'Enviar por E-mail')+'</span>';
+        button.type='button';
+        button.className='mn-share-fixed-button '+channel;
+        button.style.cssText='display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:16px!important;min-width:310px!important;min-height:84px!important;padding:15px 22px!important;border:0!important;border-radius:12px!important;color:white!important;font-weight:700!important;font-size:18px!important;cursor:pointer!important;box-shadow:0 4px 12px #16304b26!important;background:'+(channel==='whatsapp'?'#008d49':'#0759c9')+'!important;';
+        button.innerHTML=icons[channel].replace('width="19" height="19"','width="42" height="42"')+'<span style="display:flex;flex-direction:column;align-items:flex-start;gap:5px"><strong style="color:white;font-size:18px">'+(channel==='whatsapp'?'Enviar por WhatsApp':'Enviar por E-mail')+'</strong><small style="color:white;font-size:12px;font-weight:400">Compartilhar solicitação e cotações</small></span>';
         button.addEventListener('click',()=>{
-          const container=analyze.closest('section')||analyze.closest('.panel')||actions.parentElement?.parentElement||scope;
-          const title=container.querySelector('.mn-detail-head')?.innerText?.trim()||container.querySelector('strong')?.innerText?.trim()||'Solicitação';
+          const container=analyze.closest('section,.panel,.card')||actions.parentElement?.parentElement||panel;
+          const header=[...container.querySelectorAll('h2,h3,h4,strong,div')].find(el=>el.children.length===0&&/MAN-\d{3,}/.test(el.textContent||''));
+          const heading=header?.textContent?.replace(/Editar solicitação/gi,'').trim()||container.innerText.match(/MAN-\d{3,}[^\n]*/)?.[0]||'Solicitação';
+          const summary=container.innerText.match(/Empresa:\s*[^\n]+Quantidade:\s*[^\n]+Necessário:\s*[^\n]+/)?.[0]||'';
           const table=[...container.querySelectorAll('table')].find(t=>/fornecedor/i.test(t.innerText||''))||container.querySelector('table');
-          const lines=table?[...table.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll('th,td')].map(td=>td.innerText.trim()).join(' | ')).filter(Boolean):[];
-          const summary=container.querySelector('.mn-flow,.mn-info')?.innerText?.trim()||'';
-          const msg=['COTAÇÕES - COLAFIX',title,summary,lines.join('\n')].filter(Boolean).join('\n\n');
-          if(channel==='whatsapp')window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
-          else window.location.href='mailto:?subject='+encodeURIComponent('Cotações Colafix - '+title)+'&body='+encodeURIComponent(msg);
+          const trs=table?[...table.querySelectorAll('tbody tr')]:[];
+          const quotes=trs.map((tr,i)=>{
+            const cells=[...tr.querySelectorAll('td')].map(td=>td.innerText.trim());
+            if(cells.length<4)return '';
+            return ['*'+(i+1)+'. '+cells[0]+'*','💰 Valor: '+cells[1],'🚚 Prazo de entrega: '+cells[2]+( /dia/i.test(cells[2])?'':' dias'),'📅 Pagamento: '+cells[3],cells[4]&&cells[4]!=='—'?'📝 Observação: '+cells[4]:''].filter(Boolean).join('\n');
+          }).filter(Boolean);
+          const msg=['📋 *COTAÇÕES - COLAFIX*','', '*'+heading+'*',summary,'','📊 *Cotações ('+quotes.length+')*',quotes.join('\n\n'),'','Atenciosamente,','Equipe de Compras - Colafix'].filter(x=>x!==undefined).join('\n').trim();
+          if(channel==='whatsapp')window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank','noopener,noreferrer');
+          else window.location.href='mailto:?subject='+encodeURIComponent('Cotações Colafix - '+heading)+'&body='+encodeURIComponent(msg.replace(/\*/g,''));
         });
         row.appendChild(button);
       }
