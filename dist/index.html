@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Colafix · Monitoramento MRP</title><meta name="description" content="Esboço demonstrativo de monitoramento de materiais e necessidades de compra"><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css?v=20261009-quote-links3"></head><body>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Colafix · Monitoramento MRP</title><meta name="description" content="Esboço demonstrativo de monitoramento de materiais e necessidades de compra"><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css?v=20261009-quote-links3"><style>\n#manutencao-view .mn-share-center{display:flex;justify-content:center;align-items:center;gap:14px;width:100%;flex-basis:100%;padding:12px 4px 5px;flex-wrap:wrap}\n#manutencao-view .mn-share-modern{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:205px;min-height:46px;padding:11px 20px;border-radius:10px;text-decoration:none!important;font-weight:700;font-size:14px;color:white!important;box-shadow:0 3px 9px #16283b18;transition:transform .15s,filter .15s}\n#manutencao-view .mn-share-modern.whatsapp{background:linear-gradient(135deg,#18d878,#02a64e)}\n#manutencao-view .mn-share-modern.email{background:linear-gradient(135deg,#2aafff,#1266dd)}\n#manutencao-view .mn-share-modern:hover{filter:brightness(.96);transform:translateY(-1px)}\n#manutencao-view .mn-share-modern svg{flex:none}\n@media(max-width:520px){#manutencao-view .mn-share-modern{min-width:0;width:100%}}\n</style></head><body>
 <aside class="sidebar"><div class="brand" aria-label="Colafix"><span>Cola</span>fix<small>GESTÃO DE SUPRIMENTOS</small></div><p class="nav-caption">ÁREA DE TRABALHO</p><nav aria-label="Navegação principal"><a href="#dashboard"><span aria-hidden="true">▦</span>Dashboard</a><a href="#mrp"><span aria-hidden="true">📊</span>MRP</a><a href="#estoque"><span aria-hidden="true">📦</span>Estoque</a><a href="#prazos"><span aria-hidden="true">📅</span>Prazos de entrega</a><a href="#importacoes"><span aria-hidden="true">📥</span>Importações</a><a href="#granel"><span aria-hidden="true">🚛</span>Cimento a granel</a><a href="#ensacado"><span aria-hidden="true">🧱</span>Cimento ensacado</a><a href="#diesel"><span aria-hidden="true">⛽</span>Diesel</a><a href="#areiaamigos"><span aria-hidden="true">🚚</span>Areia Amigos</a><a href="#mpquotes"><span aria-hidden="true">💰</span>Cotações de MP</a><a href="#manutencao"><span aria-hidden="true">🔧</span>Compras Manutenção</a><a href="/usuarios" data-admin-only hidden><span aria-hidden="true">👥</span>Usuários</a><a href="#auditoria" data-admin-only hidden><span aria-hidden="true">🛡️</span>Auditoria</a><a href="/api/backup" data-admin-only hidden download><span aria-hidden="true">💾</span>Baixar backup</a><a href="/logout"><span aria-hidden="true">🚪</span>Sair</a></nav><div class="sidebar-foot">BASES LOCAIS<small>Compras e materiais</small></div></aside>
 <main><header><div class="heading"><h1>Dashboard</h1><span id="page-subtitle">Visão geral</span></div><label id="analysis-label">Data de análise<select id="analysis" aria-label="Data de análise"></select></label></header>
 <div class="demo"><strong>DADOS DAS FONTES DO POWER BI</strong><span><span id="source-summary">Carregando as bases importadas…</span></span></div>
@@ -14,32 +14,41 @@
 <section id="importacoes-view" class="page-view" hidden><section class="panel import-panel"><h3>Atualizar dados do sistema</h3><p>Selecione os três relatórios do mesmo dia. O nome dos arquivos pode mudar; a data será lida dentro dos PDFs.</p><form id="import-form"><label>Necessidades de compra (CSV)<input id="import-csv" type="file" accept=".csv" required></label><label>Perfil dos itens (PDF)<input id="import-profile" type="file" accept=".pdf" required></label><label>Saldo dos almoxarifados (PDF)<input id="import-stock" type="file" accept=".pdf" required></label><button type="submit" id="import-check">Conferir arquivos</button></form><div id="import-result" role="status" aria-live="polite"></div><button id="import-save" hidden>Salvar lote no histórico</button><p>Os arquivos ficam neste computador. Datas anteriores permanecem disponíveis no seletor de análise. Um lote diferente na mesma data não substitui o existente.</p></section><section class="panel import-panel"><h3>Histórico de lotes importados</h3><div id="import-history"></div></section></section><section id="granel-view" class="page-view" hidden></section><section id="areiaamigos-view" class="page-view" hidden></section><section id="ensacado-view" class="page-view" hidden></section><section id="diesel-view" class="page-view" hidden></section><section id="prazos-view" class="page-view" hidden></section><section id="mpquotes-view" class="page-view" hidden></section><section id="manutencao-view" class="page-view" hidden><section class="panel"><h3>Compras de manutenção</h3><p>Módulo em preparação.</p></section></section><section id="auditoria-view" class="page-view" hidden><section class="panel"><h3>Histórico de alterações</h3><p class="hint">Área exclusiva do administrador. Mostra quem realizou cada gravação no sistema.</p><div class="filter-grid"><label>Usuário<select id="audit-user"><option value="">Todos</option></select></label><label>Módulo<select id="audit-module"><option value="">Todos</option></select></label><label>Buscar<input id="audit-search" type="search" placeholder="Pedido, código ou ação"></label></div><div id="audit-table"></div></section></section><footer><span>Colafix · Compras e materiais</span><span>Importação local · Sem atualização automática do ERP</span></footer></main><script type="module" src="/app.js"></script><script type="module" src="/imports.js"></script><script type="module" src="/cement.js"></script><script type="module" src="/bulk-prices.js"></script><script type="module" src="/areia-amigos.js"></script><script type="module" src="/diesel.js"></script><script type="module" src="/deadlines.js"></script><script type="module" src="/maintenance.js?v=20261009-quote-links3"></script><script type="module" src="/mpquotes.js"></script><script type="module" src="/reports.js"></script><script>
 /* Compartilhamento de cotações: compatível com renderizações antigas e novas. */
 (function(){
+  const whatsappIcon='<svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="currentColor"><path d="M12 2a9.8 9.8 0 0 0-8.5 14.7L2 22l5.4-1.4A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-2.9-.4-4.2-1.1l-.3-.2-3.2.8.9-3.1-.2-.3A8.1 8.1 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.3-.6.8-.8 1-.1.2-.3.2-.5.1-1.4-.7-2.4-1.3-3.3-2.9-.2-.3.2-.3.7-1.1.1-.2.1-.4 0-.6l-.7-1.7c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1.1 2.7c.1.2 1.8 2.8 4.5 3.9 1.7.7 2.4.8 3.3.7 1-.2 1.4-.7 1.6-1.3.2-.6.2-1.1.1-1.2-.2-.1-.4-.2-.9-.4Z"/></svg>';
+  const emailIcon='<svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg>';
   function ensureQuoteShare(){
-    const candidates=[...document.querySelectorAll('button')].filter(b=>/analisar cotações/i.test(b.textContent||''));
+    const candidates=[...document.querySelectorAll('#manutencao-view button')].filter(b=>/analisar cotações/i.test(b.textContent||''));
     for(const analyze of candidates){
       const actions=analyze.parentElement;
-      if(!actions||actions.querySelector('[data-quote-share-fallback]'))continue;
-      const section=analyze.closest('section')||analyze.closest('.panel')||analyze.parentElement?.parentElement;
+      if(!actions)continue;
+      const section=analyze.closest('section')||analyze.closest('.panel')||actions.parentElement;
       if(!section)continue;
+      // Remove duplicatas antigas e mantém apenas o conjunto centralizado.
+      const old=[...actions.querySelectorAll('[data-quote-share-fallback],.mn-share-quotes-wa,.mn-share-quotes-mail')];
+      const wrapper=actions.querySelector('.mn-share-center')||document.createElement('div');
+      if(!wrapper.classList.contains('mn-share-center')){
+        wrapper.className='mn-share-center';
+        actions.appendChild(wrapper);
+      }
+      for(const a of old)if(a.parentElement!==wrapper)a.remove();
+      if(wrapper.children.length)continue;
       for(const channel of ['whatsapp','email']){
         const a=document.createElement('a');
         a.href='#';
         a.dataset.quoteShareFallback=channel;
-        a.textContent=channel==='whatsapp'?'☏ Enviar por WhatsApp':'✉ Enviar por E-mail';
-        a.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-height:35px;padding:9px 13px;border-radius:6px;color:#fff;font-weight:700;font-size:13px;text-decoration:none;margin-left:8px;background:'+(channel==='whatsapp'?'#08b85d':'#1479e6');
+        a.className='mn-share-modern '+channel;
+        a.innerHTML=(channel==='whatsapp'?whatsappIcon:emailIcon)+'<span>'+(channel==='whatsapp'?'Enviar por WhatsApp':'Enviar por E-mail')+'</span>';
         a.addEventListener('click',function(event){
           event.preventDefault();
-          const scope=analyze.closest('section')||section;
-          const title=scope.querySelector('.mn-detail-head')?.textContent?.trim()||scope.querySelector('strong')?.textContent?.trim()||'Solicitação';
-          const header=scope.querySelector('.mn-flow')?.textContent?.trim()||'';
-          const table=[...scope.querySelectorAll('table')].find(t=>/fornecedor/i.test(t.textContent||''))||scope.querySelector('table');
+          const title=section.querySelector('.mn-detail-head')?.textContent?.trim()||section.querySelector('strong')?.textContent?.trim()||'Solicitação';
+          const table=[...section.querySelectorAll('table')].find(t=>/fornecedor/i.test(t.textContent||''))||section.querySelector('table');
           const rows=table?[...table.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll('th,td')].map(td=>td.innerText.trim()).join(' | ')).filter(Boolean):[];
-          const info=scope.querySelector('.mn-info')?.innerText?.trim()||'';
-          const content=['COTAÇÕES - COLAFIX',title,header,info,rows.join('\n')].filter(Boolean).join('\n\n');
+          const info=section.querySelector('.mn-info')?.innerText?.trim()||'';
+          const content=['COTAÇÕES - COLAFIX',title,info,rows.join('\n')].filter(Boolean).join('\n\n');
           if(channel==='whatsapp')window.open('https://wa.me/?text='+encodeURIComponent(content),'_blank','noopener,noreferrer');
           else window.location.href='mailto:?subject='+encodeURIComponent('Cotações Colafix - '+title)+'&body='+encodeURIComponent(content);
         });
-        actions.appendChild(a);
+        wrapper.appendChild(a);
       }
     }
   }
