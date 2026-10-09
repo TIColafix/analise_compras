@@ -92,6 +92,19 @@ createServer(async(req,res)=>{try{
   return reply(res,200,{dollar,weather,updatedAt:new Date().toISOString()});
  }
  if(path==='/data.json'&&req.method==='GET'){const data=await readDocument('main-data',null);if(data!==null)return reply(res,200,data);}
+ if(path.startsWith('/api/areia-amigos/')&&req.method==='DELETE'){
+  if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada.'});
+  const id=decodeURIComponent(path.slice('/api/areia-amigos/'.length));
+  if(!id)return reply(res,400,{error:'Identificador obrigatório.'});
+  if(busy)return reply(res,409,{error:'Outra operação está em andamento. Tente novamente.'});
+  busy=true;
+  try{const stored=await readDocument('areia-amigos',[]),records=Array.isArray(stored)?stored:[];const item=records.find(r=>r.id===id);
+   if(!item)return reply(res,404,{error:'Recebimento não encontrado.'});
+   const updated=records.filter(r=>r.id!==id);await writeDocument('areia-amigos',updated);
+   await audit(req,'excluir','areia-amigos',{id,receipt:item.receipt});
+   return reply(res,200,{ok:true,records:updated});
+  }finally{busy=false}
+ }
  if(path==='/api/areia-amigos'&&req.method==='GET'){const records=await readDocument('areia-amigos',[]);return reply(res,200,{records:Array.isArray(records)?records:[]});}
  if(path==='/api/cement'&&req.method==='GET')return reply(res,200,await readLoads(root));
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
