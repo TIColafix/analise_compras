@@ -643,3 +643,26 @@
  #prazos-view .deadline-product{white-space:nowrap!important;min-width:0!important}
  #prazos-view .deadline-code{min-width:0!important}
 }
+
+/* Compras Manutenção: Kanban completo em zoom 100%, sem cortar última etapa */
+@media (min-width:1200px){
+ #manutencao-view .maintenance-board{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:7px!important;overflow-x:visible!important;min-width:0!important}
+ #manutencao-view .maintenance-lane{min-width:0!important;width:auto!important}
+ #manutencao-view .maintenance-lane>header{padding:11px 8px!important;gap:5px!important;min-height:62px;box-sizing:border-box}
+ #manutencao-view .maintenance-lane>header strong{min-width:0;font-size:12px!important;line-height:1.2;overflow-wrap:anywhere}
+ #manutencao-view .maintenance-lane>header span{flex-shrink:0}
+ #manutencao-view .maintenance-lane>div{padding:6px!important}
+ #manutencao-view .maintenance-card{padding:8px!important;min-width:0!important}
+ #manutencao-view .maintenance-card h4{overflow-wrap:anywhere}
+ #manutencao-view .maintenance-card-head{flex-wrap:wrap}
+ #manutencao-view .mn-card-info p{overflow-wrap:anywhere}
+ #manutencao-view .mn-card-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important}
+ #manutencao-view .mn-card-actions .advance{grid-column:1/-1!important;width:100%!important}
+ #manutencao-view .mn-card-actions button{min-width:0!important}
+ #manutencao-view .maintenance-kpis{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+ #manutencao-view .maintenance-kpis>div{min-width:0;padding:8px!important}
+ #manutencao-view .maintenance-toolbar{grid-template-columns:minmax(0,1fr) 145px 145px auto!important}
+}
+@media (max-width:1199px){
+ #manutencao-view .maintenance-board{grid-template-columns:repeat(6,minmax(190px,1fr))!important;overflow-x:auto!important}
+}
