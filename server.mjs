@@ -1,5 +1,5 @@
 import {existsSync} from 'node:fs';
-import {readLoads,saveLoad,readDiesel,saveDiesel,readDeliveryDeadlines,saveDeliveryDeadline,saveMonthlyOrder,saveBagPrices,saveBagProducts} from './cement-store.mjs';
+import {readLoads,saveLoad,deleteCementLoad,readDiesel,saveDiesel,readDeliveryDeadlines,saveDeliveryDeadline,saveMonthlyOrder,saveBagPrices,saveBagProducts} from './cement-store.mjs';
 import {readMaintenance,saveMaintenance,deleteMaintenance} from './maintenance-store.mjs';
 import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile,rename} from 'node:fs/promises';
@@ -220,6 +220,15 @@ createServer(async(req,res)=>{try{
   }finally{busy=false}
  }
  if(path==='/api/areia-amigos'&&req.method==='GET'){const records=await readDocument('areia-amigos',[]);return reply(res,200,{records:Array.isArray(records)?records:[]});}
+ if(path.startsWith('/api/cement/')&&req.method==='DELETE'){
+  if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode excluir cargas.'});
+  if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada.'});
+  const id=decodeURIComponent(path.slice('/api/cement/'.length));
+  if(!id)return reply(res,400,{error:'Identificador obrigatório.'});
+  const removed=await deleteCementLoad(root,id);
+  await audit(req,'excluir','cement',{id:removed.id,kind:removed.kind,scheduledDate:removed.scheduledDate,systemOrder:removed.systemOrder});
+  return reply(res,200,{ok:true});
+ }
  if(path==='/api/cement'&&req.method==='GET')return reply(res,200,await readLoads(root));
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
