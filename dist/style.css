@@ -714,3 +714,11 @@
 #manutencao-view .mn-quote-actions a.mn-share-quotes-wa,#manutencao-view .mn-quote-actions a.mn-share-quotes-mail{display:inline-flex!important;align-items:center;justify-content:center;text-decoration:none!important;color:#fff!important;font-weight:700!important;font-size:13px!important;line-height:1.25!important;border:0!important;border-radius:6px!important;padding:10px 14px!important;min-height:36px;visibility:visible!important;opacity:1!important}
 #manutencao-view .mn-quote-actions a.mn-share-quotes-wa{background:#08b85d!important}
 #manutencao-view .mn-quote-actions a.mn-share-quotes-mail{background:#1479e6!important}
+
+/* Quatro ícones na mesma linha dos cartões de Compras Manutenção */
+#manutencao-view .mn-card-actions{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important;align-items:center!important}
+#manutencao-view .mn-card-actions>button:not(.advance){width:100%!important;min-width:0!important;max-width:none!important;height:34px!important;min-height:34px!important;padding:5px 2px!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:0!important;box-sizing:border-box!important}
+#manutencao-view .mn-card-actions .mn-card-mail{width:100%!important;height:34px!important;min-height:34px!important}
+#manutencao-view .mn-card-actions .mn-wa-icon{width:19px!important;height:19px!important}
+#manutencao-view .mn-card-actions>.advance,
+#manutencao-view .mn-card-actions>.mn-order-warning{grid-column:1/-1!important;width:100%!important;margin-top:3px!important}
