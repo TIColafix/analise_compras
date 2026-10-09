@@ -139,18 +139,25 @@ createServer(async(req,res)=>{try{
   try{
    const instruction='Leia apenas esta foto do recibo Areia dos Amigos. Extraia JSON com receipt, date (YYYY-MM-DD), time (HH:MM), client, plate, quantities (array de 5 valores na ordem Areia Fina Branca, Areia Fina Amarelinha, Areia Média, Aterro, Areia), total (valor numérico em reais), warnings (array de strings), uncertain_fields (array de nomes dos campos receipt, date, time, client, plate, total, qty0, qty1, qty2, qty3, qty4 com leitura duvidosa). Marque uncertain_fields para qualquer campo com rasura, ambiguidade, dígitos semelhantes ou data incerta, mesmo que tenha preenchido um valor. Use null se um campo manuscrito não estiver legível. O número do recibo está no cabeçalho ao lado de Nº e NÃO é o número da rua. Leia cliente, placa, data e hora nos respectivos campos. Leia as quantidades na coluna à esquerda de cada linha de material. O total é o valor manuscrito no canto inferior direito, NÃO valores do rodapé impresso. Não copie dados de outros recibos. Não invente.';
    const configured=process.env.GEMINI_MODEL;
-   const candidates=[configured,'gemini-3.8-flash','gemini-2.5-flash-lite','gemini-2.5-flash'].filter(Boolean);
-   const models=[...new Set(candidates)];
+   const headers={'x-goog-api-key':process.env.GEMINI_API_KEY,'Content-Type':'application/json'};
+   const preferred=[configured,'gemini-3.8-flash','gemini-3.5-flash-lite'].filter(Boolean);
+   let available=[];
+   try{
+    const listing=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=100',{headers:{'x-goog-api-key':process.env.GEMINI_API_KEY},signal:ctrl.signal});
+    if(listing.ok){const data=await listing.json();available=(data.models||[]).filter(m=>m.supportedGenerationMethods?.includes('generateContent')&&/gemini/i.test(m.name)&&/flash/i.test(m.name)).map(m=>m.name.replace(/^models\//,''))}
+   }catch(e){if(e.name==='AbortError')throw e}
+   const models=[...new Set([...preferred,...available])].filter(m=>!available.length||available.includes(m));
+   if(!models.length)throw Error('A chave não retornou modelos Gemini Flash disponíveis. Confira o acesso no Google AI Studio.');
    let j=null;const failures=[];
    for(const model of models){
     try{
-     const response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',headers:{'x-goog-api-key':process.env.GEMINI_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:instruction},{inlineData:{mimeType:match[1],data:match[2]}}]}],generationConfig:{responseMimeType:'application/json',temperature:0}}),signal:ctrl.signal});
+     const response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',headers,body:JSON.stringify({contents:[{role:'user',parts:[{text:instruction},{inlineData:{mimeType:match[1],data:match[2]}}]}],generationConfig:{responseMimeType:'application/json',temperature:0}}),signal:ctrl.signal});
      const result=await response.json();
      if(response.ok){j=result;break}
-     const reason=String(result.error?.message||'HTTP '+response.status).slice(0,170);
+     const reason=String(result.error?.message||'HTTP '+response.status).slice(0,130);
      failures.push(model+': HTTP '+response.status+' — '+reason);
      if(![404,429,500,502,503,504].includes(response.status))break;
-    }catch(err){if(err.name==='AbortError')throw err;failures.push(model+': '+String(err.message).slice(0,170))}
+    }catch(err){if(err.name==='AbortError')throw err;failures.push(model+': '+String(err.message).slice(0,130))}
    }
    if(!j)throw Error('Modelos Gemini sem resposta: '+failures.join(' | '));
    const raw=j.candidates?.[0]?.content?.parts?.filter(p=>typeof p.text==='string').map(p=>p.text).join('');if(!raw)throw Error('Gemini não retornou texto para o recibo.');
