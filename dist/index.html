@@ -1,4 +1,7 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Colafix · Monitoramento MRP</title><meta name="description" content="Esboço demonstrativo de monitoramento de materiais e necessidades de compra"><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css?v=20261009-quote-links3"><style>\n#manutencao-view .mn-share-center{display:flex;justify-content:center;align-items:center;gap:14px;width:100%;flex-basis:100%;padding:12px 4px 5px;flex-wrap:wrap}\n#manutencao-view .mn-share-modern{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:205px;min-height:46px;padding:11px 20px;border-radius:10px;text-decoration:none!important;font-weight:700;font-size:14px;color:white!important;box-shadow:0 3px 9px #16283b18;transition:transform .15s,filter .15s}\n#manutencao-view .mn-share-modern.whatsapp{background:linear-gradient(135deg,#18d878,#02a64e)}\n#manutencao-view .mn-share-modern.email{background:linear-gradient(135deg,#2aafff,#1266dd)}\n#manutencao-view .mn-share-modern:hover{filter:brightness(.96);transform:translateY(-1px)}\n#manutencao-view .mn-share-modern svg{flex:none}\n@media(max-width:520px){#manutencao-view .mn-share-modern{min-width:0;width:100%}}\n</style></head><body>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Colafix · Monitoramento MRP</title><meta name="description" content="Esboço demonstrativo de monitoramento de materiais e necessidades de compra"><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css?v=20261009-quote-links3"><style>\n#manutencao-view .mn-share-center{display:flex;justify-content:center;align-items:center;gap:14px;width:100%;flex-basis:100%;padding:12px 4px 5px;flex-wrap:wrap}\n#manutencao-view .mn-share-modern{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:205px;min-height:46px;padding:11px 20px;border-radius:10px;text-decoration:none!important;font-weight:700;font-size:14px;color:white!important;box-shadow:0 3px 9px #16283b18;transition:transform .15s,filter .15s}\n#manutencao-view .mn-share-modern.whatsapp{background:linear-gradient(135deg,#18d878,#02a64e)}\n#manutencao-view .mn-share-modern.email{background:linear-gradient(135deg,#2aafff,#1266dd)}\n#manutencao-view .mn-share-modern:hover{filter:brightness(.96);transform:translateY(-1px)}\n#manutencao-view .mn-share-modern svg{flex:none}\n@media(max-width:520px){#manutencao-view .mn-share-modern{min-width:0;width:100%}}\n</style><style>
+#manutencao-view .mn-share-centered-row{display:flex!important;justify-content:center!important;align-items:center!important;gap:12px!important;width:100%!important;flex-basis:100%!important;padding:7px 0 8px!important;flex-wrap:wrap!important}
+#manutencao-view .mn-share-centered-row a[data-quote-share-fallback]{margin:0!important;min-width:195px!important;min-height:40px!important}
+</style></head><body>
 <aside class="sidebar"><div class="brand" aria-label="Colafix"><span>Cola</span>fix<small>GESTÃO DE SUPRIMENTOS</small></div><p class="nav-caption">ÁREA DE TRABALHO</p><nav aria-label="Navegação principal"><a href="#dashboard"><span aria-hidden="true">▦</span>Dashboard</a><a href="#mrp"><span aria-hidden="true">📊</span>MRP</a><a href="#estoque"><span aria-hidden="true">📦</span>Estoque</a><a href="#prazos"><span aria-hidden="true">📅</span>Prazos de entrega</a><a href="#importacoes"><span aria-hidden="true">📥</span>Importações</a><a href="#granel"><span aria-hidden="true">🚛</span>Cimento a granel</a><a href="#ensacado"><span aria-hidden="true">🧱</span>Cimento ensacado</a><a href="#diesel"><span aria-hidden="true">⛽</span>Diesel</a><a href="#areiaamigos"><span aria-hidden="true">🚚</span>Areia Amigos</a><a href="#mpquotes"><span aria-hidden="true">💰</span>Cotações de MP</a><a href="#manutencao"><span aria-hidden="true">🔧</span>Compras Manutenção</a><a href="/usuarios" data-admin-only hidden><span aria-hidden="true">👥</span>Usuários</a><a href="#auditoria" data-admin-only hidden><span aria-hidden="true">🛡️</span>Auditoria</a><a href="/api/backup" data-admin-only hidden download><span aria-hidden="true">💾</span>Baixar backup</a><a href="/logout"><span aria-hidden="true">🚪</span>Sair</a></nav><div class="sidebar-foot">BASES LOCAIS<small>Compras e materiais</small></div></aside>
 <main><header><div class="heading"><h1>Dashboard</h1><span id="page-subtitle">Visão geral</span></div><label id="analysis-label">Data de análise<select id="analysis" aria-label="Data de análise"></select></label></header>
 <div class="demo"><strong>DADOS DAS FONTES DO POWER BI</strong><span><span id="source-summary">Carregando as bases importadas…</span></span></div>
@@ -43,9 +46,20 @@
       }
     }
   }
+  function centerQuoteShare(){
+    for(const analyze of [...document.querySelectorAll('button')].filter(b=>/analisar cotações/i.test(b.textContent||''))){
+      const actions=analyze.parentElement;
+      if(!actions)continue;
+      const buttons=[...actions.querySelectorAll('a[data-quote-share-fallback]')];
+      if(buttons.length!==2)continue;
+      let row=actions.querySelector('.mn-share-centered-row');
+      if(!row){row=document.createElement('div');row.className='mn-share-centered-row';actions.appendChild(row)}
+      for(const button of buttons)row.appendChild(button);
+    }
+  }
   let scheduled=false;
-  const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;ensureQuoteShare()})});
-  function init(){ensureQuoteShare();observer.observe(document.body,{childList:true,subtree:true})}
+  const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;ensureQuoteShare();centerQuoteShare()})});
+  function init(){ensureQuoteShare();centerQuoteShare();observer.observe(document.body,{childList:true,subtree:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script></body></html>
