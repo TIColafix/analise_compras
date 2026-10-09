@@ -508,3 +508,12 @@
 @media(max-width:760px){.aa-columns,.aa-fields,.aa-items,.aa-filters{grid-template-columns:1fr}.aa-columns>.aa-card:last-child{grid-column:auto}.aa-head{flex-wrap:wrap}}
 
 .aa-share-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}.aa-share-card{border:0;border-radius:16px;padding:18px 12px 14px;min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:12px;color:white!important;text-align:center;cursor:pointer;box-shadow:0 7px 20px rgba(0,0,0,.13);transition:transform .15s,filter .15s}.aa-share-card:hover{transform:translateY(-2px);filter:brightness(1.05)}.aa-share-wa{background:linear-gradient(145deg,#19d773,#009b50)}.aa-share-mail{background:linear-gradient(145deg,#1dafff,#0751dc)}.aa-share-icon{width:64px;height:64px;display:grid;place-items:center;border-radius:50%;font-size:38px;background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.4);box-shadow:0 4px 12px rgba(0,0,0,.12)}.aa-share-card strong{font-size:18px;line-height:1.25}.aa-share-card small{font-size:12px;line-height:1.4;opacity:.95}.aa-share-action{display:block;width:100%;padding:12px 6px;border-radius:10px;background:#fff;color:#078b50;font-size:13px;font-weight:700}.aa-share-mail .aa-share-action{color:#0751dc}@media(max-width:420px){.aa-share-grid{gap:8px}.aa-share-card{padding:14px 8px;min-height:220px}.aa-share-card strong{font-size:15px}}
+
+/* Botões de compartilhamento: sobrescrevem o estilo global de botões da aba */
+#areiaamigos-view button.aa-share-card{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;border:0!important;border-radius:16px!important;padding:18px 12px 14px!important;min-height:245px!important;color:#fff!important;text-align:center!important;box-shadow:0 7px 20px rgba(0,0,0,.14)!important}
+#areiaamigos-view button.aa-share-wa{background:linear-gradient(145deg,#20d978,#009b51)!important}
+#areiaamigos-view button.aa-share-mail{background:linear-gradient(145deg,#23b1ff,#0952db)!important}
+#areiaamigos-view button.aa-share-card .aa-share-icon{background:rgba(255,255,255,.16)!important;color:white!important}
+#areiaamigos-view button.aa-share-card strong,#areiaamigos-view button.aa-share-card small{color:white!important}
+#areiaamigos-view button.aa-share-card .aa-share-action{background:#fff!important;color:#078b50!important}
+#areiaamigos-view button.aa-share-mail .aa-share-action{color:#0751dc!important}
