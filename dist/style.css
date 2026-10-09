@@ -619,3 +619,27 @@
 #areiaamigos-view .aa-report-filter input{box-sizing:border-box!important;height:50px!important;min-height:50px!important;margin:0!important}
 #areiaamigos-view #aa-report-clear{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;height:50px!important;min-height:50px!important;margin:0!important;align-self:flex-end!important;white-space:nowrap!important}
 #areiaamigos-view #aa-report-wa .aa-r-icon{width:24px!important;height:24px!important;fill:#fff!important}
+
+/* Prazos: visual compacto em zoom 100%, mantendo todas as colunas visíveis no desktop */
+@media (min-width:1250px){
+ #prazos-view .deadline-table .table-scroll{overflow-x:auto}
+ #prazos-view .deadlines-grid{min-width:0!important;width:100%!important;table-layout:fixed!important;font-size:11px!important}
+ #prazos-view .deadlines-grid th,#prazos-view .deadlines-grid td{box-sizing:border-box;min-width:0!important;width:auto!important;max-width:none!important;padding:9px 5px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+ #prazos-view .deadlines-grid th:nth-child(1),#prazos-view .deadlines-grid td:nth-child(1){width:6%!important}
+ #prazos-view .deadlines-grid th:nth-child(2),#prazos-view .deadlines-grid td:nth-child(2){width:24%!important}
+ #prazos-view .deadlines-grid th:nth-child(3),#prazos-view .deadlines-grid td:nth-child(3){width:5%!important}
+ #prazos-view .deadlines-grid th:nth-child(4),#prazos-view .deadlines-grid td:nth-child(4){width:8%!important}
+ #prazos-view .deadlines-grid th:nth-child(5),#prazos-view .deadlines-grid td:nth-child(5){width:9%!important}
+ #prazos-view .deadlines-grid th:nth-child(6),#prazos-view .deadlines-grid td:nth-child(6){width:10%!important}
+ #prazos-view .deadlines-grid th:nth-child(7),#prazos-view .deadlines-grid td:nth-child(7){width:9%!important}
+ #prazos-view .deadlines-grid th:nth-child(8),#prazos-view .deadlines-grid td:nth-child(8){width:6%!important}
+ #prazos-view .deadlines-grid th:nth-child(9),#prazos-view .deadlines-grid td:nth-child(9){width:6%!important}
+ #prazos-view .deadlines-grid th:nth-child(10),#prazos-view .deadlines-grid td:nth-child(10){width:6%!important}
+ #prazos-view .deadlines-grid th:nth-child(11),#prazos-view .deadlines-grid td:nth-child(11){width:5%!important}
+ #prazos-view .deadlines-grid th:nth-child(12),#prazos-view .deadlines-grid td:nth-child(12){display:none!important}
+ #prazos-view .deadlines-grid th:nth-child(13),#prazos-view .deadlines-grid td:nth-child(13){width:6%!important}
+ #prazos-view .deadline-actions{display:flex!important;gap:2px!important;justify-content:center!important}
+ #prazos-view .deadline-icon-btn{width:23px!important;height:28px!important;min-width:23px!important;font-size:13px!important}
+ #prazos-view .deadline-product{white-space:nowrap!important;min-width:0!important}
+ #prazos-view .deadline-code{min-width:0!important}
+}
