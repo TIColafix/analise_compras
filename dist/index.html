@@ -53,7 +53,8 @@
           const header=[...container.querySelectorAll('h2,h3,h4,strong,div')].find(el=>el.children.length===0&&/MAN-\d{3,}/.test(el.textContent||''));
           const heading=header?.textContent?.replace(/Editar solicitação/gi,'').trim()||container.innerText.match(/MAN-\d{3,}[^\n]*/)?.[0]||'Solicitação';
           const fullItem=container.querySelector('.mn-info p')?.textContent||'';
-          const itemName=heading.replace(/^MAN-\d+\s*[·.\-:]?\s*/,'').trim();
+          const fullHeading=container.innerText.split('\n').map(x=>x.trim()).find(x=>/^MAN-\d+\s*[·.\-:]\s*\S/.test(x))||'';
+          const itemName=(fullHeading.replace(/^MAN-\d+\s*[·.\-:]?\s*/,'').trim()||container.querySelector('.mn-info p')?.innerText.replace(/^Descrição\s*/i,'').trim()||'');
           const summary=container.innerText.match(/Empresa:\s*[^\n]+Quantidade:\s*[^\n]+Necessário:\s*[^\n]+/)?.[0]||'';
           const table=[...container.querySelectorAll('table')].find(t=>/fornecedor/i.test(t.innerText||''))||container.querySelector('table');
           const trs=table?[...table.querySelectorAll('tbody tr')]:[];
@@ -62,7 +63,7 @@
             if(cells.length<4)return '';
             return ['*'+(i+1)+'. '+cells[0]+'*','💰 Valor: '+cells[1],'🚚 Prazo de entrega: '+cells[2]+( /dia/i.test(cells[2])?'':' dias'),'📅 Pagamento: '+cells[3],cells[4]&&cells[4]!=='—'?'📝 Observação: '+cells[4]:''].filter(Boolean).join('\n');
           }).filter(Boolean);
-          const msg=['📋 *COTAÇÕES - COLAFIX*','', '*'+heading+'*',itemName&&!heading.includes(itemName)?'Item: '+itemName:'',summary,'','📊 *Cotações ('+quotes.length+')*',quotes.join('\n\n'),'','Atenciosamente,','Equipe de Compras - Colafix'].filter(x=>x!==undefined).join('\n').trim();
+          const msg=['📋 *COTAÇÕES - COLAFIX*','', '*'+heading+'*',itemName?'📦 *Item: '+itemName+'*':'',summary,'','📊 *Cotações ('+quotes.length+')*',quotes.join('\n\n'),'','Atenciosamente,','Equipe de Compras - Colafix'].filter(x=>x!==undefined).join('\n').trim();
           if(channel==='whatsapp')window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank','noopener,noreferrer');
           else window.location.href='mailto:?subject='+encodeURIComponent('Cotações Colafix - '+heading)+'&body='+encodeURIComponent(msg.replace(/\*/g,''));
         });
