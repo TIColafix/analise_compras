@@ -11,6 +11,7 @@ let data,engine,page='dashboard',selected,stockSelection,focusId=null,deadlineOr
 const deadlineNumber=v=>{const n=Number(String(v??'').replace(/\./g,'').replace(',','.'));return Number.isFinite(n)?n:0};
 const normalizedUnit=v=>{const u=String(v||'').trim().toUpperCase();return ['UN','UND','UNID','UNIDADE'].includes(u)?'UN':u};
 function pendingDeadlineCoverage(item,date){const needed=Math.max(0,(item.safety??0)-(item.afterLead??item.warehouse??0));const matching=deadlineOrders.filter(r=>String(r.code||'').trim().toUpperCase()===String(item.id||'').trim().toUpperCase()&&r.status==='Aguardando entrega'&&normalizedUnit(r.unit)===normalizedUnit(item.unit));const pending=matching.reduce((s,r)=>s+Math.max(0,deadlineNumber(r.quantity)-deadlineNumber(r.deliveredQuantity)),0);return {pending,needed,covered:pending>0,fullyCovered:pending>=needed,orders:matching};}
+setInterval(()=>{if(!document.hidden)fetch('/api/me',{cache:'no-store',credentials:'same-origin'}).catch(()=>{});},30000);
 async function loadCurrentUser(){try{const r=await fetch('/api/me?ts='+Date.now(),{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error('Sessão não identificada');const j=await r.json();currentUser={name:j.name||j.user||'Usuário',role:j.role||'operator'};document.documentElement.dataset.user=currentUser.name;}catch(e){currentUser={name:'Usuário',role:'operator'};}}
 async function loadAudit(){
  if(currentUser.role!=='admin')return;
