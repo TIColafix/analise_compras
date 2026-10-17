@@ -377,5 +377,13 @@ createServer(async(req,res)=>{try{
   }finally{busy=false;}
  }
  if(req.method!=='GET')return reply(res,405,{error:'Método não permitido.'});
+ if(path.startsWith('/images/')){
+  const imageName=path.slice('/images/'.length);
+  if(!/^[a-zA-Z0-9_-]+\.(?:png|jpg|jpeg|webp|svg)(?:\.png)?$/i.test(imageName))return reply(res,404,{error:'Imagem não encontrada.'});
+  const content=await readFile(join(root,'dist','images',imageName));
+  const extension=imageName.split('.').pop().toLowerCase();
+  const imageType={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',svg:'image/svg+xml'}[extension];
+  res.writeHead(200,{'Content-Type':imageType,'Cache-Control':'public, max-age=3600'});res.end(content);return;
+ }
  const file=files[path];if(!file)return reply(res,404,{error:'Não encontrado.'});const content=await readFile(join(root,'dist',file));res.writeHead(200,{'Content-Type':types[file.split('.').pop()],'Cache-Control':'no-store'});res.end(content);
 }catch(e){reply(res,400,{error:e.message});}}).listen(port,host,()=>console.log(`Monitoramento MRP: http://${host}:${port}`));
