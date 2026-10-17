@@ -1125,3 +1125,11 @@ body:has(#dashboard-view:not([hidden])) .main-content,body:has(#dashboard-view:n
 #dashboard-view .cinema-hero-weather{height:160px!important;align-self:center!important}
 @media(max-width:1100px){#dashboard-view .cinema-hero{grid-template-columns:minmax(0,1fr) minmax(285px,360px)!important}#dashboard-view .cinema-hero-weather{height:auto!important}}
 @media(max-width:700px){#dashboard-view .cinema-hero{grid-template-columns:minmax(0,1fr)!important}#dashboard-view .cinema-hero-weather{height:auto!important}}
+
+#dashboard-view .cinema-hero{grid-template-columns:minmax(320px,1fr) 290px 145px!important}
+#dashboard-view .cinema-hero-metrics .dash-live{grid-template-rows:72px 72px!important}
+#dashboard-view .cinema-hero-metrics .dash-live-market{height:72px!important;min-height:72px!important;max-height:72px!important;text-decoration:none!important;cursor:pointer!important}
+#dashboard-view .cinema-hero-metrics .dash-dollar-chart,#dashboard-view .cinema-hero-metrics .dash-dollar-change,#dashboard-view .cinema-hero-metrics .dash-diesel-chart,#dashboard-view .cinema-hero-metrics .dash-diesel-change{display:none!important}
+#dashboard-view .cinema-hero-metrics .dash-live-market:hover{border-color:#ff3159!important}
+@media(max-width:1100px){#dashboard-view .cinema-hero{grid-template-columns:minmax(0,1fr) 290px!important}}
+@media(max-width:700px){#dashboard-view .cinema-hero{grid-template-columns:1fr!important}}
