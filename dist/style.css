@@ -808,3 +808,28 @@
 #indiretos-view .ind-stock-layout .status-bar strong{min-width:24px;text-align:right}
 
 #indiretos-view .ind-stock-toolbar{display:flex;flex-wrap:wrap;gap:16px;margin:12px 0 18px}#indiretos-view .ind-stock-toolbar label{display:flex;flex-direction:column;gap:8px;min-width:220px;flex:1;font-size:14px}#indiretos-view .ind-stock-toolbar input,#indiretos-view .ind-stock-toolbar select{background:white;border:1px solid #cbd5e1;border-radius:8px;padding:12px;font:inherit}
+
+
+/* Prazos Insumos/EPIs: mesma estrutura visual de MP */
+#indiretos-view .deadline-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px;margin:18px 0 20px}
+#indiretos-view .deadline-kpis>div{background:white;border:1px solid #d6dce5;border-radius:10px;padding:20px;display:flex;flex-direction:column}
+#indiretos-view .deadline-kpis strong{font-size:31px;color:#27303c}
+#indiretos-view .deadline-kpis span{color:#64748b}
+#indiretos-view .deadline-report,#indiretos-view .deadline-purchase-entry{margin-bottom:18px}
+#indiretos-view .deadline-purchase-entry details summary{cursor:pointer;font-weight:700;padding:4px}
+#indiretos-view .deadline-report-filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:15px 0}
+#indiretos-view .deadline-report-filters label{min-width:0}
+#indiretos-view .deadline-report-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+#indiretos-view .deadline-report-footer>div{display:flex;gap:8px}
+#indiretos-view .deadline-report-footer button,#indiretos-view .ind-actions button{background:#fff;border:1px solid #cbd5e1;border-radius:7px;padding:9px;cursor:pointer}
+#indiretos-view .ind-order-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}
+#indiretos-view .ind-order-fields input{width:100%}
+#indiretos-view .cement-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0}
+#indiretos-view .cement-filters input,#indiretos-view .cement-filters select{width:100%}
+#indiretos-view .deadlines-grid{min-width:1180px}
+#indiretos-view .deadlines-grid th,#indiretos-view .deadlines-grid td{font-size:12px}
+#indiretos-view .deadlines-grid .ind-late{background:#ffd9d9}
+#indiretos-view .deadlines-grid .ind-done{background:#dcfce7}
+#indiretos-view .ind-actions{white-space:nowrap}
+@media(max-width:1000px){#indiretos-view .deadline-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}#indiretos-view .deadline-report-filters{grid-template-columns:repeat(2,minmax(0,1fr))}#indiretos-view .ind-order-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){#indiretos-view .deadline-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#indiretos-view .cement-filters{grid-template-columns:1fr}}
