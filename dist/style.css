@@ -806,3 +806,5 @@
 #indiretos-view .ind-stock-layout .status-bar i.ok{background:#21a179}
 #indiretos-view .ind-stock-layout .status-bar i.critical{background:#e64e67}
 #indiretos-view .ind-stock-layout .status-bar strong{min-width:24px;text-align:right}
+
+#indiretos-view .ind-stock-toolbar{display:flex;flex-wrap:wrap;gap:16px;margin:12px 0 18px}#indiretos-view .ind-stock-toolbar label{display:flex;flex-direction:column;gap:8px;min-width:220px;flex:1;font-size:14px}#indiretos-view .ind-stock-toolbar input,#indiretos-view .ind-stock-toolbar select{background:white;border:1px solid #cbd5e1;border-radius:8px;padding:12px;font:inherit}
