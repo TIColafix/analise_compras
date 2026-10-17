@@ -1171,3 +1171,21 @@ html[data-colafix-theme="dark"] :is(.modal,.dialog,[role="dialog"]){background-c
 html[data-colafix-theme="dark"] [style*="background: white"],html[data-colafix-theme="dark"] [style*="background:#fff"],html[data-colafix-theme="dark"] [style*="background: #fff"]{background:#1b2635!important;color:#e6edf5!important}
 html[data-colafix-theme="dark"] .colafix-theme-switch{background:#e9eef5!important;color:#152235!important;border-color:#bac7d7!important}
 @media(max-width:700px){.colafix-theme-switch{right:10px;bottom:10px;padding:10px 12px;font-size:12px}}
+
+
+/* Contraste de componentes que permaneciam claros no tema escuro */
+html[data-colafix-theme="dark"] :is(.report-box,.deadline-report,.deadline-kpis>div,.report-multi-menu,.report-multi>button,.report-box-actions button,.deadline-report-footer button){background:#1d2939!important;color:#edf3fb!important;border-color:#405169!important}
+html[data-colafix-theme="dark"] :is(.report-box-head,.report-box-head h3,.report-box-head strong,.report-box-head span,.report-filter-grid label,.report-box-actions span,.deadline-report h3,.deadline-report h3 small,.deadline-report-filters label,.deadline-report-footer,.deadline-kpis strong,.deadline-kpis span){color:#dce6f3!important}
+html[data-colafix-theme="dark"] :is(.report-filter-grid input,.report-filter-grid select,.deadline-report-filters input,.deadline-report-filters select,.report-multi>button){background:#142033!important;color:#f5f8ff!important;border-color:#485b74!important}
+html[data-colafix-theme="dark"] :is(.report-box-actions button,.deadline-report-footer button){background:#2a3b50!important;color:#fff!important}
+html[data-colafix-theme="dark"] :is(.report-box-actions button,.deadline-report-footer button):hover{background:#3a506a!important}
+html[data-colafix-theme="dark"] .deadline-kpis>div{background:#1d2939!important;border:1px solid #405169!important}
+html[data-colafix-theme="dark"] .deadline-kpis strong{color:#f5f8ff!important}
+html[data-colafix-theme="dark"] .deadline-kpis span{color:#bdcbe0!important}
+html[data-colafix-theme="dark"] :is(.report-multi-menu,.report-multi-menu label,.report-multi-menu span){color:#eaf2ff!important}
+html[data-colafix-theme="dark"] :is(.modal,.modal-content,[role="dialog"]){color:#eaf2ff!important}
+html[data-colafix-theme="dark"] :is(.modal,.modal-content,[role="dialog"]) :is(header,h2,h3,h4,small,label){color:#eaf2ff!important}
+html[data-colafix-theme="dark"] :is(.modal,.modal-content,[role="dialog"]) :is(.panel,.card,.box,.table-scroll){background:#1d2939!important;color:#eaf2ff!important;border-color:#405169!important}
+html[data-colafix-theme="dark"] :is(.modal,.modal-content,[role="dialog"]) :is(button,input,select,textarea){color:#eaf2ff}
+html[data-colafix-theme="dark"] :is(.deadline-report,.report-box,.deadline-kpis) button:disabled{color:#aab7c8!important}
+html[data-colafix-theme="dark"] :is(.report-box,.deadline-report,.deadline-kpis) :is(.empty-state,.help-text,.muted){color:#b7c6d9!important}
