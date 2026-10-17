@@ -1016,3 +1016,13 @@ body:has(#dashboard-view:not([hidden])) .main-content,body:has(#dashboard-view:n
 @media(max-width:1200px){#dashboard-view .cinema-hero{grid-template-columns:minmax(250px,1fr) 260px 105px}#dashboard-view .cinema-hero-metrics .dash-dollar-chart{max-width:70px}}
 @media(max-width:900px){#dashboard-view .cinema-hero{grid-template-columns:1fr 270px;grid-template-rows:auto auto}#dashboard-view .cinema-hero-actions{grid-column:2;grid-row:1}#dashboard-view .cinema-hero-weather{display:none}#dashboard-view .cinema-hero-metrics{grid-column:2;grid-row:2}}
 @media(max-width:650px){#dashboard-view .cinema-hero{grid-template-columns:1fr;grid-template-rows:auto auto auto;padding:20px}#dashboard-view .cinema-hero-copy{grid-column:1;grid-row:1}#dashboard-view .cinema-hero-actions{grid-column:1;grid-row:2}#dashboard-view .cinema-hero-metrics{grid-column:1;grid-row:3}#dashboard-view .cinema-hero-metrics .dash-live{grid-template-columns:1fr 1fr;grid-template-rows:1fr}#dashboard-view .cinema-hero-metrics .dash-dollar-v3{grid-column:1;grid-row:1}#dashboard-view .cinema-hero-metrics .dash-diesel-v3{grid-column:2;grid-row:1}#dashboard-view .cinema-hero-metrics .dash-dollar-chart{display:none!important}}
+
+
+/* Imagens oficiais fornecidas pelo usuário para o dashboard Colafix */
+#dashboard-view .cinema-hero{background-image:linear-gradient(90deg,rgba(3,6,12,.95) 0%,rgba(3,6,12,.78) 24%,rgba(3,6,12,.1) 60%,rgba(3,6,12,.8) 100%),url('/images/colafix-banner.png.png')!important;background-position:center 48%!important}
+#dashboard-view .tile-raw{background-image:linear-gradient(0deg,rgba(2,4,10,.95),rgba(2,4,10,.04) 75%),url('/images/materia-prima.png.png')!important}
+#dashboard-view .tile-bulk{background-image:linear-gradient(0deg,rgba(2,4,10,.95),rgba(2,4,10,.04) 75%),url('/images/cimento-granel.png.png')!important}
+#dashboard-view .tile-bag{background-image:linear-gradient(0deg,rgba(2,4,10,.95),rgba(2,4,10,.04) 75%),url('/images/cimento-ensacado.png.png')!important}
+#dashboard-view .tile-diesel{background-image:linear-gradient(0deg,rgba(2,4,10,.95),rgba(2,4,10,.04) 75%),url('/images/diesel.png.png')!important}
+#dashboard-view .tile-epi{background-image:linear-gradient(0deg,rgba(2,4,10,.95),rgba(2,4,10,.04) 75%),url('/images/epis.png.png')!important}
+#dashboard-view .cinema-tile{background-size:cover!important;background-position:center!important}
