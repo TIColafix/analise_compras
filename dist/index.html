@@ -76,4 +76,21 @@
   function init(){ensureQuoteShare();observer.observe(document.body,{childList:true,subtree:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+</script><script>
+(function(){
+const key='colafix-theme';
+function apply(mode){
+ const dark=mode==='dark';
+ document.documentElement.setAttribute('data-colafix-theme',dark?'dark':'light');
+ document.querySelectorAll('[data-theme-switch]').forEach(b=>{b.textContent=dark?'☀️ Modo claro':'🌙 Modo escuro';b.setAttribute('aria-label',dark?'Ativar modo claro':'Ativar modo escuro');b.setAttribute('aria-pressed',String(dark))});
+}
+try{apply(localStorage.getItem(key)==='dark'?'dark':'light')}catch(e){apply('light')}
+function mount(){
+ if(document.querySelector('[data-theme-switch]'))return;
+ const b=document.createElement('button');b.type='button';b.className='colafix-theme-switch';b.setAttribute('data-theme-switch','');b.title='Alternar entre tema claro e escuro';
+ b.addEventListener('click',()=>{const next=document.documentElement.getAttribute('data-colafix-theme')==='dark'?'light':'dark';apply(next);try{localStorage.setItem(key,next)}catch(e){}});
+ document.body.appendChild(b);apply(document.documentElement.getAttribute('data-colafix-theme'));
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
+})();
 </script></body></html>
