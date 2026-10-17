@@ -1189,3 +1189,24 @@ html[data-colafix-theme="dark"] :is(.modal,.modal-content,[role="dialog"]) :is(.
 html[data-colafix-theme="dark"] :is(.modal,.modal-content,[role="dialog"]) :is(button,input,select,textarea){color:#eaf2ff}
 html[data-colafix-theme="dark"] :is(.deadline-report,.report-box,.deadline-kpis) button:disabled{color:#aab7c8!important}
 html[data-colafix-theme="dark"] :is(.report-box,.deadline-report,.deadline-kpis) :is(.empty-state,.help-text,.muted){color:#b7c6d9!important}
+
+
+/* Correções finais de legibilidade: listas MRP, painéis e cimento a granel */
+html[data-colafix-theme="dark"] .material-grid{background:#172332!important}
+html[data-colafix-theme="dark"] .material{background:#223145!important;color:#f0f5fc!important;border-color:#40516a!important}
+html[data-colafix-theme="dark"] .material:hover{background:#30425a!important;border-color:#8295ad!important}
+html[data-colafix-theme="dark"] .material.active{background:#33465c!important;color:#fff!important;border-color:#f0444e!important}
+html[data-colafix-theme="dark"] .material small{color:#aebfd4!important}
+html[data-colafix-theme="dark"] .material strong{color:#f1f5fb!important}
+html[data-colafix-theme="dark"] .material-tag{color:#b9c7d8!important}
+html[data-colafix-theme="dark"] .section-title{background:#26364a!important;color:#fff!important}
+html[data-colafix-theme="dark"] .section-title h2,html[data-colafix-theme="dark"] .section-title>span{color:#f0f5fc!important}
+html[data-colafix-theme="dark"] .cement-load-card{background:#202d3d!important;color:#e8f0fb!important;border-color:#45566b!important;border-left-color:#ef4444!important}
+html[data-colafix-theme="dark"] .cement-load-card :is(strong,small,p,span,label){color:#d9e6f6}
+html[data-colafix-theme="dark"] .cement-load-card>div>strong{color:#f5f8ff!important}
+html[data-colafix-theme="dark"] .cement-load-card :is(.load-status,select,button){color:#f2f6ff}
+html[data-colafix-theme="dark"] .cement-card-note{background:#473824!important;color:#ffe2a5!important}
+html[data-colafix-theme="dark"] .cement-week,html[data-colafix-theme="dark"] .cement-week-panel,html[data-colafix-theme="dark"] .cement-day{background:#172332!important;color:#edf3fb!important;border-color:#415168!important}
+html[data-colafix-theme="dark"] .cement-day-empty{color:#b9c8da!important}
+html[data-colafix-theme="dark"] .cement-load-card .load-status{color:#f4f7fc!important}
+html[data-colafix-theme="dark"] .cement-load-card :is(input,select,textarea){background:#142033!important;color:#f5f8ff!important}
