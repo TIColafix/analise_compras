@@ -893,7 +893,7 @@ body:has(#dashboard-view:not([hidden])) .main-content,body:has(#dashboard-view:n
 #dashboard-view .cinema-tile b{font-size:28px}
 #dashboard-view .tile-raw{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=600&q=80')}
 #dashboard-view .tile-bulk{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=600&q=80')}
-#dashboard-view .tile-bag{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1565793298595-6ba897f9a1cb?w=600&q=80')}
+#dashboard-view .tile-bag{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80')}
 #dashboard-view .tile-diesel{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=600&q=80')}
 #dashboard-view .tile-epi{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80')}
 #dashboard-view .dash-kpi,#dashboard-view .dash-shortcuts a,#dashboard-view .dash-live-market,#dashboard-view .dash-weather,#dashboard-view .dash-card{background:#111927;color:#f5f7fc;border:1px solid #253249;border-radius:11px;box-shadow:none}
@@ -908,3 +908,16 @@ body:has(#dashboard-view:not([hidden])) .main-content,body:has(#dashboard-view:n
 #dashboard-view .dash-detail{background:#121c2b;color:#f5f7fc;border-color:#2b394f}
 @media(max-width:1200px){#dashboard-view .cinema-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}#dashboard-view .cinema-hero{flex-direction:column}}
 @media(max-width:700px){#dashboard-view .cinema-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#dashboard-view .cinema-hero{padding:22px}#dashboard-view .cinema-tile{min-height:120px}#dashboard-view .cinema-hero h2 strong{font-size:38px}}
+
+/* Contraste consistente: blocos de dados no tema escuro */
+#dashboard-view .dash-live-market,#dashboard-view .dash-weather,#dashboard-view .dash-weather-days,#dashboard-view .dash-weather-days span{background:#121b2b!important;color:#f1f5fc!important}
+#dashboard-view .dash-live-market *,#dashboard-view .dash-weather *{color:#e8eff9}
+#dashboard-view .dash-live-market small,#dashboard-view .dash-weather small,#dashboard-view .dash-live-market em{color:#a7b6ce!important}
+#dashboard-view .dash-dollar-change{color:#43dc91!important}
+#dashboard-view .dash-live-market .dollar-history{background:#0b1422;border-radius:8px;padding:8px}
+#dashboard-view .dash-live-market .dollar-history b,#dashboard-view .dash-weather-days strong{color:#fff!important}
+#dashboard-view .dash-weather-days span{border-color:#2b3a52!important}
+#dashboard-view .dash-kpi:hover,#dashboard-view .dash-shortcuts a:hover{border-color:#f43653;transform:translateY(-2px);transition:transform .16s,border-color .16s}
+#dashboard-view .cinema-tile{background-color:#24374a}
+#dashboard-view .tile-bag{background-color:#28384b}
+#dashboard-view .cinema-hero{background-image:linear-gradient(90deg,rgba(5,8,15,.96) 0%,rgba(5,8,15,.8) 35%,rgba(5,8,15,.1) 80%),url('https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1600&q=85')}
