@@ -869,42 +869,42 @@
 
 
 /* Dashboard Colafix — visual cinematográfico inspirado em catálogos */
-body:has(#dashboard:not([hidden])){background:#080c14}
-body:has(#dashboard:not([hidden])) .main-content,body:has(#dashboard:not([hidden])) main{background:#080c14;color:#f4f6fb}
-#dashboard{color:#f3f6fb}
-#dashboard .cinema-hero{min-height:260px;border-radius:18px;position:relative;overflow:hidden;padding:28px 35px;display:flex;justify-content:space-between;align-items:flex-start;gap:18px;background:linear-gradient(90deg,rgba(5,8,15,.96) 0%,rgba(5,8,15,.82) 35%,rgba(5,8,15,.18) 77%),url('https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=1600&q=85') center/cover no-repeat;border:1px solid #2a3443;box-shadow:0 15px 35px #0005}
-#dashboard .cinema-eyebrow{font-size:11px;letter-spacing:2px;color:#ff6471;font-weight:700}
-#dashboard .cinema-hero h2{color:#fff;font-size:27px;line-height:1.05;margin:10px 0}
-#dashboard .cinema-hero h2 strong{font-size:clamp(38px,5vw,68px);letter-spacing:-2px}
-#dashboard .cinema-hero p{color:#e0e5ef;font-size:15px;line-height:1.45;margin:8px 0 18px}
-#dashboard .cinema-hero-buttons{display:flex;gap:10px;flex-wrap:wrap}
-#dashboard .cinema-hero-buttons a{padding:12px 18px;border-radius:8px;color:white;background:#ed1738;font-weight:700;text-decoration:none}
-#dashboard .cinema-hero-buttons a+a{background:#283344;border:1px solid #586275}
-#dashboard .cinema-hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-#dashboard .cinema-hero-actions .dash-date{background:#121a29cc;color:#fff;border:1px solid #475267}
-#dashboard .cinema-hero-actions .dash-recalc{background:#111c2c;color:white;border:1px solid #68758c;border-radius:8px;padding:11px}
-#dashboard .cinema-areas{margin:20px 0 16px}
-#dashboard .cinema-areas h3,#dashboard .cinema-section-title{font-size:19px;color:#fff;margin:0 0 12px}
-#dashboard .cinema-tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
-#dashboard .cinema-tile{min-height:150px;border-radius:11px;overflow:hidden;position:relative;display:flex;align-items:end;justify-content:space-between;padding:15px;color:white;text-decoration:none;border:1px solid #3b4658;background-position:center;background-size:cover;box-shadow:inset 0 -85px 70px -20px #02040a;transition:transform .18s,border-color .18s,box-shadow .18s}
-#dashboard .cinema-tile:hover,#dashboard .cinema-tile:focus-visible{transform:scale(1.035);border-color:#fa2948;box-shadow:inset 0 -85px 70px -20px #02040a,0 0 0 2px #fa2948;z-index:2}
-#dashboard .cinema-tile span{font-weight:750;font-size:16px;line-height:1.15;text-shadow:0 2px 5px #000}
-#dashboard .cinema-tile small{display:block;font-size:11px;font-weight:400;color:#e1e7ef;margin-top:4px}
-#dashboard .cinema-tile b{font-size:28px}
-#dashboard .tile-raw{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=600&q=80')}
-#dashboard .tile-bulk{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=600&q=80')}
-#dashboard .tile-bag{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1565793298595-6ba897f9a1cb?w=600&q=80')}
-#dashboard .tile-diesel{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=600&q=80')}
-#dashboard .tile-epi{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80')}
-#dashboard .dash-kpi,#dashboard .dash-shortcuts a,#dashboard .dash-live-market,#dashboard .dash-weather,#dashboard .dash-card{background:#111927;color:#f5f7fc;border:1px solid #253249;border-radius:11px;box-shadow:none}
-#dashboard .dash-kpi strong,#dashboard .dash-shortcuts strong,#dashboard .dash-card b,#dashboard .dash-live strong{color:#fff}
-#dashboard .dash-kpi small,#dashboard .dash-shortcuts small,#dashboard .dash-card small{color:#aebcd0}
-#dashboard .dash-live{margin:14px 0}
-#dashboard .dash-card header{background:#151f2e;border-color:#27354b}
-#dashboard .dash-card table{background:#101826;color:#e6edf7}
-#dashboard .dash-card td,#dashboard .dash-card th{border-color:#283446;color:#e6edf7}
-#dashboard .dash-card a{color:#6ebaff}
-#dashboard .dash-card .row-select{color:#f2f6ff}
-#dashboard .dash-detail{background:#121c2b;color:#f5f7fc;border-color:#2b394f}
-@media(max-width:1200px){#dashboard .cinema-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}#dashboard .cinema-hero{flex-direction:column}}
-@media(max-width:700px){#dashboard .cinema-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#dashboard .cinema-hero{padding:22px}#dashboard .cinema-tile{min-height:120px}#dashboard .cinema-hero h2 strong{font-size:38px}}
+body:has(#dashboard-view:not([hidden])){background:#080c14}
+body:has(#dashboard-view:not([hidden])) .main-content,body:has(#dashboard-view:not([hidden])) main{background:#080c14;color:#f4f6fb}
+#dashboard-view{color:#f3f6fb}
+#dashboard-view .cinema-hero{min-height:260px;border-radius:18px;position:relative;overflow:hidden;padding:28px 35px;display:flex;justify-content:space-between;align-items:flex-start;gap:18px;background:linear-gradient(90deg,rgba(5,8,15,.96) 0%,rgba(5,8,15,.82) 35%,rgba(5,8,15,.18) 77%),url('https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=1600&q=85') center/cover no-repeat;border:1px solid #2a3443;box-shadow:0 15px 35px #0005}
+#dashboard-view .cinema-eyebrow{font-size:11px;letter-spacing:2px;color:#ff6471;font-weight:700}
+#dashboard-view .cinema-hero h2{color:#fff;font-size:27px;line-height:1.05;margin:10px 0}
+#dashboard-view .cinema-hero h2 strong{font-size:clamp(38px,5vw,68px);letter-spacing:-2px}
+#dashboard-view .cinema-hero p{color:#e0e5ef;font-size:15px;line-height:1.45;margin:8px 0 18px}
+#dashboard-view .cinema-hero-buttons{display:flex;gap:10px;flex-wrap:wrap}
+#dashboard-view .cinema-hero-buttons a{padding:12px 18px;border-radius:8px;color:white;background:#ed1738;font-weight:700;text-decoration:none}
+#dashboard-view .cinema-hero-buttons a+a{background:#283344;border:1px solid #586275}
+#dashboard-view .cinema-hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+#dashboard-view .cinema-hero-actions .dash-date{background:#121a29cc;color:#fff;border:1px solid #475267}
+#dashboard-view .cinema-hero-actions .dash-recalc{background:#111c2c;color:white;border:1px solid #68758c;border-radius:8px;padding:11px}
+#dashboard-view .cinema-areas{margin:20px 0 16px}
+#dashboard-view .cinema-areas h3,#dashboard-view .cinema-section-title{font-size:19px;color:#fff;margin:0 0 12px}
+#dashboard-view .cinema-tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+#dashboard-view .cinema-tile{min-height:150px;border-radius:11px;overflow:hidden;position:relative;display:flex;align-items:end;justify-content:space-between;padding:15px;color:white;text-decoration:none;border:1px solid #3b4658;background-position:center;background-size:cover;box-shadow:inset 0 -85px 70px -20px #02040a;transition:transform .18s,border-color .18s,box-shadow .18s}
+#dashboard-view .cinema-tile:hover,#dashboard-view .cinema-tile:focus-visible{transform:scale(1.035);border-color:#fa2948;box-shadow:inset 0 -85px 70px -20px #02040a,0 0 0 2px #fa2948;z-index:2}
+#dashboard-view .cinema-tile span{font-weight:750;font-size:16px;line-height:1.15;text-shadow:0 2px 5px #000}
+#dashboard-view .cinema-tile small{display:block;font-size:11px;font-weight:400;color:#e1e7ef;margin-top:4px}
+#dashboard-view .cinema-tile b{font-size:28px}
+#dashboard-view .tile-raw{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=600&q=80')}
+#dashboard-view .tile-bulk{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=600&q=80')}
+#dashboard-view .tile-bag{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1565793298595-6ba897f9a1cb?w=600&q=80')}
+#dashboard-view .tile-diesel{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=600&q=80')}
+#dashboard-view .tile-epi{background-image:linear-gradient(0deg,#02040a99,transparent),url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80')}
+#dashboard-view .dash-kpi,#dashboard-view .dash-shortcuts a,#dashboard-view .dash-live-market,#dashboard-view .dash-weather,#dashboard-view .dash-card{background:#111927;color:#f5f7fc;border:1px solid #253249;border-radius:11px;box-shadow:none}
+#dashboard-view .dash-kpi strong,#dashboard-view .dash-shortcuts strong,#dashboard-view .dash-card b,#dashboard-view .dash-live strong{color:#fff}
+#dashboard-view .dash-kpi small,#dashboard-view .dash-shortcuts small,#dashboard-view .dash-card small{color:#aebcd0}
+#dashboard-view .dash-live{margin:14px 0}
+#dashboard-view .dash-card header{background:#151f2e;border-color:#27354b}
+#dashboard-view .dash-card table{background:#101826;color:#e6edf7}
+#dashboard-view .dash-card td,#dashboard-view .dash-card th{border-color:#283446;color:#e6edf7}
+#dashboard-view .dash-card a{color:#6ebaff}
+#dashboard-view .dash-card .row-select{color:#f2f6ff}
+#dashboard-view .dash-detail{background:#121c2b;color:#f5f7fc;border-color:#2b394f}
+@media(max-width:1200px){#dashboard-view .cinema-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}#dashboard-view .cinema-hero{flex-direction:column}}
+@media(max-width:700px){#dashboard-view .cinema-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#dashboard-view .cinema-hero{padding:22px}#dashboard-view .cinema-tile{min-height:120px}#dashboard-view .cinema-hero h2 strong{font-size:38px}}
