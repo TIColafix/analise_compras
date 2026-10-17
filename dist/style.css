@@ -789,3 +789,20 @@
 .sidebar .nav-indirect-children a{display:flex;align-items:center;gap:8px;font-size:13px;padding:10px 9px;border-radius:7px;margin:2px 0}
 .sidebar .nav-indirect-children a[aria-current="page"]{background:#394452;color:#fff;border-left:3px solid #f43f4f}
 .sidebar .nav-indirect-parent.indirect-active{background:#343e4b}
+
+
+/* Menu compacto em uma linha */
+.sidebar .nav-indirect-parent{display:flex!important;flex-wrap:nowrap!important;gap:7px!important;white-space:nowrap!important;align-items:center!important}
+.sidebar .nav-indirect-parent>span:nth-child(2){flex:1 1 auto!important;min-width:0!important;font-size:13px!important;white-space:nowrap!important;line-height:1.2!important;letter-spacing:-.2px!important}
+.sidebar .nav-indirect-parent>span:first-child{flex:none;font-size:17px!important}
+.sidebar .nav-indirect-chevron{flex:none!important;font-size:10px!important}
+#indiretos-view .ind-stock-layout>.panel{overflow:hidden}
+#indiretos-view .ind-stock-layout .table-scroll{max-height:520px;overflow:auto}
+#indiretos-view .ind-stock-layout .table-scroll th{position:sticky;top:0;z-index:1}
+#indiretos-view .ind-stock-layout .status-bar{display:flex;align-items:center;gap:9px;padding:10px 0}
+#indiretos-view .ind-stock-layout .status-bar span{min-width:105px}
+#indiretos-view .ind-stock-layout .status-bar>div{flex:1;background:#eef0f3;height:14px;border-radius:4px;overflow:hidden}
+#indiretos-view .ind-stock-layout .status-bar i{display:block;height:100%;background:#f5b942}
+#indiretos-view .ind-stock-layout .status-bar i.ok{background:#21a179}
+#indiretos-view .ind-stock-layout .status-bar i.critical{background:#e64e67}
+#indiretos-view .ind-stock-layout .status-bar strong{min-width:24px;text-align:right}
