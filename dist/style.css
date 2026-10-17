@@ -729,3 +729,29 @@
 .cement-load-card.company-colafix .cement-company-tag{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
 .cement-load-card.company-fixcol .cement-company-tag{background:#ffedd5;border-color:#fdba74;color:#9a3412}
 .cement-load-card.company-argamazza .cement-company-tag{background:#f3e8ff;border-color:#d8b4fe;color:#6b21a8}
+
+
+/* Materiais indiretos */
+#indiretos-view .ind-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+#indiretos-view .ind-head h2{margin:0;font-size:24px}#indiretos-view .ind-head p{color:#64748b;margin:5px 0}
+#indiretos-view .ind-head>div:last-child{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#indiretos-view .ind-upload,#indiretos-view .ind-head button{display:inline-flex;align-items:center;padding:10px 14px;background:#fff;border:1px solid #cbd5e1;border-radius:9px;cursor:pointer;font-weight:650}
+#indiretos-view .ind-upload{background:#1668dc;color:#fff;border-color:#1668dc}
+#indiretos-view .ind-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+#indiretos-view .ind-kpis>div{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:17px;display:flex;flex-direction:column;gap:7px}
+#indiretos-view .ind-kpis small{color:#64748b}#indiretos-view .ind-kpis strong{font-size:27px;color:#172b4d}
+#indiretos-view .ind-filter{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+#indiretos-view .ind-categories{display:flex;gap:6px;flex-wrap:wrap}
+#indiretos-view .ind-categories button,#indiretos-view .ind-tabs button{padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;cursor:pointer}
+#indiretos-view .ind-categories button.active,#indiretos-view .ind-tabs button.active{background:#1668dc;border-color:#1668dc;color:white}
+#indiretos-view [data-search]{min-width:220px;padding:10px;border:1px solid #cbd5e1;border-radius:8px}
+#indiretos-view .ind-tabs{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}
+#indiretos-view .table-scroll{background:white;border:1px solid #e2e8f0;border-radius:12px;overflow:auto}
+#indiretos-view table{width:100%;border-collapse:collapse}#indiretos-view th,#indiretos-view td{padding:11px;text-align:left;border-bottom:1px solid #edf0f5;vertical-align:middle}
+#indiretos-view th{background:#f8fafc;white-space:nowrap}#indiretos-view td{font-size:13px}
+#indiretos-view .ind-number{max-width:105px;padding:8px;border:1px solid #cbd5e1;border-radius:7px}
+#indiretos-view [data-status-id]{padding:7px;border-radius:7px;border:1px solid #cbd5e1}
+#indiretos-view .ind-state{display:block;color:#b42318;margin-top:3px}
+#indiretos-view .ind-dates{display:flex;gap:12px;margin:12px 0;flex-wrap:wrap}
+#indiretos-view .ind-dates label{display:flex;align-items:center;gap:8px}
+@media(max-width:800px){#indiretos-view .ind-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#indiretos-view .ind-filter{align-items:stretch}#indiretos-view [data-search]{width:100%}}
