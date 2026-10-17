@@ -833,3 +833,13 @@
 #indiretos-view .ind-actions{white-space:nowrap}
 @media(max-width:1000px){#indiretos-view .deadline-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}#indiretos-view .deadline-report-filters{grid-template-columns:repeat(2,minmax(0,1fr))}#indiretos-view .ind-order-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){#indiretos-view .deadline-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#indiretos-view .cement-filters{grid-template-columns:1fr}}
+
+
+/* Filtros do MRP de Insumos/EPIs no padrão das matérias-primas */
+#indiretos-view .ind-mrp-filters{display:grid;grid-template-columns:minmax(180px,1.15fr) minmax(180px,1.15fr) minmax(180px,1.1fr) auto auto;align-items:end;gap:18px;margin:16px 0 28px}
+#indiretos-view .ind-mrp-filters label{min-width:0}
+#indiretos-view .ind-mrp-filters input,#indiretos-view .ind-mrp-filters select{width:100%;min-height:48px;border-radius:6px}
+#indiretos-view .ind-mrp-filters button{min-height:48px;white-space:nowrap;background:white;border:1px solid #cbd5e1;border-radius:6px;padding:0 14px;cursor:pointer}
+#indiretos-view .ind-mrp-count{white-space:nowrap;color:#64748b;padding-bottom:14px}
+@media(max-width:1100px){#indiretos-view .ind-mrp-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#indiretos-view .ind-mrp-filters{grid-template-columns:1fr}}
