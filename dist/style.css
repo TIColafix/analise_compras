@@ -1147,3 +1147,27 @@ body:has(#dashboard-view:not([hidden])) .main-content,body:has(#dashboard-view:n
 #dashboard-view .cinema-hero-weather{grid-column:3!important;grid-row:2!important;height:142px!important;align-self:center!important}
 @media(max-width:1100px){#dashboard-view .cinema-hero{grid-template-columns:minmax(0,1fr) 255px!important}#dashboard-view .cinema-hero-metrics{grid-column:2!important}#dashboard-view .cinema-hero-weather{grid-column:2!important;grid-row:3!important;width:255px!important;justify-self:end!important}}
 @media(max-width:700px){#dashboard-view .cinema-hero{grid-template-columns:1fr!important}#dashboard-view .cinema-hero-metrics,#dashboard-view .cinema-hero-weather{grid-column:1!important;grid-row:auto!important;justify-self:start!important}}
+
+
+/* Tema global claro/escuro; não modifica dados, cores de status nem imagens */
+.colafix-theme-switch{position:fixed;right:18px;bottom:18px;z-index:2147483000;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:24px;border:1px solid #74869e;background:#172538;color:#fff;font:600 13px Arial,sans-serif;cursor:pointer;box-shadow:0 5px 20px #0005}
+.colafix-theme-switch:hover{filter:brightness(1.13)}
+html[data-colafix-theme="dark"]{color-scheme:dark;background:#101720!important;color:#e6edf5!important}
+html[data-colafix-theme="dark"] body,html[data-colafix-theme="dark"] main,html[data-colafix-theme="dark"] .main-content,html[data-colafix-theme="dark"] .content,html[data-colafix-theme="dark"] .workspace{background-color:#101720!important;color:#e6edf5!important}
+html[data-colafix-theme="dark"] :is(section,article,.panel,.card,.box,.modal,.modal-content,.dialog,.tab-content,.content-card,.detail-card,.summary-card,.item-card,.list-card,.table-scroll,.table-wrapper,.dashboard-panel,.mrp-card,.analysis-card){color:#e6edf5}
+html[data-colafix-theme="dark"] :is(.panel,.card,.box,.modal,.modal-content,.dialog,.tab-content,.content-card,.detail-card,.summary-card,.item-card,.list-card,.table-scroll,.table-wrapper,.dashboard-panel,.mrp-card,.analysis-card){background-color:#1b2635!important;border-color:#344256!important}
+html[data-colafix-theme="dark"] :is(table,thead,tbody,tr,td,th){background-color:#1b2635!important;border-color:#39475b!important;color:#e6edf5!important}
+html[data-colafix-theme="dark"] :is(thead th,th){background-color:#283548!important;color:#f0f4fa!important}
+html[data-colafix-theme="dark"] tbody tr:nth-child(even) td{background-color:#202e40!important}
+html[data-colafix-theme="dark"] tbody tr:hover td{background-color:#30425a!important}
+html[data-colafix-theme="dark"] :is(input,select,textarea){background-color:#142030!important;color:#f0f4fa!important;border-color:#455771!important}
+html[data-colafix-theme="dark"] :is(input,textarea)::placeholder{color:#9caabe!important}
+html[data-colafix-theme="dark"] :is(h1,h2,h3,h4,h5,h6,p,label,legend,dt,dd){color:inherit}
+html[data-colafix-theme="dark"] :is(.muted,.subtle,.hint,.description,small){color:#b6c4d6}
+html[data-colafix-theme="dark"] :is(.list-item,.result-item,.product-item,.mrp-item,.material-item,.item-row){background-color:#202c3b!important;border-color:#3c4b60!important;color:#e6edf5!important}
+html[data-colafix-theme="dark"] :is(.list-item,.result-item,.product-item,.mrp-item,.material-item,.item-row):hover{background-color:#2a3a4e!important}
+html[data-colafix-theme="dark"] :is(.tab,.tabs button,.secondary-button){background-color:#26354a;color:#e6edf5;border-color:#455771}
+html[data-colafix-theme="dark"] :is(.modal,.dialog,[role="dialog"]){background-color:#1b2635!important;color:#e6edf5!important}
+html[data-colafix-theme="dark"] [style*="background: white"],html[data-colafix-theme="dark"] [style*="background:#fff"],html[data-colafix-theme="dark"] [style*="background: #fff"]{background:#1b2635!important;color:#e6edf5!important}
+html[data-colafix-theme="dark"] .colafix-theme-switch{background:#e9eef5!important;color:#152235!important;border-color:#bac7d7!important}
+@media(max-width:700px){.colafix-theme-switch{right:10px;bottom:10px;padding:10px 12px;font-size:12px}}
