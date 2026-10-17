@@ -921,3 +921,51 @@ body:has(#dashboard-view:not([hidden])) .main-content,body:has(#dashboard-view:n
 #dashboard-view .cinema-tile{background-color:#24374a}
 #dashboard-view .tile-bag{background-color:#28384b}
 #dashboard-view .cinema-hero{background-image:linear-gradient(90deg,rgba(5,8,15,.96) 0%,rgba(5,8,15,.8) 35%,rgba(5,8,15,.1) 80%),url('https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1600&q=85')}
+
+
+/* Painel cinematográfico — composição baseada na referência fornecida */
+#dashboard-view .cinema-topbar{display:flex;align-items:center;gap:26px;background:#05070c;border-bottom:1px solid #273244;padding:13px 22px;margin:-12px -12px 0;min-height:50px;color:#e7edf8}
+#dashboard-view .cinema-topbar a{font-size:13px;text-decoration:none;color:#d3dbe9;padding:8px 2px;white-space:nowrap}
+#dashboard-view .cinema-topbar a.active{color:white;border-bottom:2px solid #f51c43}
+#dashboard-view .cinema-logo{font-size:23px;letter-spacing:-1px;color:#fff;margin-right:8px}
+#dashboard-view .cinema-logo span{color:#ff2045}
+#dashboard-view .cinema-topbar-user{margin-left:auto;font-size:12px;color:#dbe6f6}
+#dashboard-view .cinema-hero{min-height:235px;border-radius:0 0 16px 16px;margin:0 0 15px;padding:20px 28px;background-image:linear-gradient(90deg,rgba(3,5,10,.94) 0%,rgba(3,5,10,.66) 27%,rgba(3,5,10,.05) 55%,rgba(3,5,10,.6) 100%),url('https://images.unsplash.com/photo-1513828583688-c52646db42da?w=1800&q=90');background-position:center;background-size:cover;display:grid;grid-template-columns:minmax(270px,1fr) minmax(240px,340px);gap:12px}
+#dashboard-view .cinema-hero-copy{grid-row:1 / span 2;align-self:center}
+#dashboard-view .cinema-hero h2{font-size:22px;margin:8px 0}
+#dashboard-view .cinema-hero h2 strong{font-size:clamp(42px,4.4vw,68px)}
+#dashboard-view .cinema-hero-actions{grid-column:2;grid-row:1;align-self:start}
+#dashboard-view .cinema-hero-metrics{grid-column:2;grid-row:2;align-self:end}
+#dashboard-view .cinema-hero-metrics .dash-live{display:grid!important;grid-template-columns:1fr 1fr;gap:7px;margin:0!important}
+#dashboard-view .cinema-hero-metrics .dash-dollar-v3,#dashboard-view .cinema-hero-metrics .dash-diesel-v3{min-width:0;min-height:68px;padding:10px;display:flex;align-items:center;gap:9px}
+#dashboard-view .cinema-hero-metrics .dash-dollar-v3{grid-column:1/-1}
+#dashboard-view .cinema-hero-metrics .dash-diesel-v3{grid-column:1/-1}
+#dashboard-view .cinema-hero-metrics .dash-weather{display:none!important}
+#dashboard-view .cinema-hero-metrics .dollar-history,#dashboard-view .cinema-hero-metrics .dash-dollar-chart{display:none!important}
+#dashboard-view .cinema-hero-metrics .dash-dollar-info strong,#dashboard-view .cinema-hero-metrics .dash-diesel-v3 strong{font-size:18px}
+#dashboard-view .cinema-hero-metrics .dash-dollar-change{font-size:10px}
+#dashboard-view .cinema-areas{margin:10px 0}
+#dashboard-view .cinema-tiles{gap:10px}
+#dashboard-view .cinema-tile{min-height:125px;border-radius:8px}
+#dashboard-view .cinema-tile:first-child{border-color:#ff1d43;box-shadow:inset 0 -85px 70px -20px #02040a,0 0 0 1px #ff1d43}
+#dashboard-view .cinema-analytics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}
+#dashboard-view .cinema-chart-card{background:linear-gradient(160deg,#121d30,#080e19);border:1px solid #25334b;border-radius:9px;padding:12px;min-width:0;color:#e8effa}
+#dashboard-view .cinema-chart-card header{display:flex;justify-content:space-between;gap:5px;align-items:center;font-size:11px}
+#dashboard-view .cinema-chart-card header strong{color:#fff;font-size:13px;white-space:nowrap}
+#dashboard-view .cinema-chart-card header a{color:#7ebaff;text-decoration:none}
+#dashboard-view .cinema-chart{height:105px;margin:10px 0 5px;border-bottom:1px solid #26334a}
+#dashboard-view .cinema-chart svg{width:100%;height:100%;overflow:visible}
+#dashboard-view .cinema-chart-card>small{font-size:10px;color:#a6b4c8}
+#dashboard-view .cinema-chart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+#dashboard-view .cinema-chart-empty strong{font-size:13px}
+#dashboard-view .cinema-chart-empty small{color:#aab8ca;font-size:10px}
+#dashboard-view .cinema-forecast-days{display:flex;justify-content:space-around;gap:4px;margin-top:25px}
+#dashboard-view .cinema-forecast-days span{display:flex;align-items:center;flex-direction:column;gap:6px}
+#dashboard-view .cinema-forecast-days i{font-size:23px;font-style:normal}
+#dashboard-view .cinema-forecast-days b{font-size:11px;color:#b7c8e0}
+#dashboard-view .cinema-forecast-days strong{font-size:15px}
+#dashboard-view .dash-shortcuts{display:none!important}
+#dashboard-view .dash-top-kpis{margin:9px 0 12px}
+#dashboard-view .dash-grid{margin-top:10px}
+@media(max-width:1100px){#dashboard-view .cinema-analytics{grid-template-columns:repeat(2,minmax(0,1fr))}#dashboard-view .cinema-topbar{gap:12px;flex-wrap:wrap}#dashboard-view .cinema-hero{grid-template-columns:1fr 250px}}
+@media(max-width:650px){#dashboard-view .cinema-analytics{grid-template-columns:1fr}#dashboard-view .cinema-hero{grid-template-columns:1fr}#dashboard-view .cinema-hero-copy,#dashboard-view .cinema-hero-actions,#dashboard-view .cinema-hero-metrics{grid-column:1;grid-row:auto}#dashboard-view .cinema-topbar{gap:9px}#dashboard-view .cinema-topbar-user{display:none}}
