@@ -1113,3 +1113,15 @@ body:has(#dashboard-view:not([hidden])) .main-content,body:has(#dashboard-view:n
 #dashboard-view .cinema-hero-metrics .dash-live-market{min-height:94px!important}
 #dashboard-view .cinema-hero-weather{background:linear-gradient(150deg,rgba(10,22,38,.96),rgba(4,12,23,.98))!important}
 @media(max-width:700px){#dashboard-view .cinema-hero-metrics .dash-dollar-v3>.dash-dollar-chart{flex-basis:55px!important;max-width:55px!important}#dashboard-view .cinema-hero-metrics .dash-dollar-v3>.dash-dollar-info>strong{font-size:20px!important}}
+
+
+/* Cards compactos: apenas preços atuais, sem gráficos ou percentuais */
+#dashboard-view .cinema-hero{grid-template-columns:minmax(320px,1fr) minmax(285px,360px) 145px!important;grid-template-rows:42px auto!important;min-height:245px!important}
+#dashboard-view .cinema-hero-metrics{align-self:center!important}
+#dashboard-view .cinema-hero-metrics .dash-live{grid-template-rows:repeat(2,76px)!important;gap:8px!important;height:auto!important}
+#dashboard-view .cinema-hero-metrics .dash-live-market{height:76px!important;min-height:76px!important;max-height:76px!important;padding:10px 14px!important;gap:12px!important}
+#dashboard-view .cinema-hero-metrics .dash-dollar-chart,#dashboard-view .cinema-hero-metrics .dash-dollar-change,#dashboard-view .cinema-hero-metrics .dash-diesel-chart,#dashboard-view .cinema-hero-metrics .dash-diesel-change{display:none!important}
+#dashboard-view .cinema-hero-metrics .dash-dollar-v3>.dash-dollar-info>strong,#dashboard-view .cinema-hero-metrics .dash-diesel-v3>.dash-diesel-info>strong{font-size:23px!important}
+#dashboard-view .cinema-hero-weather{height:160px!important;align-self:center!important}
+@media(max-width:1100px){#dashboard-view .cinema-hero{grid-template-columns:minmax(0,1fr) minmax(285px,360px)!important}#dashboard-view .cinema-hero-weather{height:auto!important}}
+@media(max-width:700px){#dashboard-view .cinema-hero{grid-template-columns:minmax(0,1fr)!important}#dashboard-view .cinema-hero-weather{height:auto!important}}
