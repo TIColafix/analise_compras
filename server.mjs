@@ -234,6 +234,24 @@ createServer(async(req,res)=>{try{
  if(path==='/api/cement'&&req.method==='GET')return reply(res,200,await readLoads(root));
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
+ if(path==='/api/indirect-materials/parse-pdf'&&req.method==='POST'){
+  if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
+  const input=await body(req),kind=input.kind;
+  if(!['profile','stock'].includes(kind)||typeof input.content!=='string'||input.content.length>18000000)return reply(res,400,{error:'PDF inválido ou muito grande.'});
+  const bytes=Buffer.from(input.content,'base64');
+  if(bytes.subarray(0,5).toString()!=='%PDF-')return reply(res,400,{error:'O arquivo não é PDF.'});
+  const folder=await mkdtemp(join(tmpdir(),'indirect-pdf-')),target=join(folder,'report.pdf');
+  try{
+   await writeFile(target,bytes);
+   const p=spawn(python,[join(root,'scripts/import_indirect_pdf.py'),target,kind],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});
+   let output='',errors='';
+   p.stdout.on('data',d=>output+=d);p.stderr.on('data',d=>errors+=d);
+   const exitCode=await new Promise((resolve,reject)=>{p.on('error',reject);p.on('close',resolve)});
+   let result;try{result=JSON.parse(output)}catch{throw Error(errors||'Falha na leitura do PDF.')}
+   if(exitCode!==0||result.error)throw Error(result.error||errors||'Falha ao interpretar PDF.');
+   return reply(res,200,result);
+  }finally{await rm(folder,{recursive:true,force:true})}
+ }
  if(path==='/api/indirect-materials'&&req.method==='GET')return reply(res,200,{items:await readDocument('indirect-materials',[]),history:await readDocument('indirect-materials-history',[])});
  if(path==='/api/indirect-materials'&&req.method==='POST'){
   if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
