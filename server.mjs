@@ -11,7 +11,7 @@ import {readDocument,writeDocument,appendAudit,readAudit} from './database.mjs';
 const root=fileURLToPath(new URL('.',import.meta.url));
 const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
 const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'python');
-const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/bulk-prices.js':'bulk-prices.js','/areia-amigos.js':'areia-amigos.js','/diesel.js':'diesel.js','/deadlines.js':'deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js','/migration':'migration.html','/migration.html':'migration.html'};
+const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/bulk-prices.js':'bulk-prices.js','/areia-amigos.js':'areia-amigos.js','/diesel.js':'diesel.js','/deadlines.js':'deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js','/indirect-materials.js':'indirect-materials.js','/migration':'migration.html','/migration.html':'migration.html'};
 const types={html:'text/html; charset=utf-8',css:'text/css',js:'text/javascript',svg:'image/svg+xml',json:'application/json; charset=utf-8'};
 const pending=new Map();const sessions=new Map();let busy=false;
 async function pythonReady(){return new Promise(resolve=>{const p=spawn(python,['-c','import sys,pypdf; print(sys.version.split()[0],pypdf.__version__)'],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',e=>resolve({ok:false,error:e.message}));p.on('close',c=>resolve(c===0?{ok:true,detail:out.trim()}:{ok:false,error:err.trim()||'Python indisponível'}));});}
@@ -234,6 +234,15 @@ createServer(async(req,res)=>{try{
  if(path==='/api/cement'&&req.method==='GET')return reply(res,200,await readLoads(root));
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
+ if(path==='/api/indirect-materials'&&req.method==='GET')return reply(res,200,{items:await readDocument('indirect-materials',[])});
+ if(path==='/api/indirect-materials'&&req.method==='POST'){
+  if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
+  const payload=await body(req),items=payload.items;
+  if(!Array.isArray(items)||items.length>10000||items.some(x=>!x||typeof x.id!=='string'||x.id.length>200||typeof x.code!=='string'||x.code.length>80))return reply(res,400,{error:'Dados inválidos.'});
+  await writeDocument('indirect-materials',items);
+  await audit(req,'atualizar','indirect-materials',{total:items.length});
+  return reply(res,200,{ok:true,count:items.length});
+ }
  if(path==='/api/maintenance'&&req.method==='GET')return reply(res,200,await readMaintenance(root));
  if(path==='/api/audit'&&req.method==='GET'){if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode consultar a auditoria.'});return reply(res,200,{ok:true,entries:await readAudit(300)});}
  if(path.startsWith('/api/maintenance/')&&req.method==='DELETE'){
