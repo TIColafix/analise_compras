@@ -88,14 +88,14 @@ importForm.onsubmit=async e=>{e.preventDefault();commit.hidden=true;pending=null
  for(const p of parsed){for(const x of p.items){const old=byCode.get(x.code)||{code:x.code};byCode.set(x.code,{...old,...x})}}
  const updated=batch.map(x=>({...x,...(byCode.get(x.code)||{}),id:x.id,code:x.code,order:x.order,quantity:x.quantity,delivery:x.delivery,description:x.description,category:x.category}));
  const notMatched=[...new Set(batch.map(x=>x.code))].filter(code=>!byCode.has(code));
- pending={batch:updated,details:byCode,files:[...files,...profiles,...stocks].map(x=>x.name),date:[...dates][0]||new Date().toISOString().slice(0,10)};
+ pending={batch:updated,profileCodes:new Set(parsed.filter(p=>p.kind==='profile').flatMap(p=>p.items.map(x=>x.code))),details:byCode,files:[...files,...profiles,...stocks].map(x=>x.name),date:[...dates][0]||new Date().toISOString().slice(0,10)};
  result.textContent=batch.length+' pedidos em '+files.length+' CSV(s); '+profiles.length+' perfil(is), '+stocks.length+' saldo(s); '+byCode.size+' materiais lidos dos PDFs. '+(notMatched.length?'Sem correspondência para: '+notMatched.join(', ')+'. ':'')+'Clique em Salvar lote para confirmar.';
  commit.hidden=false;
  }catch(err){result.textContent='Erro: '+err.message;commit.hidden=true}finally{check.disabled=false}};
 commit.onclick=async()=>{if(!pending)return;commit.disabled=true;try{
  const map=new Map(rows.map(x=>[x.id,x]));
  for(const item of pending.batch){const old=map.get(item.id)||{};map.set(item.id,{...old,...item,status:old.status||item.status,delivered:old.delivered||0})}
- for(const [code,details] of pending.details){if(!/^NE\d{4}$/.test(code))continue;if(![...map.values()].some(x=>x.code===code)){const id='PROFILE|'+code;map.set(id,{id,code,order:'',description:details.description,unit:details.unit,quantity:0,delivery:'',status:'Pendente',category:classify(details.description,/CAMISETA|CALCA|BOTINA|RESPIRADOR/i.test(details.description)?'epis':'other'),...details})}else for(const item of map.values())if(item.code===code)Object.assign(item,details)}
+ for(const [code,details] of pending.details){if(!/^NE\d{4}$/.test(code))continue;if(![...map.values()].some(x=>x.code===code)&&pending.profileCodes.has(code)){const id='PROFILE|'+code;map.set(id,{id,code,order:'',description:details.description,unit:details.unit,quantity:0,delivery:'',status:'Sem pedido',category:classify(details.description,/CAMISETA|CALCA|BOTINA|RESPIRADOR/i.test(details.description)?'epis':'other'),...details})}else for(const item of map.values())if(item.code===code)Object.assign(item,details)}
  const previous=rows;rows=[...map.values()];const h={date:br(pending.date),count:pending.batch.length,files:pending.files,profiles:[...pending.details].length};
  history=[h,...history];try{await save()}catch(e){rows=previous;history.shift();throw e}
  pending=null;render();const output=root.querySelector('#ind-import-result');if(output)output.textContent='Lote importado com sucesso: CSVs e PDFs processados.';
