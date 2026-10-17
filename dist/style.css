@@ -852,3 +852,17 @@
 #indiretos-view .ind-stock-toolbar input,#indiretos-view .ind-stock-toolbar select{width:100%;min-height:48px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:10px 14px;font:inherit}
 @media(max-width:1000px){#indiretos-view .ind-stock-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}#indiretos-view .ind-stock-toolbar label:nth-child(5){grid-column:auto}}
 @media(max-width:600px){#indiretos-view .ind-stock-toolbar{grid-template-columns:1fr}}
+
+
+/* Grupos de navegação MP e Insumos/EPIs */
+.sidebar .nav-mp-group{display:block}
+.sidebar .nav-mp-parent{display:flex!important;align-items:center!important;gap:7px!important;flex-wrap:nowrap!important;white-space:nowrap!important}
+.sidebar .nav-mp-parent>span:nth-child(2){flex:1 1 auto;min-width:0;font-size:13px;white-space:nowrap}
+.sidebar .nav-mp-parent>span:first-child{flex:none;font-size:17px}
+.sidebar .nav-mp-parent .nav-indirect-chevron{font-size:10px;flex:none}
+.sidebar .nav-mp-parent[aria-expanded="true"] .nav-indirect-chevron{transform:rotate(180deg)}
+.sidebar .nav-mp-parent.indirect-active{background:#343e4b}
+.sidebar .nav-mp-children{margin:0 5px 7px 23px;padding-left:10px;border-left:2px solid #465064}
+.sidebar .nav-mp-children[hidden]{display:none!important}
+.sidebar .nav-mp-children a{display:flex;align-items:center;gap:8px;font-size:13px;padding:10px 9px;border-radius:7px;margin:2px 0}
+.sidebar .nav-mp-children a[aria-current="page"]{background:#394452;color:#fff;border-left:3px solid #f43f4f}
