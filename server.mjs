@@ -234,12 +234,13 @@ createServer(async(req,res)=>{try{
  if(path==='/api/cement'&&req.method==='GET')return reply(res,200,await readLoads(root));
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
- if(path==='/api/indirect-materials'&&req.method==='GET')return reply(res,200,{items:await readDocument('indirect-materials',[])});
+ if(path==='/api/indirect-materials'&&req.method==='GET')return reply(res,200,{items:await readDocument('indirect-materials',[]),history:await readDocument('indirect-materials-history',[])});
  if(path==='/api/indirect-materials'&&req.method==='POST'){
   if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
   const payload=await body(req),items=payload.items;
   if(!Array.isArray(items)||items.length>10000||items.some(x=>!x||typeof x.id!=='string'||x.id.length>200||typeof x.code!=='string'||x.code.length>80))return reply(res,400,{error:'Dados inválidos.'});
   await writeDocument('indirect-materials',items);
+  if(payload.history!==undefined){if(!Array.isArray(payload.history)||payload.history.length>1000)return reply(res,400,{error:'Histórico inválido.'});await writeDocument('indirect-materials-history',payload.history);}
   await audit(req,'atualizar','indirect-materials',{total:items.length});
   return reply(res,200,{ok:true,count:items.length});
  }
