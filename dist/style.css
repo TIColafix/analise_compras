@@ -1420,3 +1420,30 @@ html[data-colafix-theme="dark"] #granel-view .price-block th{background:#30445f!
 html[data-colafix-theme="dark"] #granel-view .price-block td{background:#23354d!important}
 html[data-colafix-theme="dark"] #granel-view .price-block .final-price{background:#194d35!important;color:#e0ffec!important}
 html[data-colafix-theme="dark"] #granel-view .price-block :is(input,select){background:#132237!important;color:#f4f8ff!important;border-color:#536d8b!important}
+
+
+/* CORRECAO DIRETA: componentes reais da agenda e dos precos de cimento, tema escuro */
+html[data-colafix-theme="dark"] #granel-view .cement-week-nav button,
+html[data-colafix-theme="dark"] #granel-view .cement-add-day{background:#20344c!important;color:#f5f9ff!important;-webkit-text-fill-color:#f5f9ff!important;border:1px solid #67809e!important;font-weight:700!important;opacity:1!important}
+html[data-colafix-theme="dark"] #granel-view .cement-week-nav button:hover,
+html[data-colafix-theme="dark"] #granel-view .cement-add-day:hover{background:#315274!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-colafix-theme="dark"] #granel-view .cement-week-nav button:disabled,
+html[data-colafix-theme="dark"] #granel-view .cement-add-day:disabled{opacity:.55!important}
+html[data-colafix-theme="dark"] #granel-view .cement-load-card button:not(.cement-add-day){color:#f2f8ff!important}
+html[data-colafix-theme="dark"] #granel-view .cement-load-card button[title*="WhatsApp"],
+html[data-colafix-theme="dark"] #granel-view .cement-load-card .cement-whatsapp{background:#087e48!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-panel{background:#213149!important;border-color:#4e6784!important;color:#edf5ff!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-panel :is(h2,h3,p,small,label,span){color:#e6f0ff!important;-webkit-text-fill-color:#e6f0ff!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-price-card{background:#243750!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-price-current strong{color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-price-change strong{color:#e8f2ff!important;-webkit-text-fill-color:#e8f2ff!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-price-change.down strong{color:#5de2a4!important;-webkit-text-fill-color:#5de2a4!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-price-change.up strong{color:#ff9399!important;-webkit-text-fill-color:#ff9399!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-panel :is(table,th,td){color:#f0f6ff!important;-webkit-text-fill-color:#f0f6ff!important;border-color:#48617e!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-panel th{background:#30445f!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-panel td{background:#213149!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-form :is(input,select){background:#122238!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #6a85a5!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-form input::placeholder{color:#bdcfe5!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-form button{background:#1477e3!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #3289ee!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-spark-empty{color:#b8cce5!important;-webkit-text-fill-color:#b8cce5!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-inter-logo span{color:#ff6b72!important;-webkit-text-fill-color:#ff6b72!important}
