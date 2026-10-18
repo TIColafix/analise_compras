@@ -1243,3 +1243,32 @@ html[data-colafix-theme="dark"] :is(.stock,.coverage,.parameter-grid) :is(small,
 html[data-colafix-theme="dark"] :is(.stock,.coverage,.parameter-grid) strong{color:#edf4ff!important}
 html[data-colafix-theme="dark"] :is(.stock,.coverage,.parameter-grid) .negative{color:#ff858b!important}
 html[data-colafix-theme="dark"] .colafix-theme-switch{z-index:999999!important}
+
+
+/* Quadro de Compras: tema escuro integral e legível */
+html[data-colafix-theme="dark"] .maintenance-board{background:#152131!important;border:1px solid #35465d!important}
+html[data-colafix-theme="dark"] .maintenance-lane{background:#1c293a!important;border-color:#3b4d64!important}
+html[data-colafix-theme="dark"] .maintenance-lane>header{background:#28394e!important;border-color:#465973!important;color:#f2f6ff!important}
+html[data-colafix-theme="dark"] .maintenance-lane:nth-child(2)>header{background:#514225!important}
+html[data-colafix-theme="dark"] .maintenance-lane:nth-child(3)>header{background:#274764!important}
+html[data-colafix-theme="dark"] .maintenance-lane:nth-child(4)>header{background:#42345d!important}
+html[data-colafix-theme="dark"] .maintenance-lane:nth-child(5)>header{background:#543b2b!important}
+html[data-colafix-theme="dark"] .maintenance-lane:nth-child(6)>header{background:#285044!important}
+html[data-colafix-theme="dark"] .maintenance-lane>header :is(b,strong,small,span:not(:last-child)){color:#f4f7ff!important}
+html[data-colafix-theme="dark"] .maintenance-card{background:#253449!important;color:#f0f5fc!important;border-color:#40546e!important;border-left-color:#ffb300!important}
+html[data-colafix-theme="dark"] .maintenance-card.urgent,html[data-colafix-theme="dark"] .maintenance-card.late{border-left-color:#ff5263!important}
+html[data-colafix-theme="dark"] .maintenance-card :is(h4,p,small,span,strong){color:#e7effb!important}
+html[data-colafix-theme="dark"] .maintenance-card h4,html[data-colafix-theme="dark"] .mn-quote-summary,html[data-colafix-theme="dark"] .mn-company-info{background:#32445c!important;color:#f0f6ff!important}
+html[data-colafix-theme="dark"] .mn-card-info p b{color:#fff!important}
+html[data-colafix-theme="dark"] .mn-card-info p.late,html[data-colafix-theme="dark"] .mn-card-info p.soon{color:#ff7885!important}
+html[data-colafix-theme="dark"] .mn-quote-summary strong{color:#65edab!important}
+html[data-colafix-theme="dark"] .mn-status{background:#394b62!important;color:#edf4ff!important}
+html[data-colafix-theme="dark"] .maintenance-empty{color:#aebed2!important}
+html[data-colafix-theme="dark"] .maintenance-kpis>div{background:#253449!important;border-color:#455873!important;color:#f1f6ff!important}
+html[data-colafix-theme="dark"] .maintenance-kpis :is(strong,span){color:#e8f0fb!important}
+html[data-colafix-theme="dark"] .mn-search{background:#1b2a3d!important;border-color:#4a5d76!important}
+html[data-colafix-theme="dark"] .mn-search input{background:transparent!important;color:#f4f7fc!important}
+html[data-colafix-theme="dark"] .maintenance-toolbar :is(input,select){background:#172438!important;color:#f0f5fd!important;border-color:#4a5c73!important}
+html[data-colafix-theme="dark"] .mn-analysis{background:#1e4033!important;color:#f0f8f3!important}
+html[data-colafix-theme="dark"] .mn-analysis.warn{background:#493b21!important}
+html[data-colafix-theme="dark"] .mn-analysis-score{background:#253a33!important;color:#f3f8f4!important}
