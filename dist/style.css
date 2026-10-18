@@ -1639,3 +1639,19 @@ font-weight:600!important;text-shadow:none!important;opacity:1!important;
 #indiretos-view .ind-mrp-plan th,#indiretos-view .ind-mrp-plan td{padding:11px 12px;border-bottom:1px solid #455e7b;text-align:left}
 #indiretos-view .ind-mrp-plan summary{cursor:pointer}
 @media(max-width:800px){#indiretos-view .ind-mrp-plan .ind-mrp-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Cores dos status das cargas em ambos os temas: granel, ensacado e diesel. */
+html[data-colafix-theme="dark"] #granel-view select.load-status.scheduled,
+html[data-colafix-theme="dark"] #ensacado-view select.load-status.scheduled,
+html[data-colafix-theme="dark"] #diesel-view select.load-status.scheduled{background:#fff1cc!important;color:#765000!important;border:1px solid #e7c76b!important}
+html[data-colafix-theme="dark"] #granel-view select.load-status.loaded,
+html[data-colafix-theme="dark"] #ensacado-view select.load-status.loaded,
+html[data-colafix-theme="dark"] #diesel-view select.load-status.loaded{background:#d9eaff!important;color:#174f94!important;border:1px solid #80b1ed!important}
+html[data-colafix-theme="dark"] #granel-view select.load-status.delivered,
+html[data-colafix-theme="dark"] #ensacado-view select.load-status.delivered,
+html[data-colafix-theme="dark"] #diesel-view select.load-status.delivered{background:#dcf7e5!important;color:#176c39!important;border:1px solid #79c998!important}
+html[data-colafix-theme="dark"] #granel-view select.load-status.cancelled,
+html[data-colafix-theme="dark"] #ensacado-view select.load-status.cancelled,
+html[data-colafix-theme="dark"] #diesel-view select.load-status.cancelled{background:#ffe1e4!important;color:#a21d35!important;border:1px solid #ee98a5!important}
+html[data-colafix-theme="dark"] :is(#granel-view,#ensacado-view,#diesel-view) select.load-status option{background:#17263a!important;color:#f5f8ff!important}
