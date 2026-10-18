@@ -48,7 +48,7 @@ function render(){if(!root)return;syncIndirectNav();const f=filtered(),late=rows
 const mrpSuppliers=[...new Set(rows.map(x=>x.supplier).filter(Boolean))].sort();
 const mrpQuery=root.dataset.mrpQuery||'',mrpSupplier=root.dataset.mrpSupplier||'',mrpDisplay=root.dataset.mrpDisplay||'all';
 const mrpCandidates=tab==='MRP'?f.filter(x=>(!mrpSupplier||x.supplier===mrpSupplier)&&(!mrpQuery||[x.code,x.description,x.order].join(' ').toLowerCase().includes(mrpQuery.toLowerCase()))&&(mrpDisplay==='all'||(mrpDisplay==='review'&&(x.stock==null||x.safety==null))||(mrpDisplay==='late'&&status(x)==='Atrasado')||(mrpDisplay==='pending'&&x.status!=='Recebido'&&x.status!=='Cancelado'))):f;
-const items=[...new Map((tab==='Estoque'?rows:mrpCandidates).filter(x=>x.code).map(x=>[x.code,x])).values()];if(!items.some(x=>x.code===selectedCode))selectedCode=items[0]?.code||'';
+const materialMap=new Map();for(const x of (tab==='Estoque'?rows:mrpCandidates)){if(!x.code)continue;const old=materialMap.get(x.code)||{};const combined={...old,...x};for(const key of ['stock','safety','consumption','lead','initial','minLot','previousStock'])if((x[key]===null||x[key]===undefined||x[key]==='')&&old[key]!==null&&old[key]!==undefined)combined[key]=old[key];materialMap.set(x.code,combined)}const items=[...materialMap.values()];if(!items.some(x=>x.code===selectedCode))selectedCode=items[0]?.code||'';
 const chosen=f.filter(x=>x.code===selectedCode),item=chosen[0],stockStatus=x=>x.stock==null||x.safety==null?'Revisar dados':x.consumption==null||x.consumption===0?'Sem consumo':x.stock<x.safety?'Crítico':x.lead!=null&&x.stock<x.safety+x.consumption/30*x.lead?'Atenção':'Ok';
 const stockSuppliers=[...new Set(rows.map(x=>x.supplier).filter(Boolean))].sort();
 const stockSupplier=root.dataset.stockSupplier||'',stockRupture=root.dataset.stockRupture||'',stockVariation=root.dataset.stockVariation||'';
@@ -87,7 +87,7 @@ importForm.onsubmit=async e=>{e.preventDefault();commit.hidden=true;pending=null
  for(const p of parsed)if(p.date)dates.add(p.date);
  if(dates.size>1)throw Error('Os PDFs possuem datas de relatório diferentes. Selecione relatórios do mesmo dia.');
  const byCode=new Map();
- for(const p of parsed){for(const x of p.items){const old=byCode.get(x.code)||{code:x.code};byCode.set(x.code,{...old,...x})}}
+ for(const p of parsed){for(const x of p.items){const old=byCode.get(x.code)||{code:x.code};byCode.set(x.code,{...old,...Object.fromEntries(Object.entries(x).filter(([k,v])=>v!==null&&v!==undefined&&v!==''))})}}
  const updated=batch.map(x=>({...x,...(byCode.get(x.code)||{}),id:x.id,code:x.code,order:x.order,quantity:x.quantity,delivery:x.delivery,description:x.description,category:x.category}));
  const notMatched=[...new Set(batch.map(x=>x.code))].filter(code=>!byCode.has(code));
  pending={batch:updated,profileCodes:new Set(parsed.filter(p=>p.kind==='profile').flatMap(p=>p.items.map(x=>x.code))),details:byCode,files:[...files,...profiles,...stocks].map(x=>x.name),date:[...dates][0]||new Date().toISOString().slice(0,10)};
@@ -97,7 +97,7 @@ importForm.onsubmit=async e=>{e.preventDefault();commit.hidden=true;pending=null
 commit.onclick=async()=>{if(!pending)return;commit.disabled=true;try{
  const map=new Map(rows.map(x=>[x.id,x]));
  for(const item of pending.batch){const old=map.get(item.id)||{};map.set(item.id,{...old,...item,status:old.status||item.status,delivered:old.delivered||0})}
- for(const [code,details] of pending.details){if(!/^NE\d{4}$/.test(code))continue;if(![...map.values()].some(x=>x.code===code)){const id='PROFILE|'+code;map.set(id,{id,code,order:'',description:details.description,unit:details.unit,quantity:0,delivery:'',status:'Sem pedido',category:classify(details.description,/CAMISETA|CALCA|BOTINA|RESPIRADOR/i.test(details.description)?'epis':'other'),...details})}else for(const item of map.values())if(item.code===code)Object.assign(item,details)}
+ for(const [code,details] of pending.details){if(!/^NE\d{4}$/.test(code))continue;if(![...map.values()].some(x=>x.code===code)){const id='PROFILE|'+code;map.set(id,{id,code,order:'',description:details.description,unit:details.unit,quantity:0,delivery:'',status:'Sem pedido',category:classify(details.description,/CAMISETA|CALCA|BOTINA|RESPIRADOR/i.test(details.description)?'epis':'other'),...details})}else for(const item of map.values())if(item.code===code)Object.assign(item,Object.fromEntries(Object.entries(details).filter(([k,v])=>v!==null&&v!==undefined&&v!=='')))}
  const previous=rows;rows=[...map.values()];const h={date:br(pending.date),count:pending.batch.length,files:pending.files,profiles:[...pending.details].length};
  history=[h,...history];try{await save()}catch(e){rows=previous;history.shift();throw e}
  pending=null;render();const output=root.querySelector('#ind-import-result');if(output)output.textContent='Lote importado com sucesso: CSVs e PDFs processados.';
