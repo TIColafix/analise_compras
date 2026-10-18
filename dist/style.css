@@ -1305,3 +1305,24 @@ html[data-colafix-theme="dark"] .report-filter-grid>label:nth-child(3) :is(.repo
 html[data-colafix-theme="dark"] .report-filter-grid>div:nth-child(3) :is(.report-multi-menu,[role="listbox"],.dropdown-menu) :is(label,span,div,li){color:#f4f8ff!important;-webkit-text-fill-color:#f4f8ff!important}
 html[data-colafix-theme="dark"] .report-filter-grid>label:nth-child(3) :is(.report-multi-menu,[role="listbox"],.dropdown-menu) :is(label,li):hover,
 html[data-colafix-theme="dark"] .report-filter-grid>div:nth-child(3) :is(.report-multi-menu,[role="listbox"],.dropdown-menu) :is(label,li):hover{background-color:#344a65!important}
+
+
+/* Cadastro de pedido comprado: contraste completo no tema escuro */
+html[data-colafix-theme="dark"] .deadline-purchase-entry{background:#1c293a!important;color:#eaf2fd!important;border-color:#43546b!important}
+html[data-colafix-theme="dark"] .deadline-purchase-entry details>summary{background:#2b3d54!important;color:#f3f7ff!important;padding:10px 14px!important;border:1px solid #475b75!important;border-radius:6px!important}
+html[data-colafix-theme="dark"] .deadline-purchase-entry form{background:#1c293a!important;color:#eaf2fd!important}
+html[data-colafix-theme="dark"] .deadline-purchase-entry :is(label,strong,small,p,span){color:#e5eefb!important}
+html[data-colafix-theme="dark"] .deadline-purchase-common input,
+html[data-colafix-theme="dark"] .deadline-purchase-item input{background:#142237!important;color:#f6f9ff!important;-webkit-text-fill-color:#f6f9ff!important;border:1px solid #526781!important}
+html[data-colafix-theme="dark"] .deadline-purchase-items{background:#24354a!important;color:#f0f5fd!important;border:1px solid #50637d!important}
+html[data-colafix-theme="dark"] .deadline-purchase-items>strong{color:#fff!important}
+html[data-colafix-theme="dark"] .deadline-purchase-items>small{color:#b9cce2!important}
+html[data-colafix-theme="dark"] .deadline-purchase-entry :is(button,input[type="file"]){color:#f4f8ff!important}
+html[data-colafix-theme="dark"] .deadline-purchase-entry button:not(.primary){background:#30435c!important;color:#f4f8ff!important;border:1px solid #526781!important;border-radius:5px}
+html[data-colafix-theme="dark"] .deadline-purchase-entry button.primary{background:#1269d3!important;color:#fff!important}
+html[data-colafix-theme="dark"] .deadline-purchase-entry :is(.import-panel,[class*="pdf-import"]){background:#24354a!important;color:#f0f5fd!important;border-color:#526781!important}
+html[data-colafix-theme="dark"] .deadline-purchase-entry input[type="file"]::file-selector-button{background:#344962!important;color:#fff!important;border:1px solid #657b97!important;border-radius:4px;padding:7px 10px;cursor:pointer}
+/* Filtro MRP: botão Limpar material */
+html[data-colafix-theme="dark"] #mrp-clear-item{background:#293d55!important;color:#f3f8ff!important;-webkit-text-fill-color:#f3f8ff!important;border:1px solid #5b708d!important;border-radius:6px!important;min-height:42px!important;padding:10px 16px!important;white-space:nowrap!important}
+html[data-colafix-theme="dark"] #mrp-clear-item:hover{background:#395472!important}
+html[data-colafix-theme="dark"] #mrp-view>.filters .count{color:#bacbe1!important}
