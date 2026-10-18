@@ -1326,3 +1326,11 @@ html[data-colafix-theme="dark"] .deadline-purchase-entry input[type="file"]::fil
 html[data-colafix-theme="dark"] #mrp-clear-item{background:#293d55!important;color:#f3f8ff!important;-webkit-text-fill-color:#f3f8ff!important;border:1px solid #5b708d!important;border-radius:6px!important;min-height:42px!important;padding:10px 16px!important;white-space:nowrap!important}
 html[data-colafix-theme="dark"] #mrp-clear-item:hover{background:#395472!important}
 html[data-colafix-theme="dark"] #mrp-view>.filters .count{color:#bacbe1!important}
+
+
+/* Filtro Status dos relatórios de prazos: componente real deadline-multi */
+html[data-colafix-theme="dark"] .deadline-multi>button{background:#142236!important;color:#f5f8ff!important;-webkit-text-fill-color:#f5f8ff!important;border:1px solid #526781!important}
+html[data-colafix-theme="dark"] .deadline-multi-options{background:#1d2d42!important;color:#f5f8ff!important;border:1px solid #526781!important;box-shadow:0 12px 24px #0008!important}
+html[data-colafix-theme="dark"] .deadline-multi-options label{background:transparent!important;color:#f5f8ff!important;-webkit-text-fill-color:#f5f8ff!important}
+html[data-colafix-theme="dark"] .deadline-multi-options label:hover{background:#344c69!important}
+html[data-colafix-theme="dark"] .deadline-multi-options input[type="checkbox"]{accent-color:#3b8dff!important}
