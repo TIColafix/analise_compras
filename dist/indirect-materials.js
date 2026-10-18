@@ -95,7 +95,7 @@ importForm.onsubmit=async e=>{e.preventDefault();commit.hidden=true;pending=null
 commit.onclick=async()=>{if(!pending)return;commit.disabled=true;try{
  const map=new Map(rows.map(x=>[x.id,x]));
  for(const item of pending.batch){const old=map.get(item.id)||{};map.set(item.id,{...old,...item,status:old.status||item.status,delivered:old.delivered||0})}
- for(const [code,details] of pending.details){if(!/^NE\d{4}$/.test(code))continue;if(![...map.values()].some(x=>x.code===code)&&pending.profileCodes.has(code)){const id='PROFILE|'+code;map.set(id,{id,code,order:'',description:details.description,unit:details.unit,quantity:0,delivery:'',status:'Sem pedido',category:classify(details.description,/CAMISETA|CALCA|BOTINA|RESPIRADOR/i.test(details.description)?'epis':'other'),...details})}else for(const item of map.values())if(item.code===code)Object.assign(item,details)}
+ for(const [code,details] of pending.details){if(!/^NE\d{4}$/.test(code))continue;if(![...map.values()].some(x=>x.code===code)){const id='PROFILE|'+code;map.set(id,{id,code,order:'',description:details.description,unit:details.unit,quantity:0,delivery:'',status:'Sem pedido',category:classify(details.description,/CAMISETA|CALCA|BOTINA|RESPIRADOR/i.test(details.description)?'epis':'other'),...details})}else for(const item of map.values())if(item.code===code)Object.assign(item,details)}
  const previous=rows;rows=[...map.values()];const h={date:br(pending.date),count:pending.batch.length,files:pending.files,profiles:[...pending.details].length};
  history=[h,...history];try{await save()}catch(e){rows=previous;history.shift();throw e}
  pending=null;render();const output=root.querySelector('#ind-import-result');if(output)output.textContent='Lote importado com sucesso: CSVs e PDFs processados.';
