@@ -1374,3 +1374,24 @@ html[data-colafix-theme="dark"] #areiaamigos-view .aa-report-kpi:not(.aa-kpi-blu
 #prazos-view .deadline-multi:has(.deadline-multi-options:not([hidden])){z-index:999!important}
 #prazos-view .deadline-multi-options:not([hidden]){display:block!important;position:absolute!important;top:calc(100% + 3px)!important;left:0!important;right:auto!important;width:max(100%,240px)!important;max-height:min(360px,65vh)!important;overflow-y:auto!important;overscroll-behavior:contain!important;z-index:1000!important}
 #prazos-view .deadline-multi-options label{display:flex!important;align-items:center!important;gap:9px!important;min-height:34px!important;white-space:nowrap!important}
+
+
+/* Cimento ensacado: formulários, itens de carga e comparativo legíveis no modo escuro */
+html[data-colafix-theme="dark"] #ensacado-view :is(.bag-items-editor,.price-block,.price-kpis>div){background:#213149!important;border-color:#4a607a!important;color:#edf4ff!important}
+html[data-colafix-theme="dark"] #ensacado-view .bag-items-editor :is(strong,small,label,span,p){color:#e3edfb!important}
+html[data-colafix-theme="dark"] #ensacado-view .bag-items-editor :is(input,select){background:#132237!important;color:#f4f8ff!important;border:1px solid #526b89!important;-webkit-text-fill-color:#f4f8ff!important}
+html[data-colafix-theme="dark"] #ensacado-view .bag-items-editor button{background:#304764!important;color:#f5f9ff!important;border:1px solid #5c7391!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-kpis small{color:#b9cde7!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-kpis strong{color:#f4f8ff!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-kpis>div:first-child strong{color:#57e6a0!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-kpis>div:nth-child(2) strong{color:#82baff!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-kpis>div:nth-child(3) strong{color:#ff8d95!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block h3{color:#152c42!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block:not(.current):not(.freight):not(.client) h3{background:#30455f!important;color:#f4f8ff!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block :is(th,td){color:#edf4ff!important;border-color:#455c76!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block th{background:#2b3e57!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block td{background:#213149!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block .final-price{background:#194d35!important;color:#d8ffe8!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block .price-edit-row td{background:#2b3c51!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block .price-cell-input{background:#142237!important;color:#f5f9ff!important;-webkit-text-fill-color:#f5f9ff!important;border-color:#6587ad!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-actions button{background:#304764!important;color:#fff!important;border-color:#597392!important}
