@@ -18,12 +18,12 @@ function status(x){return x.status==='Recebido'?'Recebido':x.status==='Cancelado
 
 function deadlineView(){
  // Relatórios CSV do ERP indicam necessidades, não compras confirmadas.
- const purchases=purchases.filter(x=>x.source==='manual-purchase');
+ const purchases=rows.filter(x=>x.source==='manual-purchase');
  const statuses=['Aguardando entrega','Parcial','Entregue','Cancelado','Atrasado'];
  const state=x=>x.status==='Recebido'?'Entregue':x.status==='Cancelado'?'Cancelado':num(x.delivered)>0?'Parcial':status(x)==='Atrasado'?'Atrasado':'Aguardando entrega';
  const now=today(),week=new Date(now+'T12:00:00'),next=new Date(week);next.setDate(next.getDate()+7);const horizon=next.toISOString().slice(0,10);
  const count=k=>purchases.filter(x=>state(x)===k).length;
- const suppliers=[...new Set(rows.map(x=>x.supplier||'').filter(Boolean))].sort();
+ const suppliers=[...new Set(purchases.map(x=>x.supplier||'').filter(Boolean))].sort();
  const options=items=>items.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');
  const sel=(attr,values,all='Todos')=>'<select '+attr+'><option value="">'+all+'</option>'+options(values)+'</select>';
  const start=root.dataset.from||'',end=root.dataset.to||'',supplier=root.dataset.indSupplier||'',st=root.dataset.indStatus||'',q=root.dataset.indQuery||'';
