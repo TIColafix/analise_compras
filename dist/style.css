@@ -1210,3 +1210,36 @@ html[data-colafix-theme="dark"] .cement-week,html[data-colafix-theme="dark"] .ce
 html[data-colafix-theme="dark"] .cement-day-empty{color:#b9c8da!important}
 html[data-colafix-theme="dark"] .cement-load-card .load-status{color:#f4f7fc!important}
 html[data-colafix-theme="dark"] .cement-load-card :is(input,select,textarea){background:#142033!important;color:#f5f8ff!important}
+
+
+/* Tema escuro: contraste consistente nas telas de Estoque, Compras, Cotações, Areia e Administração */
+html[data-colafix-theme="dark"] .panel{background:#1c2838!important;color:#e9f1fb!important;border-color:#3c4b60!important}
+html[data-colafix-theme="dark"] .panel h3,html[data-colafix-theme="dark"] .panel h4,html[data-colafix-theme="dark"] .report-box h3,html[data-colafix-theme="dark"] .deadline-report h3{background:#2b3b50!important;color:#f6f9ff!important;border-color:#45566d!important}
+html[data-colafix-theme="dark"] .panel h3 small,html[data-colafix-theme="dark"] .panel h4 small{color:#b9c9df!important}
+html[data-colafix-theme="dark"] .panel :is(.section-title,.section-heading){background:#2b3b50!important;color:#f6f9ff!important}
+html[data-colafix-theme="dark"] .panel :is(.section-title,.section-heading) *{color:#f6f9ff!important}
+html[data-colafix-theme="dark"] .panel :is(td,th) :is(strong,small,span,p){color:#e3edfa}
+html[data-colafix-theme="dark"] .panel :is(td,th) small{color:#b6c7db!important}
+html[data-colafix-theme="dark"] .panel :is(td,th) :is(a,button){color:inherit}
+html[data-colafix-theme="dark"] .material :is(small,strong,.material-tag){color:#e6eefb!important}
+html[data-colafix-theme="dark"] .report-box-head{background:#2b3b50!important;color:#f5f8ff!important;padding:10px 14px;border-radius:6px}
+html[data-colafix-theme="dark"] .report-box-head :is(h2,h3,strong,span,small){color:#f2f7ff!important}
+html[data-colafix-theme="dark"] .deadline-report>h3,html[data-colafix-theme="dark"] .deadline-report h3{background:#2b3b50!important;color:#f6f9ff!important}
+html[data-colafix-theme="dark"] .mpq-card{background:#223147!important;color:#e9f1fb!important;border-color:#465873!important}
+html[data-colafix-theme="dark"] .mpq-card :is(h4,p,small,strong,span){color:#e9f1fb!important}
+html[data-colafix-theme="dark"] .mpq-card h4,html[data-colafix-theme="dark"] .mpq-card>div:first-child span{background:#34455e!important;color:#eaf3ff!important}
+html[data-colafix-theme="dark"] .mpq-summary,html[data-colafix-theme="dark"] .mpq-info{background:#2d4058!important;color:#e8f0fc!important}
+html[data-colafix-theme="dark"] .mpq-summary em{color:#58e3a0!important}
+html[data-colafix-theme="dark"] .mpq-toolbar,html[data-colafix-theme="dark"] .mpq-detail{color:#eaf2ff!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-card{background:#1f2d40!important;color:#e9f1fc!important;border-color:#43556e!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-card :is(h2,h3,h4,p,label,small){color:#e7f0fc!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-image-box{background:#162438!important;border-color:#47607c!important}
+html[data-colafix-theme="dark"] #areiaamigos-view :is(.aa-card button,.aa-tabs button){background:#2a3b51!important;color:#edf4ff!important;border-color:#536783!important}
+html[data-colafix-theme="dark"] #areiaamigos-view :is(.aa-primary,button.aa-primary){background:#0874ef!important;color:#fff!important}
+html[data-colafix-theme="dark"] #areiaamigos-view :is(.aa-card input,.aa-card select,.aa-card textarea){background:#142033!important;color:#f3f8ff!important;border-color:#51637c!important}
+html[data-colafix-theme="dark"] #areiaamigos-view :is(.aa-card table td,.aa-card table th){color:#eaf2ff!important}
+html[data-colafix-theme="dark"] :is(.stock,.coverage,.parameter-grid){background:#1c2838!important;color:#eaf2ff!important;border-color:#42536a!important}
+html[data-colafix-theme="dark"] :is(.stock,.coverage,.parameter-grid) :is(small,span,label){color:#bbcbdd!important}
+html[data-colafix-theme="dark"] :is(.stock,.coverage,.parameter-grid) strong{color:#edf4ff!important}
+html[data-colafix-theme="dark"] :is(.stock,.coverage,.parameter-grid) .negative{color:#ff858b!important}
+html[data-colafix-theme="dark"] .colafix-theme-switch{z-index:999999!important}
