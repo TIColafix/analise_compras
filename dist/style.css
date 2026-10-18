@@ -1717,3 +1717,12 @@ html[data-colafix-theme="dark"] #areiaamigos-view .aa-share-mail .aa-share-actio
 html[data-colafix-theme="dark"] #areiaamigos-view .aa-preview{
  background:#142238!important;color:#dce8f7!important;
 }
+
+
+/* Areia Amigos: título 'Itens da carga (m³)' legível no tema escuro. */
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-card > h4{
+ display:block!important;background:#2a3e57!important;color:#f4f8ff!important;
+ -webkit-text-fill-color:#f4f8ff!important;border:1px solid #435a77!important;
+ padding:10px 12px!important;border-radius:6px!important;
+ font-weight:700!important;opacity:1!important;
+}
