@@ -1611,3 +1611,31 @@ html[data-colafix-theme="dark"] details.rules-details[open]>summary{border-botto
 #indiretos-view .ind-mrp-explain p{line-height:1.6}
 @media(max-width:1050px){#indiretos-view .ind-mrp-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){#indiretos-view .ind-mrp-facts{grid-template-columns:1fr}}
+
+/* Legibilidade dos controles em tema escuro - MRP, prazos e plano de ação */
+#indiretos-view button[data-mrp-clear],
+#indiretos-view .ind-actions button,
+#indiretos-view .ind-mrp-plan button,
+#indiretos-view .ind-mrp-plan summary,
+#indiretos-view .ind-mrp-analysis summary{
+background:#263b55!important;color:#f7fbff!important;border:1px solid #6581a3!important;
+border-radius:6px!important;padding:9px 13px!important;min-height:36px!important;
+font-weight:600!important;text-shadow:none!important;opacity:1!important;
+}
+#indiretos-view button[data-mrp-clear]:hover,
+#indiretos-view .ind-actions button:hover{background:#355a82!important}
+#indiretos-view .ind-actions{white-space:nowrap}
+#indiretos-view .ind-actions button{padding:6px 9px!important;min-width:32px!important;min-height:32px!important;margin:0 2px!important}
+#indiretos-view .ind-mrp-plan .panel{margin:12px 0;overflow:hidden}
+#indiretos-view .ind-mrp-plan .panel>h3{padding:12px 16px!important;margin:0!important}
+#indiretos-view .ind-mrp-plan-content{padding:16px!important;color:#eef4ff!important;line-height:1.55}
+#indiretos-view .ind-mrp-plan-content p{color:#e6efff!important}
+#indiretos-view .ind-mrp-plan .ind-mrp-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+#indiretos-view .ind-mrp-plan .ind-mrp-fact{padding:13px;background:#263b55;border:1px solid #516d8d;border-radius:7px}
+#indiretos-view .ind-mrp-plan .ind-mrp-fact small{display:block;color:#c5d7eb!important;margin-bottom:7px}
+#indiretos-view .ind-mrp-plan .ind-mrp-fact strong{color:#fff!important;font-size:16px}
+#indiretos-view .ind-mrp-plan .ind-mrp-erp-scroll{overflow:auto;max-width:100%}
+#indiretos-view .ind-mrp-plan table{width:100%;border-collapse:collapse;color:#f0f5ff}
+#indiretos-view .ind-mrp-plan th,#indiretos-view .ind-mrp-plan td{padding:11px 12px;border-bottom:1px solid #455e7b;text-align:left}
+#indiretos-view .ind-mrp-plan summary{cursor:pointer}
+@media(max-width:800px){#indiretos-view .ind-mrp-plan .ind-mrp-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
