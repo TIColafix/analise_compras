@@ -1666,3 +1666,17 @@ html[data-colafix-theme="dark"] #diesel-view .cement-load-card .cement-card-head
 html[data-colafix-theme="dark"] #diesel-view .cement-load-card select.load-status.loaded{background:#d9eaff!important;color:#174f94!important;-webkit-text-fill-color:#174f94!important;border-color:#80b1ed!important}
 html[data-colafix-theme="dark"] #diesel-view .cement-load-card .cement-card-head select.load-status.cancelled,
 html[data-colafix-theme="dark"] #diesel-view .cement-load-card select.load-status.cancelled{background:#ffe1e4!important;color:#a21d35!important;-webkit-text-fill-color:#a21d35!important;border-color:#ee98a5!important}
+
+/* Menu de manutenção e painel de prazos */
+.nav-maint-group .nav-indirect-children{padding-left:16px}
+#manutencao-prazos-view .maintenance-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+#manutencao-prazos-view .maint-deadline-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:18px 0}
+#manutencao-prazos-view .maint-deadline-filters label{display:flex;flex-direction:column;gap:7px;min-width:0}
+#manutencao-prazos-view .maint-deadline-filters input,#manutencao-prazos-view .maint-deadline-filters select{width:100%;min-width:0;box-sizing:border-box}
+#manutencao-prazos-view .maint-deadlines{padding:16px;overflow:hidden}
+#manutencao-prazos-view .maint-deadline-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0}
+#manutencao-prazos-view .table-wrap{overflow:auto}
+#manutencao-prazos-view td,#manutencao-prazos-view th{padding:12px;text-align:left}
+#manutencao-prazos-view .maint-row-late{box-shadow:inset 4px 0 #ef4444;background:rgba(239,68,68,.13)}
+#manutencao-prazos-view .maint-row-done{box-shadow:inset 4px 0 #22c55e;background:rgba(34,197,94,.12)}
+@media(max-width:850px){#manutencao-prazos-view .maint-deadline-filters{grid-template-columns:1fr 1fr}#manutencao-prazos-view .maintenance-kpis{grid-template-columns:1fr 1fr}}
