@@ -1519,3 +1519,45 @@ html[data-colafix-theme="dark"] #diesel-view :is(.cement-week-panel,.cement-form
 html[data-colafix-theme="dark"] #diesel-view :is(.cement-week-panel,.cement-form-panel,.cement-list-panel) :is(label,h3,h4,legend){color:#e9f2ff!important}
 html[data-colafix-theme="dark"] #diesel-view .cement-load-card .cement-whatsapp{background:#087e48!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #29bf77!important;font-weight:700!important}
 html[data-colafix-theme="dark"] #diesel-view .cement-card-note{background:#54432c!important;color:#ffe9bc!important}
+
+
+/* 2026-10: respiro interno consistente nos paineis de todas as abas */
+:where(#indiretos-view,#granel-view,#ensacado-view,#diesel-view,#materia-prima-view,#areia-amigos-view,#compras-manutencao-view) :is(.panel,.cement-week-panel,.cement-form-panel,.cement-list-panel) {
+  box-sizing:border-box;
+}
+#indiretos-view .ind-detail-grid>.panel{
+  padding:0 18px 20px!important;
+  overflow:hidden;
+  border-radius:9px;
+}
+#indiretos-view .ind-detail-grid>.panel>h3{
+  margin:0 -18px 18px!important;
+  padding:13px 18px!important;
+  line-height:1.35;
+}
+#indiretos-view .ind-detail-grid>.panel>p,
+#indiretos-view .ind-detail-grid>.panel>small,
+#indiretos-view .ind-detail-grid>.panel>.ind-metric{
+  display:block;
+  margin-left:0!important;
+  margin-right:0!important;
+  line-height:1.5;
+}
+#indiretos-view .ind-detail-grid>.panel>.ind-metric{margin-top:4px!important;margin-bottom:14px!important}
+#indiretos-view .ind-detail-grid .ind-params{padding:0!important;gap:11px}
+#indiretos-view .ind-detail-grid .ind-params label{line-height:1.4;gap:5px}
+#indiretos-view .ind-detail-grid .ind-params input{box-sizing:border-box;width:100%;min-width:0;max-width:100%;padding:10px 12px!important}
+#indiretos-view .ind-detail-grid>.panel table{width:100%;max-width:100%;margin:0}
+#indiretos-view .ind-detail-grid>.panel th,
+#indiretos-view .ind-detail-grid>.panel td{padding:11px 12px!important;line-height:1.4;vertical-align:middle}
+#indiretos-view .ind-detail-grid>.panel>table{border-collapse:separate;border-spacing:0}
+#indiretos-view .ind-detail-grid>.panel>table th:first-child,
+#indiretos-view .ind-detail-grid>.panel>table td:first-child{padding-left:14px!important}
+#indiretos-view .ind-detail-grid>.panel>table th:last-child,
+#indiretos-view .ind-detail-grid>.panel>table td:last-child{padding-right:14px!important}
+:where(#granel-view,#ensacado-view,#diesel-view) :is(.cement-week-panel,.cement-form-panel,.cement-list-panel) > :is(h2,h3,h4,p){line-height:1.45}
+:where(#granel-view,#ensacado-view,#diesel-view) :is(.cement-week-panel,.cement-form-panel,.cement-list-panel) :is(input,select,textarea){box-sizing:border-box;padding-left:12px;padding-right:12px}
+@media(max-width:850px){
+ #indiretos-view .ind-detail-grid{grid-template-columns:minmax(0,1fr)!important}
+ #indiretos-view .ind-detail-grid>.panel{min-width:0}
+}
