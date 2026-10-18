@@ -1395,3 +1395,28 @@ html[data-colafix-theme="dark"] #ensacado-view .price-block .final-price{backgro
 html[data-colafix-theme="dark"] #ensacado-view .price-block .price-edit-row td{background:#2b3c51!important}
 html[data-colafix-theme="dark"] #ensacado-view .price-block .price-cell-input{background:#142237!important;color:#f5f9ff!important;-webkit-text-fill-color:#f5f9ff!important;border-color:#6587ad!important}
 html[data-colafix-theme="dark"] #ensacado-view .price-actions button{background:#304764!important;color:#fff!important;border-color:#597392!important}
+
+
+/* Cimento a granel: contraste do modo escuro em programação, cargas e preços */
+html[data-colafix-theme="dark"] #granel-view :is(.cement-week-head h3,.cement-week-head p,.cement-week-company-filter span,.cement-day-empty){color:#e5efff!important}
+html[data-colafix-theme="dark"] #granel-view .cement-week{background:#40546e!important;border-color:#40546e!important}
+html[data-colafix-theme="dark"] #granel-view .cement-day{background:#17263b!important}
+html[data-colafix-theme="dark"] #granel-view .cement-day>header{background:#30445f!important;color:#f4f8ff!important}
+html[data-colafix-theme="dark"] #granel-view .cement-load-card{background:#23354d!important;border-top-color:#506580!important;border-right-color:#506580!important;border-bottom-color:#506580!important;color:#f2f7ff!important}
+html[data-colafix-theme="dark"] #granel-view .cement-load-card :is(p,strong,small,span){color:#e8f2ff!important}
+html[data-colafix-theme="dark"] #granel-view .cement-load-card .cement-card-note{background:#54432c!important;color:#ffe9bc!important}
+html[data-colafix-theme="dark"] #granel-view .cement-week-company-filter button:not([aria-pressed="true"]){background:#243650!important;color:#edf4ff!important;border-color:#59708e!important}
+html[data-colafix-theme="dark"] #granel-view :is(.cement-tabs button,.cement-company-tabs button):not([aria-pressed="true"]){background:#243650!important;color:#edf4ff!important;border-color:#59708e!important}
+html[data-colafix-theme="dark"] #granel-view :is(.cement-form-panel,.cement-list-panel,.cement-week-panel,.cement-price-panel) :is(label,legend,h2,h3,h4){color:#e9f2ff}
+html[data-colafix-theme="dark"] #granel-view :is(.cement-form-panel,.cement-list-panel,.cement-week-panel) :is(input,select,textarea){background:#132237!important;color:#f4f8ff!important;border-color:#536d8b!important}
+html[data-colafix-theme="dark"] #granel-view :is(.cement-form-panel,.cement-list-panel,.cement-week-panel) :is(input,select,textarea)::placeholder{color:#b1c4dc!important}
+html[data-colafix-theme="dark"] #granel-view :is(.cement-form-panel,.cement-list-panel,.cement-week-panel) :is(button):not([aria-pressed="true"]){color:#f0f6ff}
+html[data-colafix-theme="dark"] #granel-view .price-kpis>div{background:#23354d!important;border-color:#536a86!important}
+html[data-colafix-theme="dark"] #granel-view .price-kpis small{color:#c5d6ed!important}
+html[data-colafix-theme="dark"] #granel-view .price-kpis strong{color:#f5f9ff!important}
+html[data-colafix-theme="dark"] #granel-view .price-block{background:#23354d!important;border-color:#536a86!important}
+html[data-colafix-theme="dark"] #granel-view .price-block :is(th,td){color:#edf4ff!important;border-color:#49617d!important}
+html[data-colafix-theme="dark"] #granel-view .price-block th{background:#30445f!important}
+html[data-colafix-theme="dark"] #granel-view .price-block td{background:#23354d!important}
+html[data-colafix-theme="dark"] #granel-view .price-block .final-price{background:#194d35!important;color:#e0ffec!important}
+html[data-colafix-theme="dark"] #granel-view .price-block :is(input,select){background:#132237!important;color:#f4f8ff!important;border-color:#536d8b!important}
