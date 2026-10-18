@@ -1,6 +1,7 @@
 import {existsSync} from 'node:fs';
 import {readLoads,saveLoad,deleteCementLoad,readDiesel,saveDiesel,readDeliveryDeadlines,saveDeliveryDeadline,saveMonthlyOrder,saveBagPrices,saveBagProducts} from './cement-store.mjs';
 import {readMaintenance,saveMaintenance,deleteMaintenance} from './maintenance-store.mjs';
+import {readMaintenanceDeadlines,saveMaintenanceDeadline} from './maintenance-deadlines-store.mjs';
 import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile,rename,mkdtemp,rm} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
@@ -12,7 +13,7 @@ import {readDocument,writeDocument,appendAudit,readAudit} from './database.mjs';
 const root=fileURLToPath(new URL('.',import.meta.url));
 const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
 const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'python');
-const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/bulk-prices.js':'bulk-prices.js','/areia-amigos.js':'areia-amigos.js','/diesel.js':'diesel.js','/deadlines.js':'deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js','/indirect-materials.js':'indirect-materials.js','/migration':'migration.html','/migration.html':'migration.html'};
+const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/bulk-prices.js':'bulk-prices.js','/areia-amigos.js':'areia-amigos.js','/diesel.js':'diesel.js','/deadlines.js':'deadlines.js','/maintenance-deadlines.js':'maintenance-deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js','/indirect-materials.js':'indirect-materials.js','/migration':'migration.html','/migration.html':'migration.html'};
 const types={html:'text/html; charset=utf-8',css:'text/css',js:'text/javascript',svg:'image/svg+xml',json:'application/json; charset=utf-8'};
 const pending=new Map();const sessions=new Map();let busy=false;
 async function pythonReady(){return new Promise(resolve=>{const p=spawn(python,['-c','import sys,pypdf; print(sys.version.split()[0],pypdf.__version__)'],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',e=>resolve({ok:false,error:e.message}));p.on('close',c=>resolve(c===0?{ok:true,detail:out.trim()}:{ok:false,error:err.trim()||'Python indisponível'}));});}
@@ -236,6 +237,7 @@ createServer(async(req,res)=>{try{
  if(path==='/api/cement'&&req.method==='GET')return reply(res,200,await readLoads(root));
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
+ if(path==='/api/maintenance-deadlines'&&req.method==='GET')return reply(res,200,await readMaintenanceDeadlines(root));
  if(path==='/api/indirect-materials/parse-pdf'&&req.method==='POST'){
   if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
   const input=await body(req),kind=input.kind;
@@ -338,6 +340,7 @@ createServer(async(req,res)=>{try{
  if(path==='/api/areia-amigos'){if(!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(input.image||'')||input.image.length>7e6)throw Error('Anexe uma imagem JPG, PNG ou WEBP de até 5 MB.');if(!/^\d{4}-\d{2}-\d{2}$/.test(input.date||'')||!String(input.receipt||'').trim())throw Error('Informe a data e o número do recibo.');const previous=await readDocument('areia-amigos',[]),records=Array.isArray(previous)?previous:[];const duplicate=records.find(x=>String(x.receipt||'').trim()===String(input.receipt||'').trim()&&String(x.id)!==String(input.id||''));if(duplicate)return reply(res,409,{error:'Recibo nº '+String(input.receipt).trim()+' já está cadastrado. Não é permitido salvar recibos duplicados.'});const entry={id:String(input.id||randomUUID()),receipt:String(input.receipt).trim().slice(0,80),date:input.date,time:String(input.time||'').slice(0,5),client:String(input.client||'').slice(0,180),plate:String(input.plate||'').slice(0,32),total:Number(input.total)||0,quantities:Array.from({length:5},(_,i)=>Math.max(0,Number(input.quantities?.[i])||0)),image:input.image,updatedAt:new Date().toISOString()};const index=records.findIndex(x=>x.id===entry.id);if(index>=0)records[index]=entry;else records.unshift(entry);await writeDocument('areia-amigos',records);await audit(req,'salvar','areia-amigos',{id:entry.id,receipt:entry.receipt});return reply(res,200,{ok:true,records});}
  if(path==='/api/cement'){const load=await saveLoad(root,input);await audit(req,'salvar','cement',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}if(path==='/api/cement-bag-products'){const products=await saveBagProducts(root,input);await audit(req,'salvar','cement-bag-products',{count:products.length});return reply(res,200,{ok:true,products});}if(path==='/api/cement-bag-prices'){const bagPrices=await saveBagPrices(root,input);await audit(req,'salvar','cement-bag-prices',{period:bagPrices.period||'',updatedAt:bagPrices.updatedAt||''});return reply(res,200,{ok:true,bagPrices});}if(path==='/api/cement-monthly-order'){const orders=await saveMonthlyOrder(root,input);await audit(req,'salvar','cement-monthly-order',{supplier:input.supplier||''});return reply(res,200,{ok:true,orders});}
    if(path==='/api/diesel'){const load=await saveDiesel(root,input);await audit(req,'salvar','diesel',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}
+   if(path==='/api/maintenance-deadlines'){const order=await saveMaintenanceDeadline(root,input);await audit(req,'salvar','maintenance-deadlines',{id:order?.id||input.id||''});return reply(res,200,{ok:true,order});}
    if(path==='/api/deadlines'){const order=await saveDeliveryDeadline(root,input);await audit(req,'salvar','delivery-deadlines',{id:order?.id||input.id||'',purchaseOrder:order?.purchaseOrder||input.purchaseOrder||'',code:order?.code||input.code||''});return reply(res,200,{ok:true,order});}
    if(path==='/api/maintenance'){const request=await saveMaintenance(root,input);await audit(req,'salvar','maintenance',{id:request?.id||input.id||'',status:request?.status||input.status||''});return reply(res,200,{ok:true,request});}
    if(path==='/api/parameters'){
@@ -351,7 +354,7 @@ createServer(async(req,res)=>{try{
     if(process.env.DATABASE_URL){await writeDocument('main-data',data);await audit(req,'alterar-parametros','main-data',{id:input.id,date:input.date,values});}else{const backup=join(root,'source-data/backups');await mkdir(backup,{recursive:true});await writeFile(join(backup,'parameters-'+randomUUID()+'.json'),raw);const temp=target+'.'+randomUUID()+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);}
     return reply(res,200,{ok:true,edit});
    }
-   if(path==='/api/deadlines/import-pdf'){
+   if(path==='/api/deadlines/import-pdf'||path==='/api/maintenance-deadlines/import-pdf'){
     const f=input.file;if(!f||typeof f.content!=='string'||!f.content.length)throw Error('Selecione o PDF do pedido.');
     const bytes=Buffer.from(f.content,'base64');if(bytes.subarray(0,5).toString()!=='%PDF-')throw Error('O arquivo deve ser um PDF.');
     const folder=join(root,'source-data/imports/purchase-orders');await mkdir(folder,{recursive:true});
