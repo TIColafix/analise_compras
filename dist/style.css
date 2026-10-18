@@ -1593,3 +1593,21 @@ html[data-colafix-theme="dark"] details.rules-details>p{padding:4px 17px!importa
 html[data-colafix-theme="dark"] details.rules-details[open]>summary{border-bottom:1px solid #526a86!important}
 @media(max-width:720px){.planning-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:420px){.planning-facts{grid-template-columns:minmax(0,1fr)!important}}
+
+/* Insumos e EPIs: indicadores e alertas de reposição equivalentes ao painel MRP */
+#indiretos-view .ind-mrp-analysis{margin-top:16px;padding:0 18px 18px!important;overflow:hidden;border-radius:9px}
+#indiretos-view .ind-mrp-analysis>h3{margin:0 -18px 16px!important;padding:14px 18px!important}
+#indiretos-view .ind-mrp-alert{padding:14px 16px;border-radius:8px;background:#213e52;border:1px solid #467d95;color:#eaf8ff;line-height:1.5}
+#indiretos-view .ind-mrp-alert.critical{background:#4c2935;border-color:#e65a6a}
+#indiretos-view .ind-mrp-alert.warning{background:#51402a;border-color:#d5a34d}
+#indiretos-view .ind-mrp-alert strong{font-size:17px;color:#fff!important}
+#indiretos-view .ind-mrp-alert p{margin:6px 0 0;color:#f1f6ff!important}
+#indiretos-view .ind-mrp-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+#indiretos-view .ind-mrp-fact{background:#24374f;border:1px solid #526b89;border-radius:8px;padding:13px 15px;min-width:0}
+#indiretos-view .ind-mrp-fact small{display:block;color:#b9cde7!important;margin-bottom:7px;line-height:1.4}
+#indiretos-view .ind-mrp-fact strong{display:block;color:#fff!important;font-size:17px;overflow-wrap:anywhere}
+#indiretos-view .ind-mrp-explain{border:1px solid #526b89;border-radius:7px;padding:12px 15px;color:#e8f2ff}
+#indiretos-view .ind-mrp-explain summary{cursor:pointer;font-weight:600}
+#indiretos-view .ind-mrp-explain p{line-height:1.6}
+@media(max-width:1050px){#indiretos-view .ind-mrp-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:540px){#indiretos-view .ind-mrp-facts{grid-template-columns:1fr}}
