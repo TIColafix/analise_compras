@@ -1334,3 +1334,19 @@ html[data-colafix-theme="dark"] .deadline-multi-options{background:#1d2d42!impor
 html[data-colafix-theme="dark"] .deadline-multi-options label{background:transparent!important;color:#f5f8ff!important;-webkit-text-fill-color:#f5f8ff!important}
 html[data-colafix-theme="dark"] .deadline-multi-options label:hover{background:#344c69!important}
 html[data-colafix-theme="dark"] .deadline-multi-options input[type="checkbox"]{accent-color:#3b8dff!important}
+
+
+/* Prazos de entrega: contraste dos estados e botões em ambos os temas */
+#prazos-view .deadlines-grid tbody tr.deadline-delivered>td{background:#d7f5df!important;color:#155b31!important}
+#prazos-view .deadlines-grid tbody tr.deadline-late>td{background:#ffe0e0!important;color:#991b1b!important}
+#prazos-view .deadlines-grid tbody tr.deadline-delivered:hover>td{background:#c3eccc!important}
+#prazos-view .deadlines-grid tbody tr.deadline-late:hover>td{background:#ffc9c9!important}
+html[data-colafix-theme="dark"] #prazos-view .deadlines-grid tbody tr.deadline-delivered>td{background:#173e2d!important;color:#d2ffe1!important;border-color:#32634c!important}
+html[data-colafix-theme="dark"] #prazos-view .deadlines-grid tbody tr.deadline-late>td{background:#51272d!important;color:#ffe1e1!important;border-color:#79434b!important}
+html[data-colafix-theme="dark"] #prazos-view .deadlines-grid tbody tr.deadline-delivered:hover>td{background:#20533a!important}
+html[data-colafix-theme="dark"] #prazos-view .deadlines-grid tbody tr.deadline-late:hover>td{background:#683038!important}
+#prazos-view .deadline-actions{display:flex!important;flex-flow:row nowrap!important;gap:5px!important;align-items:center!important;justify-content:flex-start!important;min-width:120px!important}
+#prazos-view .deadline-actions .deadline-icon-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 33px!important;width:33px!important;height:34px!important;min-width:33px!important;padding:0!important;border:1px solid #94a3b8!important;border-radius:6px!important;background:#f8fafc!important;color:#1e293b!important;-webkit-text-fill-color:#1e293b!important;font-size:17px!important;font-weight:700!important;line-height:1!important;opacity:1!important}
+#prazos-view .deadline-actions .deadline-ok-btn{background:#dcfce7!important;border-color:#86efac!important;color:#166534!important;-webkit-text-fill-color:#166534!important}
+#prazos-view .deadline-actions .deadline-icon-btn:disabled{opacity:.5!important}
+#prazos-view .deadlines-grid th:last-child,#prazos-view .deadlines-grid td:last-child{min-width:128px!important;width:128px!important;overflow:visible!important}
