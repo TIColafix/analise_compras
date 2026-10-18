@@ -124,6 +124,12 @@ createServer(async(req,res)=>{try{
  if(path==='/login'&&req.method==='POST'){const f=await formBody(req),acc=await accountFor(String(f.get('username')||f.get('user')||''),String(f.get('password')||''));if(!acc){res.writeHead(401,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});return res.end(loginPage('Usuário ou senha inválidos.'))}const token=randomBytes(32).toString('hex'),remember=f.get('remember')==='1';sessions.set(token,{account:acc,createdAt:Date.now(),lastSeen:Date.now(),remember});res.writeHead(303,{Location:'/', 'Set-Cookie':sessionCookie(token,remember),'Cache-Control':'no-store'});return res.end()}
  await refreshManagedSession(req);
  if(path==='/logout'){const token=cookies(req).colafix_session;if(token)sessions.delete(token);res.writeHead(303,{Location:'/login','Set-Cookie':clearSessionCookie(),'Cache-Control':'no-store'});return res.end()}
+ // A imagem pública da tela de login deve carregar antes da verificação de sessão.
+ if(path==='/images/colafix-banner.png.png'&&req.method==='GET'){
+  const content=await readFile(join(root,'dist','images','colafix-banner.png.png'));
+  res.writeHead(200,{'Content-Type':'image/png','Cache-Control':'public, max-age=3600'});
+  return res.end(content);
+ }
  if(path!=='/api/health'&&!authorized(req)){if(path.startsWith('/api/'))return reply(res,401,{error:'Sessão expirada. Entre novamente para continuar.',loginRequired:true});return askLogin(res);}
  if(path==='/usuarios'&&req.method==='GET'){
   if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
