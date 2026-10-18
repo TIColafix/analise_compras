@@ -1350,3 +1350,27 @@ html[data-colafix-theme="dark"] #prazos-view .deadlines-grid tbody tr.deadline-l
 #prazos-view .deadline-actions .deadline-ok-btn{background:#dcfce7!important;border-color:#86efac!important;color:#166534!important;-webkit-text-fill-color:#166534!important}
 #prazos-view .deadline-actions .deadline-icon-btn:disabled{opacity:.5!important}
 #prazos-view .deadlines-grid th:last-child,#prazos-view .deadlines-grid td:last-child{min-width:128px!important;width:128px!important;overflow:visible!important}
+
+
+/* Relatório Areia Amigos: componentes claros permanecem legíveis no modo escuro */
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report{background:#1b293b!important;color:#edf4ff!important;border-color:#40536b!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report-toolbar :is(h3,small){color:#edf4ff!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report-filter{background:#253750!important;border-color:#48617c!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report-filter label{color:#e2edfc!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report-filter input{background:#142237!important;color:#fff!important;border-color:#58718d!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report-materials,
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report-clients{background:#1e3046!important;color:#edf4ff!important;border-color:#48617c!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report :is(h4,.aa-report-materials h4,.aa-report-clients h4){color:#f0f6ff!important;background:transparent!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report :is(.aa-report-materials,.aa-report-clients) :is(table,thead,tbody,tr,th,td){color:#eaf3ff!important;border-color:#405571!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report :is(.aa-report-materials,.aa-report-clients) th{background:#2a3e58!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report :is(.aa-report-materials,.aa-report-clients) td{background:#1e3046!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report-kpi{color:#142b49!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report-kpi :is(div,strong,small,span){color:#142b49!important;-webkit-text-fill-color:#142b49!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report-kpi:not(.aa-kpi-blue):not(.aa-kpi-green):not(.aa-kpi-purple){background:#f5e6ba!important}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-report-kpi:not(.aa-kpi-blue):not(.aa-kpi-green):not(.aa-kpi-purple) :is(div,strong,small,span){color:#142b49!important}
+/* Dropdown Status: não cortar as opções no painel de relatório */
+#prazos-view .deadline-report-filters,#prazos-view .deadline-report,#prazos-view .deadline-report-box{overflow:visible!important}
+#prazos-view .deadline-multi{position:relative!important;z-index:30!important}
+#prazos-view .deadline-multi:has(.deadline-multi-options:not([hidden])){z-index:999!important}
+#prazos-view .deadline-multi-options:not([hidden]){display:block!important;position:absolute!important;top:calc(100% + 3px)!important;left:0!important;right:auto!important;width:max(100%,240px)!important;max-height:min(360px,65vh)!important;overflow-y:auto!important;overscroll-behavior:contain!important;z-index:1000!important}
+#prazos-view .deadline-multi-options label{display:flex!important;align-items:center!important;gap:9px!important;min-height:34px!important;white-space:nowrap!important}
