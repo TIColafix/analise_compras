@@ -1,0 +1,5 @@
+import {readFile,mkdir,writeFile,rename} from 'node:fs/promises';
+import {join} from 'node:path';
+import {randomUUID} from 'node:crypto';
+import {databaseEnabled,readDocument,writeDocument} from './database.mjs';
+export async function readMaintenanceDeadlines(root){if(databaseEnabled())return readDocument('maintenance-deadlines',{orders:[]});let local={orders:[]};try{local=JSON.parse(await readFile(join(root,'source-data/maintenance-deadlines.json'),'utf8'));}catch(e){if(e.code!=='ENOENT')throw e;}let initial={orders:[]};try{initial=JSON.parse(await readFile(join(root,'dist/maintenance-deadlines-initial.json'),'utf8'));}catch(e){if(e.code!=='ENOENT')throw e;}const existing=new Set((local.orders||[]).map(r=>r.id));return {orders:[...(local.orders||[]),...(initial.orders||[]).filter(r=>!existing.has(r.id))]};}
