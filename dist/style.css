@@ -1292,3 +1292,16 @@ html[data-colafix-theme="dark"] .maintenance-toolbar>button:hover{background:#39
 html[data-colafix-theme="dark"] .maintenance-view button.active,
 html[data-colafix-theme="dark"] .maintenance-view button[aria-pressed="true"]{background:#145ba5!important;color:#fff!important}
 html[data-colafix-theme="dark"] .report-box-actions button{background:#273a51!important;color:#f4f8ff!important;-webkit-text-fill-color:#f4f8ff!important;border-color:#52677f!important}
+
+
+/* Filtro Status: cobre também o componente renderizado sem a classe report-multi */
+html[data-colafix-theme="dark"] .report-filter-grid>label:nth-child(3) :is(button,input,select,[role="combobox"],[role="button"]),
+html[data-colafix-theme="dark"] .report-filter-grid>div:nth-child(3) :is(button,input,select,[role="combobox"],[role="button"]),
+html[data-colafix-theme="dark"] .report-filter-grid>label:nth-child(3)>div:first-of-type,
+html[data-colafix-theme="dark"] .report-filter-grid>div:nth-child(3)>div:first-of-type{background-color:#142236!important;color:#f4f8ff!important;-webkit-text-fill-color:#f4f8ff!important;border-color:#526780!important}
+html[data-colafix-theme="dark"] .report-filter-grid>label:nth-child(3) :is(.report-multi-menu,[role="listbox"],.dropdown-menu),
+html[data-colafix-theme="dark"] .report-filter-grid>div:nth-child(3) :is(.report-multi-menu,[role="listbox"],.dropdown-menu){background-color:#1e2d42!important;color:#f4f8ff!important;-webkit-text-fill-color:#f4f8ff!important;border-color:#526780!important}
+html[data-colafix-theme="dark"] .report-filter-grid>label:nth-child(3) :is(.report-multi-menu,[role="listbox"],.dropdown-menu) :is(label,span,div,li),
+html[data-colafix-theme="dark"] .report-filter-grid>div:nth-child(3) :is(.report-multi-menu,[role="listbox"],.dropdown-menu) :is(label,span,div,li){color:#f4f8ff!important;-webkit-text-fill-color:#f4f8ff!important}
+html[data-colafix-theme="dark"] .report-filter-grid>label:nth-child(3) :is(.report-multi-menu,[role="listbox"],.dropdown-menu) :is(label,li):hover,
+html[data-colafix-theme="dark"] .report-filter-grid>div:nth-child(3) :is(.report-multi-menu,[role="listbox"],.dropdown-menu) :is(label,li):hover{background-color:#344a65!important}
