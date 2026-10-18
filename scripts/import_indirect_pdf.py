@@ -35,7 +35,7 @@ def parse(path,kind):
                 nums=re.findall(r'-?[\d.]+,\d{4}',tail)
                 if not nums:continue
                 # Last numeric column is Saldo Atual, never a purchase order quantity
-                records.append(dict(code=m[1],description=m[2].strip(),unit=m[3],stock=number(nums[-1]),safety=number(nums[0]) if len(nums)>=3 else None))
+                records.append(dict(code=m[1],description=m[2].strip(),unit=m[3],stock=number(nums[-1])))
         if not records:raise ValueError('Nenhum saldo NE identificado. Verifique o layout REST0331')
     return dict(kind=kind,date=date(full[:1100]),items=records,count=len(records),pages=len(pages))
 if __name__=='__main__':
