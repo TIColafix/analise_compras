@@ -1561,3 +1561,35 @@ html[data-colafix-theme="dark"] #diesel-view .cement-card-note{background:#54432
  #indiretos-view .ind-detail-grid{grid-template-columns:minmax(0,1fr)!important}
  #indiretos-view .ind-detail-grid>.panel{min-width:0}
 }
+
+
+/* MRP - plano de acao e origem: corrigir campos brancos e textos ilegíveis no tema escuro */
+html[data-colafix-theme="dark"] :is(.planning-card,.planning-card-wide) .planning-facts>div{
+ background:#263a53!important;border:1px solid #526a86!important;color:#f4f8ff!important;
+ padding:14px 16px!important;border-radius:9px!important;min-width:0!important;
+}
+html[data-colafix-theme="dark"] :is(.planning-card,.planning-card-wide) .planning-facts>div small{
+ color:#bbcee7!important;-webkit-text-fill-color:#bbcee7!important;font-size:12px!important;
+ line-height:1.4!important;margin-bottom:7px!important;
+}
+html[data-colafix-theme="dark"] :is(.planning-card,.planning-card-wide) .planning-facts>div strong{
+ color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:17px!important;line-height:1.35!important;
+ overflow-wrap:anywhere;
+}
+html[data-colafix-theme="dark"] .planning-card :is(.planning-head,.planning-summary,.planning-details),
+html[data-colafix-theme="dark"] .planning-card :is(.planning-head strong,.planning-summary p,.planning-details p,.planning-details summary){
+ color:#eef5ff!important;-webkit-text-fill-color:#eef5ff!important;
+}
+html[data-colafix-theme="dark"] .planning-card .planning-details{border-top-color:#526a86!important}
+html[data-colafix-theme="dark"] details.rules-details{
+ background:#1e2d42!important;border:1px solid #526a86!important;color:#eaf2ff!important;
+ border-radius:8px!important;overflow:hidden;
+}
+html[data-colafix-theme="dark"] details.rules-details>summary{
+ background:#2b405b!important;color:#f5f9ff!important;-webkit-text-fill-color:#f5f9ff!important;
+ padding:13px 17px!important;line-height:1.4!important;
+}
+html[data-colafix-theme="dark"] details.rules-details>p{padding:4px 17px!important;line-height:1.65!important;color:#eaf2ff!important}
+html[data-colafix-theme="dark"] details.rules-details[open]>summary{border-bottom:1px solid #526a86!important}
+@media(max-width:720px){.planning-facts{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:420px){.planning-facts{grid-template-columns:minmax(0,1fr)!important}}
