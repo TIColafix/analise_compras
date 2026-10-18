@@ -1655,3 +1655,14 @@ html[data-colafix-theme="dark"] #granel-view select.load-status.cancelled,
 html[data-colafix-theme="dark"] #ensacado-view select.load-status.cancelled,
 html[data-colafix-theme="dark"] #diesel-view select.load-status.cancelled{background:#ffe1e4!important;color:#a21d35!important;border:1px solid #ee98a5!important}
 html[data-colafix-theme="dark"] :is(#granel-view,#ensacado-view,#diesel-view) select.load-status option{background:#17263a!important;color:#f5f8ff!important}
+
+
+/* Diesel: texto legível sobre a cor de cada etapa, inclusive no tema escuro. */
+html[data-colafix-theme="dark"] #diesel-view .cement-load-card .cement-card-head select.load-status.delivered,
+html[data-colafix-theme="dark"] #diesel-view .cement-load-card select.load-status.delivered{background:#dcf7e5!important;color:#176c39!important;-webkit-text-fill-color:#176c39!important;border-color:#79c998!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-load-card .cement-card-head select.load-status.scheduled,
+html[data-colafix-theme="dark"] #diesel-view .cement-load-card select.load-status.scheduled{background:#fff1cc!important;color:#765000!important;-webkit-text-fill-color:#765000!important;border-color:#e7c76b!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-load-card .cement-card-head select.load-status.loaded,
+html[data-colafix-theme="dark"] #diesel-view .cement-load-card select.load-status.loaded{background:#d9eaff!important;color:#174f94!important;-webkit-text-fill-color:#174f94!important;border-color:#80b1ed!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-load-card .cement-card-head select.load-status.cancelled,
+html[data-colafix-theme="dark"] #diesel-view .cement-load-card select.load-status.cancelled{background:#ffe1e4!important;color:#a21d35!important;-webkit-text-fill-color:#a21d35!important;border-color:#ee98a5!important}
