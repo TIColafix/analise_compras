@@ -1500,3 +1500,22 @@ html[data-colafix-theme="dark"] #ensacado-view .cement-week-nav button:disabled,
 html[data-colafix-theme="dark"] #ensacado-view .cement-add-day:disabled{opacity:.55!important}
 html[data-colafix-theme="dark"] #ensacado-view .cement-load-card button[title*="WhatsApp"],
 html[data-colafix-theme="dark"] #ensacado-view .cement-load-card .cement-whatsapp{background:#087e48!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #29bf77!important}
+
+
+/* Diesel: mesma identidade visual da programação semanal do cimento a granel */
+html[data-colafix-theme="dark"] #diesel-view :is(.cement-week-head h3,.cement-week-head p,.cement-week-company-filter span,.cement-day-empty){color:#e5efff!important;-webkit-text-fill-color:#e5efff!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-week{background:#40546e!important;border-color:#40546e!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-day{background:#17263b!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-day>header{background:#30445f!important;color:#f4f8ff!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-load-card{background:#23354d!important;border-top-color:#506580!important;border-right-color:#506580!important;border-bottom-color:#506580!important;color:#f2f7ff!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-load-card :is(p,strong,small,span,b){color:#e8f2ff!important;-webkit-text-fill-color:#e8f2ff!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-week-company-filter button:not([aria-pressed="true"]),
+html[data-colafix-theme="dark"] #diesel-view .cement-tabs button:not([aria-pressed="true"]){background:#243650!important;color:#edf4ff!important;-webkit-text-fill-color:#edf4ff!important;border-color:#59708e!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-week-nav button,
+html[data-colafix-theme="dark"] #diesel-view .cement-add-day{background:#20344c!important;color:#f5f9ff!important;-webkit-text-fill-color:#f5f9ff!important;border:1px solid #67809e!important;font-weight:700!important;opacity:1!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-week-nav button:hover,
+html[data-colafix-theme="dark"] #diesel-view .cement-add-day:hover{background:#315274!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-colafix-theme="dark"] #diesel-view :is(.cement-week-panel,.cement-form-panel,.cement-list-panel) :is(input,select,textarea){background:#132237!important;color:#f4f8ff!important;-webkit-text-fill-color:#f4f8ff!important;border-color:#536d8b!important}
+html[data-colafix-theme="dark"] #diesel-view :is(.cement-week-panel,.cement-form-panel,.cement-list-panel) :is(label,h3,h4,legend){color:#e9f2ff!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-load-card .cement-whatsapp{background:#087e48!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #29bf77!important;font-weight:700!important}
+html[data-colafix-theme="dark"] #diesel-view .cement-card-note{background:#54432c!important;color:#ffe9bc!important}
