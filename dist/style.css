@@ -1447,3 +1447,20 @@ html[data-colafix-theme="dark"] #bulk-prices-root .bulk-form input::placeholder{
 html[data-colafix-theme="dark"] #bulk-prices-root .bulk-form button{background:#1477e3!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #3289ee!important}
 html[data-colafix-theme="dark"] #bulk-prices-root .bulk-spark-empty{color:#b8cce5!important;-webkit-text-fill-color:#b8cce5!important}
 html[data-colafix-theme="dark"] #bulk-prices-root .bulk-inter-logo span{color:#ff6b72!important;-webkit-text-fill-color:#ff6b72!important}
+
+
+/* Ajuste final dos blocos ainda claros: cimento a granel e ensacado */
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-price-change.neutral{background:#334963!important;border:1px solid #5c7696!important;color:#e7f2ff!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-price-change.neutral :is(strong,small){color:#e7f2ff!important;-webkit-text-fill-color:#e7f2ff!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-price-change.down{background:#174b37!important}
+html[data-colafix-theme="dark"] #bulk-prices-root .bulk-price-change.up{background:#5c3039!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-toolbar{background:#23354d!important;border-color:#516987!important;color:#f2f7ff!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-toolbar :is(strong,small,label,span,p){color:#e5f0ff!important;-webkit-text-fill-color:#e5f0ff!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-toolbar input{background:#142237!important;color:#f5faff!important;-webkit-text-fill-color:#f5faff!important;border-color:#6b85a3!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-toolbar button{background:#304963!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #6884a5!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block :is(h3,small,label,p,span){color:#edf5ff!important;-webkit-text-fill-color:#edf5ff!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block.current h3{background:#4fe399!important;color:#102c23!important;-webkit-text-fill-color:#102c23!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block.freight h3,
+html[data-colafix-theme="dark"] #ensacado-view .price-block.client h3{background:#344e6c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block button{background:#304963!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #6481a2!important}
+html[data-colafix-theme="dark"] #ensacado-view .price-block button:disabled{opacity:.5!important}
