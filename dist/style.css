@@ -1680,3 +1680,40 @@ html[data-colafix-theme="dark"] #diesel-view .cement-load-card select.load-statu
 #manutencao-prazos-view .maint-row-late{box-shadow:inset 4px 0 #ef4444;background:rgba(239,68,68,.13)}
 #manutencao-prazos-view .maint-row-done{box-shadow:inset 4px 0 #22c55e;background:rgba(34,197,94,.12)}
 @media(max-width:850px){#manutencao-prazos-view .maint-deadline-filters{grid-template-columns:1fr 1fr}#manutencao-prazos-view .maintenance-kpis{grid-template-columns:1fr 1fr}}
+
+
+/* Areia Amigos — contraste consistente na prévia e no compartilhamento no tema escuro. */
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-inline-saved .aa-details,
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-saved-content .aa-details{
+ background:#162438!important;color:#f1f6ff!important;border:1px solid #435a77!important;
+}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-details :is(p,strong,span,small){
+ color:#f1f6ff!important;-webkit-text-fill-color:#f1f6ff!important;
+}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-inline-saved h4,
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-saved-content h4,
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-items h4{
+ background:#2a3e57!important;color:#f4f8ff!important;-webkit-text-fill-color:#f4f8ff!important;
+ border-radius:6px;padding:9px 12px!important;
+}
+html[data-colafix-theme="dark"] #areiaamigos-view button.aa-share-card.aa-share-wa{
+ background:linear-gradient(145deg,#11894c,#075d38)!important;color:#fff!important;
+}
+html[data-colafix-theme="dark"] #areiaamigos-view button.aa-share-card.aa-share-mail{
+ background:linear-gradient(145deg,#176bb9,#133f85)!important;color:#fff!important;
+}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-share-card :is(strong,small,.aa-share-icon,.aa-share-icon svg){
+ color:#fff!important;-webkit-text-fill-color:#fff!important;
+}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-share-card .aa-share-icon{
+ background:rgba(255,255,255,.14)!important;border-color:rgba(255,255,255,.55)!important;
+}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-share-wa .aa-share-action{
+ background:#d9fbe8!important;color:#075e39!important;-webkit-text-fill-color:#075e39!important;
+}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-share-mail .aa-share-action{
+ background:#e0edff!important;color:#123e87!important;-webkit-text-fill-color:#123e87!important;
+}
+html[data-colafix-theme="dark"] #areiaamigos-view .aa-preview{
+ background:#142238!important;color:#dce8f7!important;
+}
