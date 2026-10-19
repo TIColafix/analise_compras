@@ -1746,3 +1746,31 @@ html[data-colafix-theme="dark"] #stock-table .badge.critical{
  background:#8e2735!important;color:#fff5f5!important;-webkit-text-fill-color:#fff5f5!important;border:1px solid #f07181!important;
 }
 #stock-table td:has(> .badge){min-width:118px!important;white-space:nowrap!important}
+
+
+/* Contraste dos indicadores de entregas pendentes nos temas claro e escuro. */
+.item-pending-panel .badge,
+#stock-bottom .badge,
+#detail .badge {
+  opacity:1!important;
+  font-weight:800!important;
+  text-shadow:none!important;
+}
+.item-pending-panel .badge.attention,
+#stock-bottom .badge.attention,
+#detail .badge.attention {
+  background-color:#805315!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  border:1px solid #eab44e!important;
+}
+.item-pending-panel .badge.critical,
+#stock-bottom .badge.critical,
+#detail .badge.critical {
+  background-color:#922d3c!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+}
+.item-pending-panel td,
+#stock-bottom td,
+#detail td {color:var(--text,#e7edf7)}
