@@ -1789,3 +1789,10 @@ html[data-colafix-theme="dark"] #stock-table .badge.critical{
 .weekly-average-grid strong{color:#fff;font-size:15px}
 .weekly-average-panel>.hint{padding:0 14px 14px;line-height:1.5}
 @media(max-width:1100px){#stock-bottom .weekly-average-panel{grid-column:1}.weekly-average-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Ajuste de largura da tabela de prazos de Insumos/EPIs */
+#indiretos-view .deadlines-grid{width:100%!important;min-width:0!important;table-layout:fixed!important}
+#indiretos-view .deadlines-grid th,#indiretos-view .deadlines-grid td{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;padding:9px 5px!important;font-size:11px!important}
+#indiretos-view .deadlines-grid th:nth-child(2){width:24%!important}
+#indiretos-view .deadlines-grid th:nth-child(5){width:11%!important}
+#indiretos-view .deadlines-grid th:nth-child(13){width:10%!important}
