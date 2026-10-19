@@ -54,7 +54,7 @@ def parse(path):
             dm=re.search(r"\b(\d{2}/\d{2}/\d{2,4})\b",nxt)
             if dm:
                 delivery=iso_date(dm.group(1));break
-        items.append({"code":code,"product":clean_spaces(desc),"quantity":qty,"unit":unit.upper(),"deliveryDate":delivery or header_delivery})
+        items.append({"code":code,"product":clean_spaces(desc),"quantity":float(qty.replace(".","").replace(",",".")),"unit":unit.upper(),"deliveryDate":delivery or header_delivery})
 
     # Fallback: alguns RPDC0250 saem com a tabela desmontada pelo pypdf.
     # Procura explicitamente blocos como "2 GESSO SC 150,000" no texto extraido.
@@ -69,7 +69,7 @@ def parse(path):
             after=tail[m.end():m.end()+250]
             dm=re.search(r"\b(\d{2}/\d{2}/\d{2,4})\b",after)
             delivery=iso_date(dm.group(1)) if dm else header_delivery
-            items.append({"code":code,"product":clean_spaces(desc),"quantity":qty,"unit":unit.upper(),"deliveryDate":delivery})
+            items.append({"code":code,"product":clean_spaces(desc),"quantity":float(qty.replace(".","").replace(",",".")),"unit":unit.upper(),"deliveryDate":delivery})
             break
 
     if not order: raise ValueError("Não foi possível identificar o número do pedido.")
