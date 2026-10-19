@@ -54,7 +54,7 @@ function renderMRP(){const scope=$('#mrp-scope').value,all=engine.mrp(dates.mrp,
 
 function pendingItemPanel(code,unit){
  const matches=deadlineOrders.filter(r=>String(r.code||'').trim().toUpperCase()===String(code||'').trim().toUpperCase()&&r.status==='Aguardando entrega'&&(!unit||normalizedUnit(r.unit)===normalizedUnit(unit))).map(r=>({...r,remaining:Math.max(0,deadlineNumber(r.quantity)-deadlineNumber(r.deliveredQuantity))})).filter(r=>r.remaining>0);
- const rows=matches.map(r=>'<tr><td>'+esc(r.orderNumber||r.order||r.purchaseOrder||r.number||'—')+'</td><td>'+esc(r.supplier||'—')+'</td><td>'+fmt(r.remaining)+' '+esc(r.unit||unit||'')+'</td><td>'+dt(r.newDate||r.deliveryDate)+'</td><td>'+badge(r.deliveredQuantity&&deadlineNumber(r.deliveredQuantity)>0?'Entrega parcial':'Pendente')+'</td></tr>');
+ const rows=matches.map(r=>'<tr><td>'+esc(r.orderNumber||r.order||r.purchaseOrder||r.number||'—')+'</td><td>'+esc(r.supplier||'—')+'</td><td>'+fmt(r.remaining)+' '+esc(r.unit||unit||'')+'</td><td>'+dt(r.newDate||r.deliveryDate)+'</td><td>'+'<span class="delivery-pending-status">'+(r.deliveredQuantity&&deadlineNumber(r.deliveredQuantity)>0?'Parcial':'Pendente')+'</span>'+'</td></tr>');
  return panel('Entregas pendentes · '+esc(code),matches.length?'<p class="hint">Somente pedidos comprados com saldo a receber, cadastrados em Prazo de entrega.</p>'+table(['Pedido','Fornecedor','Saldo pendente','Previsão','Situação'],rows):'<p class="hint">Nenhuma entrega pendente cadastrada para este material.</p>');
 }
 
