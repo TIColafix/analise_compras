@@ -10,7 +10,7 @@ const pages={indiretos:['Material de insumos e EPIs','Planejamento de escritóri
 let data,engine,page='dashboard',selected,stockSelection,focusId=null,deadlineOrders=[],externalSummary=null,dieselSummary=null,currentUser={name:'Usuário',role:'operator'};const dates={},notes={};
 const deadlineNumber=v=>{const n=Number(String(v??'').replace(/\./g,'').replace(',','.'));return Number.isFinite(n)?n:0};
 const normalizedUnit=v=>{const u=String(v||'').trim().toUpperCase();return ['UN','UND','UNID','UNIDADE'].includes(u)?'UN':u};
-function pendingDeadlineCoverage(item,date){const needed=Math.max(0,(item.safety??0)-(item.afterLead??item.warehouse??0));const matching=deadlineOrders.filter(r=>String(r.code||'').trim().toUpperCase()===String(item.id||'').trim().toUpperCase()&&r.status==='Aguardando entrega'&&normalizedUnit(r.unit)===normalizedUnit(item.unit));const pending=matching.reduce((s,r)=>s+Math.max(0,deadlineNumber(r.quantity)-deadlineNumber(r.deliveredQuantity)),0);return {pending,needed,covered:pending>0,fullyCovered:pending>=needed,orders:matching};}
+function pendingDeadlineCoverage(item,date){const needed=Math.max(0,(item.safety??0)-(item.afterLead??item.warehouse??0));const matching=deadlineOrders.filter(r=>deadlineItemMatches(r,item.id,item.unit)&&activeDeadlineItem(r)&&normalizedUnit(r.unit)===normalizedUnit(item.unit));const pending=matching.reduce((s,r)=>s+Math.max(0,deadlineNumber(r.quantity)-deadlineNumber(r.deliveredQuantity)),0);return {pending,needed,covered:pending>0,fullyCovered:pending>=needed,orders:matching};}
 setInterval(()=>{if(!document.hidden)fetch('/api/me',{cache:'no-store',credentials:'same-origin'}).catch(()=>{});},30000);
 async function loadCurrentUser(){try{const r=await fetch('/api/me?ts='+Date.now(),{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error('Sessão não identificada');const j=await r.json();currentUser={name:j.name||j.user||'Usuário',role:j.role||'operator'};document.documentElement.dataset.user=currentUser.name;}catch(e){currentUser={name:'Usuário',role:'operator'};}}
 async function loadAudit(){
@@ -61,9 +61,9 @@ function weeklyAveragePanel(i){
 }
 function deadlineItemMatches(r,code,unit){
  const norm=v=>String(v??'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
- const codeMatch=norm(r.code||r.productCode||r.itemCode||r.materialCode)===norm(code);
- const ru=normalizedUnit(r.unit||r.um||unit);
- return codeMatch&&(!unit||ru===normalizedUnit(unit));
+ // A mesma referência de material pode ter unidade de compra diferente da unidade de estoque.
+ // Identificar pelo código e manter a unidade de cada pedido visível no resultado.
+ return !!norm(code)&&norm(r.code||r.productCode||r.itemCode||r.materialCode)===norm(code);
 }
 function activeDeadlineItem(r){
  const status=String(r.status||'').trim().toLocaleLowerCase('pt-BR');
