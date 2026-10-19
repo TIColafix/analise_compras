@@ -33,7 +33,7 @@ def parse(path):
     header_delivery=iso_date(one(r"PRAZO DE ENTREGA:\s*(\d{2}/\d{2}/\d{4})"))
     payment=one(r"Condição Pgto\.\s*:\s*([^\n]+)")
     items=[]
-    lines=pages[0].splitlines() if pages else []
+    lines=text.splitlines()
     units="KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR"
 
     # Layout normal do Focco: Emp / Linha / Codigo / Descricao / UM / Quantidade.
