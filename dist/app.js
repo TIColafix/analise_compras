@@ -52,6 +52,13 @@ function renderMRP(){const scope=$('#mrp-scope').value,all=engine.mrp(dates.mrp,
  $('#message').value=notes[i.date+'|'+i.id]||'';
 }
 
+function weeklyAveragePanel(i){
+ const monthly=Number(i.monthly);
+ const valid=i.monthly!==null&&i.monthly!==undefined&&i.monthly!==''&&Number.isFinite(monthly)&&monthly>=0&&!i.missingMonth;
+ const week=valid?monthly/4:null;
+ return '<section class="panel weekly-average-panel"><h3>Média de consumo por semana · '+esc(i.id)+'</h3>'+
+ (valid?'<div class="weekly-average-summary"><div><small>Média mensal dos parâmetros</small><strong>'+qty(monthly,i.unit)+'</strong></div><div><small>Média semanal (4 semanas)</small><strong>'+qty(week,i.unit)+'</strong></div></div><div class="weekly-average-grid">'+[1,2,3,4].map(n=>'<div><small>Semana '+n+'</small><strong>'+qty(week,i.unit)+'</strong></div>').join('')+'</div><p class="hint">Estimativa uniforme: consumo médio mensal ÷ 4. Não representa consumo real de cada semana nem quantidade de compra recomendada.</p>':'<p class="hint">Média semanal indisponível: não há consumo médio mensal válido nos parâmetros deste item para a data selecionada.</p>')+'</section>';
+}
 function pendingItemPanel(code,unit){
  const matches=deadlineOrders.filter(r=>String(r.code||'').trim().toUpperCase()===String(code||'').trim().toUpperCase()&&r.status==='Aguardando entrega'&&(!unit||normalizedUnit(r.unit)===normalizedUnit(unit))).map(r=>({...r,remaining:Math.max(0,deadlineNumber(r.quantity)-deadlineNumber(r.deliveredQuantity))})).filter(r=>r.remaining>0);
  const rows=matches.map(r=>'<tr><td>'+esc(r.orderNumber||r.order||r.purchaseOrder||r.number||'—')+'</td><td>'+esc(r.supplier||'—')+'</td><td>'+fmt(r.remaining)+' '+esc(r.unit||unit||'')+'</td><td>'+dt(r.newDate||r.deliveryDate)+'</td><td>'+'<span class="delivery-pending-status">'+(r.deliveredQuantity&&deadlineNumber(r.deliveredQuantity)>0?'Parcial':'Pendente')+'</span>'+'</td></tr>');
@@ -68,7 +75,7 @@ function renderStock(selectionOnly=false){let list=engine.stock(dates.estoque),q
  const i=list.find(i=>i.id===stockSelection);if(!i){$('#stock-profile').innerHTML='';$('#stock-bottom').innerHTML='';return;}
  $('#stock-profile').innerHTML=panel('Perfil · '+esc(i.id),movementTable(i.rows))+panel('Consumo projetado do relatório',`<div class="metric red">${qty(i.projected,i.unit)}</div>`)+panel('Consumo com ajuste de datas',`<div class="metric green">${qty(i.adjusted,i.unit)}</div><p class="hint">${i.missingMonth?'Não há consumo médio mensal para este item/mês. Cobertura indisponível.':''}${esc(i.problems.join(' · '))}</p>`);
  $('#stock-profile').innerHTML+=warehousePanel(i);
- $('#stock-bottom').innerHTML=pendingItemPanel(i.id,i.unit)+panel('Pedidos OCL / AVR · '+esc(i.id),movementTable(i.orders))+panel('Parâmetros · '+esc(i.id),parameterPanel(i)+`<p class="hint">Consumo médio usado na cobertura: ${esc(i.monthlySource||'não informado')}. Saldo anterior: ${dt(i.previousDate)}. ${esc(i.message||'')}</p>`);
+ $('#stock-bottom').innerHTML=pendingItemPanel(i.id,i.unit)+panel('Pedidos OCL / AVR · '+esc(i.id),movementTable(i.orders))+panel('Parâmetros · '+esc(i.id),parameterPanel(i)+`<p class="hint">Consumo médio usado na cobertura: ${esc(i.monthlySource||'não informado')}. Saldo anterior: ${dt(i.previousDate)}. ${esc(i.message||'')}</p>`)+weeklyAveragePanel(i);
 }
 function renderMovements(){const id=$('#movement-product').value,item=engine.catalog.get(id)||{},kind=$('#movement-type').value,year=$('#movement-year').value,month=$('#movement-month').value;const eligible=engine.history.filter(r=>r.id===id&&['REP','REQ'].includes(r.type)&&(!kind||r.type===kind));const years=[...new Set(engine.history.filter(r=>r.id===id).map(r=>r.month.slice(0,4)))].sort().filter(y=>!year||y===year);const indices=months.map((_,n)=>n).filter(n=>month===''||n===Number(month));const totals=new Map();for(const r of eligible)totals.set(r.month,(totals.get(r.month)||0)+r.qty);const value=(y,m)=>totals.get(y+'-'+String(m+1).padStart(2,'0'))??null;$('#movement-title').textContent='Consumo histórico · '+(item.unit||'UM não cadastrada');
  $('#movement-table').innerHTML=table(['Ano',...indices.map(m=>months[m]),'Total '+esc(item.unit||'')],years.map(y=>`<tr><th>${y}</th>${indices.map(m=>`<td class="number">${fmt(value(y,m))}</td>`).join('')}<td class="number"><strong>${indices.every(m=>value(y,m)==null)?'—':fmt(indices.reduce((s,m)=>s+(value(y,m)||0),0))}</strong></td></tr>`));
