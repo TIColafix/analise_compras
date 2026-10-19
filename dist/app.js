@@ -59,10 +59,32 @@ function weeklyAveragePanel(i){
  return '<section class="panel weekly-average-panel"><h3>Média de consumo por semana · '+esc(i.id)+'</h3>'+
  (valid?'<div class="weekly-average-summary"><div><small>Média mensal dos parâmetros</small><strong>'+qty(monthly,i.unit)+'</strong></div><div><small>Média semanal (4 semanas)</small><strong>'+qty(week,i.unit)+'</strong></div></div><div class="weekly-average-grid">'+[1,2,3,4].map(n=>'<div><small>Semana '+n+'</small><strong>'+qty(week,i.unit)+'</strong></div>').join('')+'</div><p class="hint">Estimativa uniforme: consumo médio mensal ÷ 4. Não representa consumo real de cada semana nem quantidade de compra recomendada.</p>':'<p class="hint">Média semanal indisponível: não há consumo médio mensal válido nos parâmetros deste item para a data selecionada.</p>')+'</section>';
 }
+function deadlineItemMatches(r,code,unit){
+ const norm=v=>String(v??'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+ const codeMatch=norm(r.code||r.productCode||r.itemCode||r.materialCode)===norm(code);
+ const ru=normalizedUnit(r.unit||r.um||unit);
+ return codeMatch&&(!unit||ru===normalizedUnit(unit));
+}
+function activeDeadlineItem(r){
+ const status=String(r.status||'').trim().toLocaleLowerCase('pt-BR');
+ return !['entregue','concluído','concluido','cancelado','cancelada','excluído','excluido'].includes(status);
+}
 function pendingItemPanel(code,unit){
- const matches=deadlineOrders.filter(r=>String(r.code||'').trim().toUpperCase()===String(code||'').trim().toUpperCase()&&r.status==='Aguardando entrega'&&(!unit||normalizedUnit(r.unit)===normalizedUnit(unit))).map(r=>({...r,remaining:Math.max(0,deadlineNumber(r.quantity)-deadlineNumber(r.deliveredQuantity))})).filter(r=>r.remaining>0);
- const rows=matches.map(r=>'<tr><td>'+esc(r.orderNumber||r.order||r.purchaseOrder||r.number||'—')+'</td><td>'+esc(r.supplier||'—')+'</td><td>'+fmt(r.remaining)+' '+esc(r.unit||unit||'')+'</td><td>'+dt(r.newDate||r.deliveryDate)+'</td><td>'+'<span class="delivery-pending-status">'+(r.deliveredQuantity&&deadlineNumber(r.deliveredQuantity)>0?'Parcial':'Pendente')+'</span>'+'</td></tr>');
- return panel('Entregas pendentes · '+esc(code),matches.length?'<p class="hint">Somente pedidos comprados com saldo a receber, cadastrados em Prazo de entrega.</p>'+table(['Pedido','Fornecedor','Saldo pendente','Previsão','Situação'],rows):'<p class="hint">Nenhuma entrega pendente cadastrada para este material.</p>');
+ const matches=deadlineOrders.filter(r=>deadlineItemMatches(r,code,unit)&&activeDeadlineItem(r))
+ .map(r=>({...r,remaining:Math.max(0,deadlineNumber(r.quantity)-deadlineNumber(r.deliveredQuantity))}))
+ .filter(r=>r.remaining>0);
+ const rows=matches.map(r=>'<tr><td>'+esc(r.orderNumber||r.order||r.purchaseOrder||r.number||'—')+'</td><td>'+esc(r.supplier||'—')+'</td><td>'+fmt(r.remaining)+' '+esc(r.unit||unit||'')+'</td><td>'+dt(r.newDate||r.deliveryDate)+'</td><td><span class="delivery-pending-status">'+(deadlineNumber(r.deliveredQuantity)>0?'Parcial':'Pendente')+'</span></td></tr>');
+ return panel('Entregas pendentes · '+esc(code),matches.length?'<p class="hint">Pedidos cadastrados em Prazo de entrega com saldo a receber.</p>'+table(['Pedido','Fornecedor','Saldo pendente','Previsão','Situação'],rows):'<p class="hint">Nenhum pedido comprado com saldo pendente encontrado em Prazo de entrega para este material. Registros OCL do ERP, isoladamente, não confirmam entrega.</p>');
+}
+let pendingRefreshSerial=0;
+async function refreshSelectedStockDeadlines(){
+ const serial=++pendingRefreshSerial;
+ await loadDeadlineOrders();
+ if(serial!==pendingRefreshSerial||page!=='estoque')return;
+ const i=engine.stock(dates.estoque).find(x=>x.id===stockSelection);
+ if(!i)return;
+ const target=document.querySelector('#stock-bottom .pending-stock-deliveries');
+ if(target)target.innerHTML=pendingItemPanel(i.id,i.unit);
 }
 
 function renderStock(selectionOnly=false){let list=engine.stock(dates.estoque),q=$('#stock-search').value.toLocaleLowerCase('pt-BR');list=list.filter(i=>(i.id+' '+i.name).toLocaleLowerCase('pt-BR').includes(q)&&(!$('#stock-supplier').value||i.supplier===$('#stock-supplier').value)&&(!$('#stock-status').value||i.status===$('#stock-status').value)&&(!$('#stock-rupture').value||i.rupture===$('#stock-rupture').value)&&(!$('#stock-change').value||($('#stock-change').value==='unknown'?i.variation==null:i.variation!=null&&($('#stock-change').value==='up'?i.variation>0:$('#stock-change').value==='down'?i.variation<0:i.variation===0))));if(!list.some(i=>i.id===stockSelection))stockSelection=list[0]?.id;$('#stock-count').textContent=list.length+' materiais · '+dt(dates.estoque);
@@ -75,7 +97,8 @@ function renderStock(selectionOnly=false){let list=engine.stock(dates.estoque),q
  const i=list.find(i=>i.id===stockSelection);if(!i){$('#stock-profile').innerHTML='';$('#stock-bottom').innerHTML='';return;}
  $('#stock-profile').innerHTML=panel('Perfil · '+esc(i.id),movementTable(i.rows))+panel('Consumo projetado do relatório',`<div class="metric red">${qty(i.projected,i.unit)}</div>`)+panel('Consumo com ajuste de datas',`<div class="metric green">${qty(i.adjusted,i.unit)}</div><p class="hint">${i.missingMonth?'Não há consumo médio mensal para este item/mês. Cobertura indisponível.':''}${esc(i.problems.join(' · '))}</p>`);
  $('#stock-profile').innerHTML+=warehousePanel(i);
- $('#stock-bottom').innerHTML=pendingItemPanel(i.id,i.unit)+panel('Pedidos OCL / AVR · '+esc(i.id),movementTable(i.orders))+panel('Parâmetros · '+esc(i.id),parameterPanel(i)+`<p class="hint">Consumo médio usado na cobertura: ${esc(i.monthlySource||'não informado')}. Saldo anterior: ${dt(i.previousDate)}. ${esc(i.message||'')}</p>`)+weeklyAveragePanel(i);
+ $('#stock-bottom').innerHTML='<div class="pending-stock-deliveries">'+pendingItemPanel(i.id,i.unit)+'</div>'+panel('Pedidos OCL / AVR · '+esc(i.id),movementTable(i.orders))+panel('Parâmetros · '+esc(i.id),parameterPanel(i)+`<p class="hint">Consumo médio usado na cobertura: ${esc(i.monthlySource||'não informado')}. Saldo anterior: ${dt(i.previousDate)}. ${esc(i.message||'')}</p>`)+weeklyAveragePanel(i);
+ refreshSelectedStockDeadlines();
 }
 function renderMovements(){const id=$('#movement-product').value,item=engine.catalog.get(id)||{},kind=$('#movement-type').value,year=$('#movement-year').value,month=$('#movement-month').value;const eligible=engine.history.filter(r=>r.id===id&&['REP','REQ'].includes(r.type)&&(!kind||r.type===kind));const years=[...new Set(engine.history.filter(r=>r.id===id).map(r=>r.month.slice(0,4)))].sort().filter(y=>!year||y===year);const indices=months.map((_,n)=>n).filter(n=>month===''||n===Number(month));const totals=new Map();for(const r of eligible)totals.set(r.month,(totals.get(r.month)||0)+r.qty);const value=(y,m)=>totals.get(y+'-'+String(m+1).padStart(2,'0'))??null;$('#movement-title').textContent='Consumo histórico · '+(item.unit||'UM não cadastrada');
  $('#movement-table').innerHTML=table(['Ano',...indices.map(m=>months[m]),'Total '+esc(item.unit||'')],years.map(y=>`<tr><th>${y}</th>${indices.map(m=>`<td class="number">${fmt(value(y,m))}</td>`).join('')}<td class="number"><strong>${indices.every(m=>value(y,m)==null)?'—':fmt(indices.reduce((s,m)=>s+(value(y,m)||0),0))}</strong></td></tr>`));
