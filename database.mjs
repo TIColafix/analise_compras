@@ -49,3 +49,21 @@ export async function readAudit(limit=200){
   const r=await p.query('select id,created_at,actor,action,document_key,detail from app_audit order by id desc limit $1',[n]);return r.rows;
 }
 export async function closeDatabase(){if(pool){await pool.end();pool=null;}}
+
+/* Exporta todos os documentos e todo o histórico em uma mesma visão consistente. */
+export async function exportDatabaseSnapshot(){
+  const p=getPool();
+  if(!p)throw Error('PostgreSQL não configurado para exportação completa.');
+  await initDatabase();
+  const client=await p.connect();
+  try{
+    await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+    const documents=await client.query('select key,data,version,updated_at from app_documents order by key');
+    const audit=await client.query('select id,created_at,actor,action,document_key,detail from app_audit order by id');
+    await client.query('COMMIT');
+    return {documents:documents.rows,audit:audit.rows};
+  }catch(error){
+    await client.query('ROLLBACK').catch(()=>{});
+    throw error;
+  }finally{client.release();}
+}
