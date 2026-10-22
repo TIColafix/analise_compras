@@ -9,7 +9,7 @@ import {randomUUID,randomBytes,createHmac,timingSafeEqual,scryptSync} from 'node
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {readDocument,writeDocument,appendAudit,readAudit} from './database.mjs';
+import {readDocument,writeDocument,appendAudit,readAudit,exportDatabaseSnapshot} from './database.mjs';
 const root=fileURLToPath(new URL('.',import.meta.url));
 const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
 const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'python');
@@ -300,7 +300,14 @@ createServer(async(req,res)=>{try{
   ]);
   if(main===null)throw Error('Base principal não encontrada.');
   const stamp=new Date().toISOString().slice(0,10);
-  const backup={format:'colafix-compras-backup',version:1,createdAt:new Date().toISOString(),documents:{main,cement,diesel,deadlines,maintenance}};
+  // Mantém os campos anteriores e inclui TODOS os documentos e a auditoria do PostgreSQL.
+  // A exportação é somente leitura: nenhum cadastro é alterado ou apagado.
+  const snapshot=process.env.DATABASE_URL?await exportDatabaseSnapshot():null;
+  const backup={format:'colafix-compras-backup',version:2,createdAt:new Date().toISOString(),
+    documents:{main,cement,diesel,deadlines,maintenance},
+    database:snapshot,
+    warning:snapshot?null:'Banco PostgreSQL indisponível: backup parcial dos módulos legados; não é cópia completa.'
+  };
   const payload=JSON.stringify(backup,null,2);
   res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Content-Disposition':`attachment; filename="backup-colafix-${stamp}.json"`,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
   return res.end(payload);
