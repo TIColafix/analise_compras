@@ -50,8 +50,8 @@ def parse(path):
         if not m:
             # Versão FoccoERP 3.184: a quantidade antecede a unidade e pode estar colada.
             extra=[
-                r"^\\d+\\s+\\d+\\s+([A-Z0-9][A-Z0-9._/-]*)\\s+(.+?)\\s+([\\d.]+,\\d+)\\s*("+units+r")(?=\\s|$)",
-                r"^\\d+\\s+([A-Z0-9][A-Z0-9._/-]*)\\s+(.+?)\\s+([\\d.]+,\\d+)\\s*("+units+r")(?=\\s|$)"
+                r"^\d+\s+\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+([\d.]+,\d+)\s*("+units+r")(?=\s|$)",
+                r"^\d+\s+([A-Z0-9][A-Z0-9._/-]*)\s+(.+?)\s+([\d.]+,\d+)\s*("+units+r")(?=\s|$)"
             ]
             for pattern in extra:
                 m=re.search(pattern,s,re.I)
@@ -62,7 +62,7 @@ def parse(path):
             code,desc,unit,qty=m.groups()
         # Alguns códigos longos são quebrados em duas linhas no PDF.
         next_line=clean_spaces(lines[i+1]) if i+1<len(lines) else ""
-        if len(code)>8 and re.fullmatch(r"\\d{1,3}",next_line):
+        if len(code)>8 and re.fullmatch(r"\d{1,3}",next_line):
             code+=next_line
         delivery=""
         for nxt in lines[i+1:i+8]:
