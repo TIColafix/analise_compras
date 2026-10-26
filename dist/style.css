@@ -1850,3 +1850,33 @@ html[data-colafix-theme="dark"] #diesel-view .cement-list button[data-delete-loa
   color:#9f1239!important;
   -webkit-text-fill-color:#9f1239!important;
 }
+
+
+/* Insumos/EPIs: prazos com o mesmo padrão visual da Matéria-prima. */
+#indiretos-view .deadline-report .table-scroll,
+#indiretos-view .panel .table-scroll {max-width:100%;overflow-x:auto}
+#indiretos-view .deadlines-grid{width:100%;min-width:1180px!important;table-layout:auto!important;font-size:12px}
+#indiretos-view .deadlines-grid th,#indiretos-view .deadlines-grid td{
+  padding:10px 8px!important;font-size:12px!important;line-height:1.35;
+  white-space:nowrap;vertical-align:middle;
+}
+#indiretos-view .deadlines-grid th:nth-child(2),
+#indiretos-view .deadlines-grid td:nth-child(2){min-width:210px;max-width:320px;overflow:hidden;text-overflow:ellipsis}
+#indiretos-view .deadlines-grid th:nth-child(5),
+#indiretos-view .deadlines-grid td:nth-child(5){min-width:140px;max-width:230px;overflow:hidden;text-overflow:ellipsis}
+#indiretos-view .deadlines-grid th:last-child,
+#indiretos-view .deadlines-grid td:last-child{min-width:132px;width:132px}
+#indiretos-view .deadlines-grid tbody tr.ind-late>td{background:#60292f!important;color:#fff!important}
+#indiretos-view .deadlines-grid tbody tr.ind-done>td{background:#194d3e!important;color:#fff!important}
+#indiretos-view .deadlines-grid tbody tr.ind-late:hover>td{background:#73363d!important}
+#indiretos-view .deadlines-grid tbody tr.ind-done:hover>td{background:#24624f!important}
+#indiretos-view .ind-actions{white-space:nowrap;min-width:125px}
+#indiretos-view .ind-actions button{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:32px;min-width:32px;height:32px;padding:0;margin-right:3px;
+  border-radius:5px;border:1px solid #8da7c3;
+  background:#e8f1fc!important;color:#183452!important;
+  -webkit-text-fill-color:#183452!important;font-size:17px;font-weight:700;cursor:pointer;
+}
+#indiretos-view .ind-actions button[data-receive]{background:#d9fbe8!important;color:#166534!important;-webkit-text-fill-color:#166534!important}
+#indiretos-view .ind-actions button[data-cancel]{background:#fff1f2!important;color:#9f1239!important;-webkit-text-fill-color:#9f1239!important}
