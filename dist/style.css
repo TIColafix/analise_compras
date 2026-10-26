@@ -1821,3 +1821,32 @@ html[data-colafix-theme="dark"] :is(#granel-view,#ensacado-view) .cement-list .l
   color:#182b42!important;
   -webkit-text-fill-color:#182b42!important;
 }
+
+
+/* Diesel: preservar cores de status e manter texto legível no modo escuro. */
+html[data-colafix-theme="dark"] #diesel-view select.load-status,
+html[data-colafix-theme="dark"] #diesel-view .cement-list select.load-status,
+html[data-colafix-theme="dark"] #diesel-view .cement-form-panel select.load-status {
+  color:#172b44!important;
+  -webkit-text-fill-color:#172b44!important;
+  opacity:1!important;
+  font-weight:700!important;
+}
+html[data-colafix-theme="dark"] #diesel-view select.load-status option {
+  background:#ffffff!important;
+  color:#172b44!important;
+}
+html[data-colafix-theme="dark"] #diesel-view .cement-list button[data-edit],
+html[data-colafix-theme="dark"] #diesel-view .cement-form-panel button[data-cancel] {
+  background:#e7eef7!important;
+  color:#172b44!important;
+  -webkit-text-fill-color:#172b44!important;
+  border:1px solid #8fa6c0!important;
+  opacity:1!important;
+  font-weight:700!important;
+}
+html[data-colafix-theme="dark"] #diesel-view .cement-list button[data-delete-load] {
+  background:#fff1f2!important;
+  color:#9f1239!important;
+  -webkit-text-fill-color:#9f1239!important;
+}
