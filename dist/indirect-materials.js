@@ -113,6 +113,11 @@ if(tab==='MRP'){
  query.oninput=()=>{const pos=query.selectionStart;root.dataset.mrpQuery=query.value;render();const el=root.querySelector('[data-mrp-query]');el.focus();el.setSelectionRange(pos,pos)};
  clear.onclick=()=>{root.dataset.mrpQuery='';selectedCode='';render()};
 }
+const importDateSelect=root.querySelector('[data-ind-import-date]');
+if(importDateSelect)importDateSelect.onchange=()=>{
+ const note=root.querySelector('.ind-stock-source-note');
+ if(note)note.textContent=importDateSelect.value?'Lote registrado em '+br(importDateSelect.value)+'. Esta data é apenas referência do carregamento; a tabela continua mostrando o estoque atual.':'DADOS DAS FONTES DO SISTEMA · '+(lastImport?'Último lote registrado: '+br(lastImport):'Nenhum lote registrado')+' · '+history.length+' lote(s) no histórico. Os saldos exibidos são os atuais.';
+};
 const resetStock=root.querySelector('[data-stock-reset]');if(resetStock)resetStock.onclick=()=>{search='';category='Todos';for(const key of ['stockStatus','stockSupplier','stockRupture','stockVariation'])delete root.dataset[key];render()};
 const stockInput=root.querySelector('[data-stock-search]');if(stockInput)stockInput.oninput=e=>{const pos=e.target.selectionStart;search=e.target.value;render();const el=root.querySelector('[data-stock-search]');if(el){el.focus();el.setSelectionRange(pos,pos)}};
 const stockStatusFilter=root.querySelector('[data-stock-status]');if(stockStatusFilter){stockStatusFilter.value=root.dataset.stockStatus||'';stockStatusFilter.onchange=e=>{root.dataset.stockStatus=e.target.value;render()};}
