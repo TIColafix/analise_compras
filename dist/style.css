@@ -1880,3 +1880,17 @@ html[data-colafix-theme="dark"] #diesel-view .cement-list button[data-delete-loa
 }
 #indiretos-view .ind-actions button[data-receive]{background:#d9fbe8!important;color:#166534!important;-webkit-text-fill-color:#166534!important}
 #indiretos-view .ind-actions button[data-cancel]{background:#fff1f2!important;color:#9f1239!important;-webkit-text-fill-color:#9f1239!important}
+
+
+/* Estoque de Insumos/EPIs: padrão visual e dimensões da Matéria-prima. */
+#indiretos-view .ind-stock-layout{display:grid;grid-template-columns:minmax(0,2.6fr) minmax(310px,1fr);gap:16px;align-items:start}
+#indiretos-view .ind-stock-layout>section,#indiretos-view .ind-stock-layout>aside{min-width:0}
+#indiretos-view .ind-stock-layout .table-scroll{width:100%;max-width:100%;overflow-x:auto}
+#indiretos-view .ind-stock-layout table{width:100%;min-width:650px;table-layout:auto}
+#indiretos-view .ind-stock-layout th,#indiretos-view .ind-stock-layout td{padding:11px 9px;vertical-align:middle}
+#indiretos-view .ind-stock-layout .ind-stock-badge{display:inline-flex;min-width:78px;justify-content:center;padding:6px 9px;border:1px solid;border-radius:7px;font-size:12px;font-weight:700;line-height:1.3}
+#indiretos-view .ind-stock-badge.ok{background:#075c44;color:#e9fff3;border-color:#27b580}
+#indiretos-view .ind-stock-badge.attention{background:#91600b;color:#fff9e9;border-color:#eab54e}
+#indiretos-view .ind-stock-badge.critical{background:#92223d;color:#fff0f2;border-color:#f16b81}
+#indiretos-view .ind-stock-badge.review{background:#465772;color:#f3f7ff;border-color:#8192ae}
+@media(max-width:1000px){#indiretos-view .ind-stock-layout{grid-template-columns:minmax(0,1fr)}}
