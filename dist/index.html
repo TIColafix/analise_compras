@@ -12,7 +12,7 @@
 <main><header><div class="heading"><h1>Dashboard</h1><span id="page-subtitle">Visão geral</span></div><label id="analysis-label">Data de análise<select id="analysis" aria-label="Data de análise"></select></label></header>
 <div class="demo"><strong>DADOS DAS FONTES DO POWER BI</strong><span><span id="source-summary">Carregando as bases importadas…</span></span></div>
 <section id="dashboard-view" class="page-view"><div id="dashboard-alerts" aria-live="polite"></div><section id="source-info" class="panel source-info-compact"></section></section>
-<section id="mp-relatorio-view" class="page-view" hidden></section><section id="mrp-view" class="page-view" hidden>
+<section id="mp-relatorio-view" class="page-view" hidden><div class="mp-report-header"><div><h2>Relatório de Materiais</h2><p>Selecione os materiais para montar seu relatório visual.</p></div></div><div class="mp-report-notice">Carregando lista de materiais... Se esta mensagem permanecer, atualize a página.</div></section><section id="mrp-view" class="page-view" hidden>
 <section class="filters"><label>Fornecedor preferencial<select id="supplier"><option value="">Todos os fornecedores</option></select></label><label>Exibir<select id="mrp-scope"><option value="all">Todos os itens do relatório</option><option value="erp">Compras indicadas pelo ERP (CSV)</option><option value="needs">Com alerta calculado</option><option value="review">Dados a revisar</option></select></label><label>Material selecionado<input id="mrp-item-filter" type="search" placeholder="Código ou nome do material"></label><button id="mrp-clear-item" type="button">Limpar material</button><div id="count" class="count"></div></section>
 <section class="materials"><div class="section-title"><h2>Itens do relatório MRP</h2><span>Selecione um material para analisar</span></div><div id="materials" class="material-grid"></div></section>
 <div id="detail" aria-live="polite"></div>
@@ -93,4 +93,4 @@ function mount(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
 })();
-</script><script type="module" src="/mp-report.js?v=20261027"></script></body></html>
+</script><script type="module" src="/mp-report.js?v=20261027-fix2"></script></body></html>
