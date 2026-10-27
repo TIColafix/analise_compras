@@ -1,6 +1,13 @@
 // Relatório visual de Matéria-prima — leitura dos dados atuais, sem mutações.
 const el=document.getElementById('mp-relatorio-view');
-let all=[],picked=new Set(),shown=false,query='',status='',reportDate='';
+let all=[],picked=new Set(),shown=false,query='',status='',reportDate='',pendingOrders=[],deliveryError='';
+const number=v=>{if(typeof v==='number')return v;const x=String(v??'').trim().replace(/\s/g,'');return Number(x.includes(',')?x.replace(/\./g,'').replace(',','.'):x)||0};
+const dateKey=v=>{const s=String(v||'').slice(0,10);if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:''};
+const formatDate=v=>{const d=dateKey(v);return d?d.split('-').reverse().join('/'):'—'};
+const normalize=v=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+function deliveryFor(item){const code=normalize(item.id),matches=pendingOrders.filter(r=>normalize(r.code)===code&&normalize(r.status)!=='CANCELADO'&&normalize(r.status)!=='ENTREGUE').map(r=>({...r,remaining:Math.max(0,number(r.quantity)-number(r.deliveredQuantity)),date:dateKey(r.newDate)||dateKey(r.deliveryDate)})).filter(r=>r.remaining>0).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'));return matches[0]||null}
+async function refreshDeliveries(){try{const r=await fetch('/api/deadlines',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const j=await r.json();pendingOrders=Array.isArray(j.orders)?j.orders:[];deliveryError='';}catch(e){deliveryError='Não foi possível consultar os pedidos: '+e.message;}if(all.length)draw()}
+
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=v=>v==null||!Number.isFinite(Number(v))?'—':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(Number(v));
 const pic=name=>{
@@ -16,8 +23,8 @@ const pic=name=>{
 };
 function card(i){
  const st=String(i.status||'Revisar dados'),cl=st==='Crítico'?'critical':st==='Atenção'?'attention':st==='Ok'?'ok':'review';
- const cover=i.warehouseCoverage??i.coverage;
- return '<article class="mp-report-card '+cl+'"><div class="mp-report-card-top"><b>'+esc(i.id)+'</b><span class="mp-report-pill '+cl+'">'+esc(st)+'</span></div>'+pic(i.name)+'<h3 title="'+esc(i.name)+'">'+esc(i.name)+'</h3><div class="mp-report-unit">'+esc(i.unit||'UN')+'</div><div class="mp-report-kpis"><div>Saldo atual<strong>'+fmt(i.stock)+'</strong></div><div>Estoque seg.<strong>'+fmt(i.safetyStock??i.safety??i.securityStock)+'</strong></div><div>Consumo médio<strong>'+fmt(i.monthlyConsumption??i.consumption??i.averageConsumption)+'</strong></div><div>Cobertura<strong class="'+cl+'">'+fmt(cover)+' dias</strong></div></div><div class="mp-report-card-foot"><span>🚚 Próxima entrega<br><strong>'+esc(i.nextDelivery||'—')+'</strong></span><span>Situação<br><strong>'+esc(i.rupture||st)+'</strong></span></div></article>';
+ const cover=i.warehouseCoverage??i.coverage;const delivery=deliveryFor(i);const due=delivery?.date;const late=!!due&&due<new Date().toLocaleDateString('en-CA');const deliveryText=delivery?formatDate(due):deliveryError?'Indisponível':'—';const deliveryStatus=delivery?(late?'Atrasado':number(delivery.deliveredQuantity)>0?'Parcial':'Pendente'):deliveryError?'Consulta indisponível':'Sem pedido';
+ return '<article class="mp-report-card '+cl+'"><div class="mp-report-card-top"><b>'+esc(i.id)+'</b><span class="mp-report-pill '+cl+'">'+esc(st)+'</span></div>'+pic(i.name)+'<h3 title="'+esc(i.name)+'">'+esc(i.name)+'</h3><div class="mp-report-unit">'+esc(i.unit||'UN')+'</div><div class="mp-report-kpis"><div>Saldo atual<strong>'+fmt(i.stock)+'</strong></div><div>Estoque seg.<strong>'+fmt(i.safetyStock??i.safety??i.securityStock)+'</strong></div><div>Consumo médio<strong>'+fmt(i.monthlyConsumption??i.consumption??i.averageConsumption)+'</strong></div><div>Cobertura<strong class="'+cl+'">'+fmt(cover)+' dias</strong></div></div><div class="mp-report-card-foot"><span>🚚 Próxima entrega<br><strong>'+esc(deliveryText)+'</strong></span><span>Situação<br><strong>'+esc(deliveryStatus)+'</strong></span></div></article>';
 }
 function draw(){
  if(!el)return;
@@ -35,3 +42,5 @@ function draw(){
 }
 window.addEventListener('mp-report-data',e=>{const d=e.detail||{};all=Array.isArray(d.items)?d.items:[];reportDate=d.date||'';picked=new Set([...picked].filter(id=>all.some(i=>i.id===id)));draw()});
 try{draw();window.dispatchEvent(new Event('mp-report-request'));}catch(error){console.error('Falha ao iniciar Relatório MP:',error);if(el)el.innerHTML='<div class="mp-report-notice">Não foi possível iniciar o relatório: '+String(error.message||error).replace(/[<>]/g,'')+'</div>';}
+
+refreshDeliveries();window.addEventListener('focus',refreshDeliveries);
