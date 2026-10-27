@@ -1942,3 +1942,19 @@ html[data-colafix-theme="dark"] #diesel-view .cement-list button[data-delete-loa
 .mp-report-empty{grid-column:1/-1;padding:30px;text-align:center;background:#15273d;border-radius:9px;color:#b8cee7}
 @media(max-width:600px){.mp-report-tools,.mp-report-tools input{width:100%}.mp-report-grid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}}
 @media print{body:has(#mp-relatorio-view:not([hidden])) .sidebar,body:has(#mp-relatorio-view:not([hidden])) header,body:has(#mp-relatorio-view:not([hidden])) .demo,body:has(#mp-relatorio-view:not([hidden])) .mp-report-tools,body:has(#mp-relatorio-view:not([hidden])) .mp-report-selection,body:has(#mp-relatorio-view:not([hidden])) .mp-report-picklist,body:has(#mp-relatorio-view:not([hidden])) .mp-report-notice{display:none!important}body:has(#mp-relatorio-view:not([hidden])){padding:0!important;background:white!important}body:has(#mp-relatorio-view:not([hidden])) main{padding:10px!important;margin:0!important}.mp-report-card{break-inside:avoid;print-color-adjust:exact;-webkit-print-color-adjust:exact}.mp-report-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* MP cards: proporções e hierarquia do modelo horizontal aprovado */
+#mp-relatorio-view .mp-report-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+#mp-relatorio-view .mp-report-card{padding:10px 11px;border-width:2px;border-radius:9px;background:linear-gradient(155deg,#101f31,#081522)}
+#mp-relatorio-view .mp-report-picture{height:108px;margin:4px 0 6px}
+#mp-relatorio-view .mp-report-card h3{font-size:13px;line-height:1.3;min-height:34px}
+#mp-relatorio-view .mp-report-kpis{gap:5px;margin-bottom:10px}
+#mp-relatorio-view .mp-report-kpis>div{padding:7px 6px}
+#mp-relatorio-view .mp-report-kpis strong{font-size:17px}
+#mp-relatorio-view .mp-report-card-foot{gap:5px;font-size:10px}
+#mp-relatorio-view .mp-report-card-foot strong{font-size:11px}
+@media(max-width:1450px){#mp-relatorio-view .mp-report-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:1120px){#mp-relatorio-view .mp-report-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:780px){#mp-relatorio-view .mp-report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:490px){#mp-relatorio-view .mp-report-grid{grid-template-columns:minmax(0,1fr)}}
+@media print{#mp-relatorio-view .mp-report-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
