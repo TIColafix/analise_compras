@@ -1,5 +1,5 @@
 // Relatório visual de Matéria-prima — leitura dos dados atuais, sem mutações.
-const el=document.getElementById('mp-report-view');
+const el=document.getElementById('mp-relatorio-view');
 let all=[],picked=new Set(),shown=false,query='',status='',reportDate='';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=v=>v==null||!Number.isFinite(Number(v))?'—':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(Number(v));
