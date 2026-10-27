@@ -34,4 +34,4 @@ function draw(){
  el.querySelector('#mp-report-print').onclick=()=>{if(!picked.size){el.querySelector('#mp-report-notice').textContent='Selecione os materiais antes de exportar.';return}window.print()};
 }
 window.addEventListener('mp-report-data',e=>{const d=e.detail||{};all=Array.isArray(d.items)?d.items:[];reportDate=d.date||'';picked=new Set([...picked].filter(id=>all.some(i=>i.id===id)));draw()});
-draw();
+try{draw();window.dispatchEvent(new Event('mp-report-request'));}catch(error){console.error('Falha ao iniciar Relatório MP:',error);if(el)el.innerHTML='<div class="mp-report-notice">Não foi possível iniciar o relatório: '+String(error.message||error).replace(/[<>]/g,'')+'</div>';}
