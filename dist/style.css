@@ -1894,3 +1894,13 @@ html[data-colafix-theme="dark"] #diesel-view .cement-list button[data-delete-loa
 #indiretos-view .ind-stock-badge.critical{background:#92223d;color:#fff0f2;border-color:#f16b81}
 #indiretos-view .ind-stock-badge.review{background:#465772;color:#f3f7ff;border-color:#8192ae}
 @media(max-width:1000px){#indiretos-view .ind-stock-layout{grid-template-columns:minmax(0,1fr)}}
+
+
+/* Cabeçalho e procedência dos lotes de Insumos/EPIs, como no estoque de MP. */
+#indiretos-view .ind-stock-monitor-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin:0 0 16px;padding:4px 0 4px 18px;border-left:3px solid #ef3340}
+#indiretos-view .ind-stock-monitor-head h2{font-size:27px;line-height:1.2;margin:0 0 4px}
+#indiretos-view .ind-stock-monitor-head small{color:#91a8c2;font-size:13px}
+#indiretos-view .ind-stock-monitor-head label{display:flex;flex-direction:column;gap:6px;min-width:170px;font-size:12px;font-weight:600}
+#indiretos-view .ind-stock-monitor-head select{width:170px;max-width:100%;height:36px}
+#indiretos-view .ind-stock-source-note{background:#fff3de;color:#86520d;border-radius:5px;padding:12px 14px;margin:0 0 20px;font-size:12px;line-height:1.5}
+@media(max-width:650px){#indiretos-view .ind-stock-monitor-head{flex-direction:column}#indiretos-view .ind-stock-monitor-head label,#indiretos-view .ind-stock-monitor-head select{width:100%}}
