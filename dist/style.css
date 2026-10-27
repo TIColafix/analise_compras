@@ -1958,3 +1958,6 @@ html[data-colafix-theme="dark"] #diesel-view .cement-list button[data-delete-loa
 @media(max-width:780px){#mp-relatorio-view .mp-report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:490px){#mp-relatorio-view .mp-report-grid{grid-template-columns:minmax(0,1fr)}}
 @media print{#mp-relatorio-view .mp-report-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Autonomia do estoque: sem destaque retangular no valor */
+#mp-relatorio-view .mp-report-kpis strong.critical,#mp-relatorio-view .mp-report-kpis strong.attention,#mp-relatorio-view .mp-report-kpis strong.ok{background:transparent!important;box-shadow:none!important;padding:0!important;border:0!important}
