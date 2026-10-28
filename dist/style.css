@@ -1989,3 +1989,20 @@ html[data-colafix-theme="dark"] #manutencao-view #qf .maintenance-actions button
 html[data-colafix-theme="dark"] #manutencao-view #qf .maintenance-actions #qc{background:#34465e!important;border-color:#657d9c!important}
 html[data-colafix-theme="dark"] #manutencao-view .mn-share-center,
 html[data-colafix-theme="dark"] #manutencao-view .mn-share-centered-row{background:#1c293b!important;color:#e8f1ff!important;border:1px solid #405773!important;border-radius:10px!important}
+
+/* Cotação Manutenção: contraste do cartão externo, título e rótulos */
+#manutencao-view #mn-quote-editor,
+html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor{background:#1d2b3e!important;color:#edf4ff!important;border:1px solid #425c7b!important;border-radius:10px!important;padding:16px!important;box-shadow:none!important}
+#manutencao-view #mn-quote-editor h3,
+#manutencao-view #mn-quote-editor label,
+#manutencao-view #mn-quote-editor .maintenance-fields label,
+html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor h3,
+html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor label{color:#f0f6ff!important;-webkit-text-fill-color:#f0f6ff!important;opacity:1!important}
+#manutencao-view #mn-quote-editor h3{background:#2b405b!important;padding:12px 14px!important;border-radius:7px!important;margin:0 0 15px!important;font-size:16px!important;text-align:left!important}
+#manutencao-view #mn-quote-editor #qf{background:transparent!important;border:0!important;padding:0!important;color:#f0f6ff!important}
+#manutencao-view #mn-quote-editor #qf label{font-size:13px!important;font-weight:600!important;display:flex!important;flex-direction:column!important;gap:7px!important;margin-bottom:12px!important}
+#manutencao-view #mn-quote-editor #qf input,
+#manutencao-view #mn-quote-editor #qf textarea{background:#122238!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #5b7595!important;border-radius:7px!important}
+#manutencao-view #mn-quote-editor .maintenance-actions{display:flex!important;gap:9px!important;margin-top:12px!important}
+#manutencao-view #mn-quote-editor .maintenance-actions button{background:#1679e6!important;color:white!important;-webkit-text-fill-color:white!important;border:1px solid #368df0!important;border-radius:7px!important;padding:10px 16px!important;font-weight:700!important}
+#manutencao-view #mn-quote-editor .maintenance-actions #qc{background:#354960!important;border-color:#607a98!important}
