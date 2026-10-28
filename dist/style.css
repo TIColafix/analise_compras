@@ -2012,3 +2012,16 @@ html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor label{color:#f
 #manutencao-view #mn-quote-editor .maintenance-fields label,
 #manutencao-view #mn-quote-editor #qf label{color:#14273d!important;-webkit-text-fill-color:#14273d!important;text-shadow:none!important;opacity:1!important}
 #manutencao-view #mn-quote-editor h3{color:#fff!important;-webkit-text-fill-color:#fff!important}
+
+/* Cotações de MP — editor correto (mpquotes.js), tema escuro consistente */
+#mpquotes-view #mp-qform .mpq-quote-editor{background:#1d2b3e!important;color:#edf4ff!important;border:1px solid #4a6482!important;border-radius:10px!important;padding:16px!important;margin:12px 0!important;box-shadow:none!important}
+#mpquotes-view #mp-qform .mpq-quote-editor h4{background:#2a405c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;margin:0 0 15px!important;padding:12px 14px!important;border-radius:7px!important;font-size:15px!important;text-align:left!important}
+#mpquotes-view #mp-qform #mpqf{background:transparent!important;color:#edf4ff!important;padding:0!important;border:0!important}
+#mpquotes-view #mp-qform #mpqf label{color:#edf4ff!important;-webkit-text-fill-color:#edf4ff!important;opacity:1!important;font-size:13px!important;font-weight:600!important;display:flex!important;flex-direction:column!important;gap:7px!important}
+#mpquotes-view #mp-qform #mpqf .maintenance-fields{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important;margin-bottom:13px!important}
+#mpquotes-view #mp-qform #mpqf input{background:#112238!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #5b7595!important;border-radius:7px!important;min-height:41px!important;padding:9px 11px!important;width:100%!important;box-sizing:border-box!important}
+#mpquotes-view #mp-qform #mpqf input::placeholder{color:#9eb0c8!important;-webkit-text-fill-color:#9eb0c8!important}
+#mpquotes-view #mp-qform #mpqf>button{background:#1679e6!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #358ef1!important;border-radius:7px!important;padding:10px 15px!important;margin:13px 8px 0 0!important;font-weight:700!important;cursor:pointer!important}
+#mpquotes-view #mp-qform #mpqf #mpq-cancel{background:#34465e!important;border-color:#647b98!important}
+@media(max-width:1000px){#mpquotes-view #mp-qform #mpqf .maintenance-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:560px){#mpquotes-view #mp-qform #mpqf .maintenance-fields{grid-template-columns:minmax(0,1fr)!important}}
