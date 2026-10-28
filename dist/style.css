@@ -1961,3 +1961,16 @@ html[data-colafix-theme="dark"] #diesel-view .cement-list button[data-delete-loa
 
 /* Autonomia do estoque: sem destaque retangular no valor */
 #mp-relatorio-view .mp-report-kpis strong.critical,#mp-relatorio-view .mp-report-kpis strong.attention,#mp-relatorio-view .mp-report-kpis strong.ok{background:transparent!important;box-shadow:none!important;padding:0!important;border:0!important}
+
+/* Pedidos mensais de cimento: mesmo alinhamento da seção Novo contrato */
+#bulk-prices-root .bulk-monthly-panel{margin-top:0;padding:16px 17px 17px}
+#bulk-prices-root .bulk-monthly-panel h3{margin:0 0 12px;font-size:16px}
+#bulk-prices-root .bulk-monthly-panel p{font-size:12px;color:#a9bfd9;margin:0 0 14px}
+#bulk-prices-root .bulk-monthly-panel .bulk-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 130px;align-items:end;gap:10px;margin:0 0 14px}
+#bulk-prices-root .bulk-monthly-panel .bulk-form label{min-width:0;display:flex;flex-direction:column;gap:7px;color:#eaf2ff;font-size:12px;font-weight:600}
+#bulk-prices-root .bulk-monthly-panel .bulk-form input,#bulk-prices-root .bulk-monthly-panel .bulk-form select{width:100%;min-width:0;height:41px;padding:8px 11px;background:#102238;color:#fff;border:1px solid #5a7698;border-radius:7px;font-size:13px}
+#bulk-prices-root .bulk-monthly-panel .bulk-form button{height:41px;min-width:0;padding:8px 12px;background:#1679e6;color:#fff;border:1px solid #3294fa;border-radius:7px;font-weight:700}
+#bulk-prices-root .bulk-monthly-panel .bulk-scroll{margin-top:10px}
+#bulk-prices-root .bulk-monthly-panel #bulk-monthly-message{margin:7px 0 10px;color:#9dd7b5}
+@media(max-width:1000px){#bulk-prices-root .bulk-monthly-panel .bulk-form{grid-template-columns:repeat(2,minmax(0,1fr))}#bulk-prices-root .bulk-monthly-panel .bulk-form button{grid-column:span 2}}
+@media(max-width:560px){#bulk-prices-root .bulk-monthly-panel .bulk-form{grid-template-columns:minmax(0,1fr)}#bulk-prices-root .bulk-monthly-panel .bulk-form button{grid-column:auto}}
