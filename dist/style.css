@@ -1974,3 +1974,18 @@ html[data-colafix-theme="dark"] #diesel-view .cement-list button[data-delete-loa
 #bulk-prices-root .bulk-monthly-panel #bulk-monthly-message{margin:7px 0 10px;color:#9dd7b5}
 @media(max-width:1000px){#bulk-prices-root .bulk-monthly-panel .bulk-form{grid-template-columns:repeat(2,minmax(0,1fr))}#bulk-prices-root .bulk-monthly-panel .bulk-form button{grid-column:span 2}}
 @media(max-width:560px){#bulk-prices-root .bulk-monthly-panel .bulk-form{grid-template-columns:minmax(0,1fr)}#bulk-prices-root .bulk-monthly-panel .bulk-form button{grid-column:auto}}
+
+/* Manutenção — formulário de cotação no tema escuro */
+html[data-colafix-theme="dark"] #manutencao-view #qf,
+html[data-colafix-theme="dark"] #manutencao-view #qf label,
+html[data-colafix-theme="dark"] #manutencao-view #qf .maintenance-actions{color:#e8f1ff!important}
+html[data-colafix-theme="dark"] #manutencao-view #qf{background:#1c293b!important;border:1px solid #47617f!important;border-radius:10px;padding:16px!important}
+html[data-colafix-theme="dark"] #manutencao-view #qf input,
+html[data-colafix-theme="dark"] #manutencao-view #qf select,
+html[data-colafix-theme="dark"] #manutencao-view #qf textarea{background:#112238!important;color:#f7faff!important;-webkit-text-fill-color:#f7faff!important;border:1px solid #607b9b!important;border-radius:7px!important;min-height:40px;padding:9px 11px!important}
+html[data-colafix-theme="dark"] #manutencao-view #qf input::placeholder,
+html[data-colafix-theme="dark"] #manutencao-view #qf textarea::placeholder{color:#9db0ca!important;-webkit-text-fill-color:#9db0ca!important}
+html[data-colafix-theme="dark"] #manutencao-view #qf .maintenance-actions button{background:#1776df!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border:1px solid #398eec!important;border-radius:7px;padding:10px 16px;font-weight:700}
+html[data-colafix-theme="dark"] #manutencao-view #qf .maintenance-actions #qc{background:#34465e!important;border-color:#657d9c!important}
+html[data-colafix-theme="dark"] #manutencao-view .mn-share-center,
+html[data-colafix-theme="dark"] #manutencao-view .mn-share-centered-row{background:#1c293b!important;color:#e8f1ff!important;border:1px solid #405773!important;border-radius:10px!important}
