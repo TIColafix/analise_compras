@@ -12,6 +12,9 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const fmt=v=>v==null||!Number.isFinite(Number(v))?'—':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(Number(v));
 const pic=name=>{
  const n=String(name||'').toUpperCase();
+ const photo=/FILME.*STRETCH|STRETCH/.test(n)?'/images/mp/filme-stretch.webp':/GESSO/.test(n)?'/images/mp/gesso-40kg.webp':/DOLOMITA.*(100|325)|DOLOMITA/.test(n)?'/images/mp/big-bag.webp':null;
+ if(photo)return '<img class="mp-report-picture mp-report-photo" src="'+photo+'" alt="'+esc(name)+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'"><span class="mp-report-fallback" style="display:none">📦</span>';
+
  const kind=/PALETE|PALLET/.test(n)?'pallet':/FILME|STRETCH|BOBINA/.test(n)?'film':/SACARIA|SACO|CIMENTO|GESSO|CALCÁRIO|AREIA|ARGAMASSA/.test(n)?'bag':'box';
  const shapes={
  pallet:'<path d="M28 85h150v16H28zm10-22h130v20H38zm-6 38h18v15H32zm53 0h18v15H85zm62 0h18v15h-18z" fill="#b9804a" stroke="#e5b17d" stroke-width="3"/><path d="M38 63l24-30h86l20 30M62 33v30m43-30v30m43-30v30" fill="none" stroke="#f5c28a" stroke-width="6"/>',
