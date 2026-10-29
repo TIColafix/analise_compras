@@ -407,9 +407,10 @@ createServer(async(req,res)=>{try{
  }
  if(req.method!=='GET')return reply(res,405,{error:'Método não permitido.'});
  if(path.startsWith('/images/')){
-  const imageName=path.slice('/images/'.length);
-  if(!/^[a-zA-Z0-9_-]+\.(?:png|jpg|jpeg|webp|svg)(?:\.png)?$/i.test(imageName))return reply(res,404,{error:'Imagem não encontrada.'});
-  const content=await readFile(join(root,'dist','images',imageName));
+  let imageName;
+  try{imageName=decodeURIComponent(path.slice('/images/'.length));}catch{return reply(res,404,{error:'Imagem não encontrada.'});}
+  if(!/^(?:mp\/)?[^/\\\\]+\.(?:png|jpg|jpeg|webp|svg)$/i.test(imageName)||imageName.includes('..'))return reply(res,404,{error:'Imagem não encontrada.'});
+  const content=await readFile(join(root,'dist','images',...imageName.split('/')));
   const extension=imageName.split('.').pop().toLowerCase();
   const imageType={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',svg:'image/svg+xml'}[extension];
   res.writeHead(200,{'Content-Type':imageType,'Cache-Control':'public, max-age=3600'});res.end(content);return;
