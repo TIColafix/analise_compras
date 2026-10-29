@@ -12,7 +12,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const fmt=v=>v==null||!Number.isFinite(Number(v))?'—':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(Number(v));
 const pic=name=>{
  const n=String(name||'').toUpperCase();
- const photo=/FILME.*STRETCH|STRETCH/.test(n)?'/images/mp/filme-stretch.webp':/GESSO/.test(n)?'/images/mp/gesso-40kg.webp':/DOLOMITA.*(100|325)|DOLOMITA/.test(n)?'/images/mp/big-bag.webp':null;
+ const photo=/FILME.*STRETCH|STRETCH/.test(n)?'/images/mp/Rolo%20de%20Filme%20Stretch%20Transl%C3%BAcido.png':/GESSO/.test(n)?'/images/mp/Saco%20de%20Gesso%2040%20kg%20em%20Destaque.png':/DOLOMITA.*(100|325)|DOLOMITA/.test(n)?'/images/mp/Big%20Bag%20Branco%20com%20Granulado%20Cinza.png':null;
  if(photo)return '<img class="mp-report-picture mp-report-photo" src="'+photo+'" alt="'+esc(name)+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'"><span class="mp-report-fallback" style="display:none">📦</span>';
 
  const kind=/PALETE|PALLET/.test(n)?'pallet':/FILME|STRETCH|BOBINA/.test(n)?'film':/SACARIA|SACO|CIMENTO|GESSO|CALCÁRIO|AREIA|ARGAMASSA/.test(n)?'bag':'box';
