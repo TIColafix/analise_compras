@@ -45,9 +45,11 @@ if(kind==='granel'){
   try{stored=JSON.parse(localStorage.getItem('colafix-bulk-prices-v1')||'{}')}catch{return null}
   const date=form.elements.scheduledDate.value||new Date().toLocaleDateString('sv-SE');
   if(!Array.isArray(stored?.contracts))return null;
-  const active=stored.contracts.filter(x=>x&&x.number&&x.start<=date&&x.end>=date);
-  active.sort((a,b)=>String(b.start).localeCompare(String(a.start))||String(b.end).localeCompare(String(a.end)));
-  return active[0]||null;
+  // O contrato mais recente continua aplicável até outro contrato mais novo
+  // entrar em vigor; o vencimento cadastrado não bloqueia agendamentos.
+  const available=stored.contracts.filter(x=>x&&x.number&&(!x.start||x.start<=date));
+  available.sort((a,b)=>String(b.start||'').localeCompare(String(a.start||''))||String(b.end||'').localeCompare(String(a.end||'')));
+  return available[0]||null;
  };
  const syncContract=()=>{
   if(form.dataset.id)return;
@@ -61,11 +63,11 @@ if(kind==='granel'){
     contractField.value=String(contract.number);
     contractField.dataset.autoContract='1';
    }
-   contractField.title='Contrato Votorantim vigente na data agendada: '+contract.start+' até '+contract.end;
+   contractField.title='Contrato Votorantim mais recente cadastrado (utilizado até novo contrato): '+contract.start+' até '+contract.end;
   }else{
    if(contractField.dataset.autoContract==='1')contractField.value='';
    delete contractField.dataset.autoContract;
-   contractField.title='Nenhum contrato vigente encontrado na aba Contratos Votorantim deste navegador.';
+   contractField.title='Nenhum contrato cadastrado com início até a data da carga neste navegador.';
   }
  };
  form.elements.supplier.addEventListener('change',syncContract);
