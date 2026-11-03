@@ -34,7 +34,7 @@ def parse(path):
     payment=one(r"Condição Pgto\.\s*:\s*([^\n]+)")
     items=[]
     lines=text.splitlines()
-    units="KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR"
+    units="KG|UN|SC|MT|PC|CX|FD|L|TON|PCT|RL|BD|PAR|MI"
 
     # Layout normal do Focco: Emp / Linha / Codigo / Descricao / UM / Quantidade.
     for i,line in enumerate(lines):
