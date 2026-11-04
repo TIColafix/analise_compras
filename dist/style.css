@@ -2051,3 +2051,23 @@ html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor label{color:#f
 #manutencao-prazos-view .deadline-table .deadline-icon-btn{width:30px;min-width:30px;height:30px;padding:0!important}
 #manutencao-prazos-view .deadline-table .deadline-scroll-dock{display:none!important}
 #manutencao-prazos-view .deadline-table .deadline-product{white-space:normal;overflow-wrap:anywhere;line-height:1.3}
+
+/* Manutencao / Prazo: botoes de recebimento legiveis no tema escuro */
+#manutencao-prazos-view .deadline-table .deadline-actions{min-width:110px;gap:5px;justify-content:flex-start}
+#manutencao-prazos-view .deadline-table .deadline-icon-btn{
+  display:inline-flex!important;align-items:center;justify-content:center;
+  width:34px!important;min-width:34px!important;height:34px!important;
+  background:#eaf2ff!important;color:#183455!important;
+  -webkit-text-fill-color:#183455!important;
+  border:1px solid #94aac6!important;border-radius:5px;
+  font-size:17px!important;font-weight:800!important;opacity:1!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.15)
+}
+#manutencao-prazos-view .deadline-table .deadline-icon-btn.deadline-ok-btn{
+  background:#c8f5dc!important;color:#075c35!important;
+  -webkit-text-fill-color:#075c35!important;border-color:#72c79b!important
+}
+#manutencao-prazos-view .deadline-table .deadline-icon-btn:disabled{opacity:.45!important}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(13){width:13%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(2){width:17%}
+#manutencao-prazos-view .deadline-table .deadlines-grid td:last-child{overflow:visible!important}
