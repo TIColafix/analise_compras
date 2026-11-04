@@ -2025,3 +2025,29 @@ html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor label{color:#f
 #mpquotes-view #mp-qform #mpqf #mpq-cancel{background:#34465e!important;border-color:#647b98!important}
 @media(max-width:1000px){#mpquotes-view #mp-qform #mpqf .maintenance-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:560px){#mpquotes-view #mp-qform #mpqf .maintenance-fields{grid-template-columns:minmax(0,1fr)!important}}
+
+/* Manutencao > Prazo de entrega: mesma apresentacao compacta dos prazos de MP.
+   Uma unica barra horizontal, colunas proporcionais e botoes sempre visiveis. */
+#manutencao-prazos-view .deadline-table{width:100%;min-width:0;overflow:hidden}
+#manutencao-prazos-view .deadline-table .table-scroll{width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-gutter:auto}
+#manutencao-prazos-view .deadline-table .deadlines-grid{width:100%;min-width:1220px;table-layout:fixed;font-size:12px}
+#manutencao-prazos-view .deadline-table .deadlines-grid th,
+#manutencao-prazos-view .deadline-table .deadlines-grid td{padding:9px 6px;vertical-align:middle;overflow:hidden;text-overflow:ellipsis}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(1){width:6%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(2){width:19%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(3){width:5%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(4){width:10%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(5){width:12%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(6){width:10%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(7){width:8%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(8){width:5%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(9){width:5%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(10){width:5%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(11){width:4%}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(12){width:0%;display:none}
+#manutencao-prazos-view .deadline-table .deadlines-grid td:nth-child(12){display:none}
+#manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(13){width:11%}
+#manutencao-prazos-view .deadline-table .deadline-actions{display:flex;flex-wrap:nowrap;gap:4px;justify-content:center}
+#manutencao-prazos-view .deadline-table .deadline-icon-btn{width:30px;min-width:30px;height:30px;padding:0!important}
+#manutencao-prazos-view .deadline-table .deadline-scroll-dock{display:none!important}
+#manutencao-prazos-view .deadline-table .deadline-product{white-space:normal;overflow-wrap:anywhere;line-height:1.3}
