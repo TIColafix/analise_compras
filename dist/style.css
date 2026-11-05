@@ -2119,3 +2119,18 @@ html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor label{color:#f
 #diesel-view .diesel-price-history{max-width:100%}
 @media(max-width:850px){#diesel-view .diesel-price-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){#diesel-view .diesel-price-form,#diesel-view .diesel-price-kpis{grid-template-columns:minmax(0,1fr)}}
+
+/* Manutenção > Prazo de entrega: mesma sinalização visual do MRP. 
+   Escopo restrito à tabela de manutenção, preservando as outras telas. */
+#manutencao-prazos-view .deadline-table .deadlines-grid tbody tr.deadline-delivered > td{
+ background:#176d42!important;color:#fff!important;-webkit-text-fill-color:#fff!important;
+ border-bottom-color:#2c8758!important
+}
+#manutencao-prazos-view .deadline-table .deadlines-grid tbody tr.deadline-late > td{
+ background:#a32d36!important;color:#fff!important;-webkit-text-fill-color:#fff!important;
+ border-bottom-color:#bd4750!important
+}
+#manutencao-prazos-view .deadline-table .deadlines-grid tbody tr.deadline-delivered:hover > td{background:#1a8050!important}
+#manutencao-prazos-view .deadline-table .deadlines-grid tbody tr.deadline-late:hover > td{background:#b53640!important}
+#manutencao-prazos-view .deadline-table .deadlines-grid tbody tr.deadline-delivered a,
+#manutencao-prazos-view .deadline-table .deadlines-grid tbody tr.deadline-late a{color:#fff!important}
