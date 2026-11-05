@@ -2071,3 +2071,34 @@ html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor label{color:#f
 #manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(13){width:13%}
 #manutencao-prazos-view .deadline-table .deadlines-grid th:nth-child(2){width:17%}
 #manutencao-prazos-view .deadline-table .deadlines-grid td:last-child{overflow:visible!important}
+
+/* Tablet/iPad: responsive application shell without desktop-scale shrinking. */
+@media (min-width:651px) and (max-width:1100px){
+ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+ body{padding-left:0!important;width:100%;min-width:0}
+ .sidebar{position:relative!important;inset:auto!important;width:100%!important;height:auto!important;min-height:0!important;padding:12px 18px!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:14px!important;overflow-x:auto;z-index:5}
+ .sidebar .brand{font-size:25px!important;letter-spacing:-1px!important;flex:0 0 auto;padding:0!important}
+ .sidebar .brand small,.sidebar .nav-caption,.sidebar .sidebar-foot{display:none!important}
+ .sidebar nav{display:flex!important;flex-direction:row!important;align-items:center;gap:6px!important;min-width:max-content;margin:0!important}
+ .sidebar nav a{display:flex!important;flex-direction:row!important;align-items:center;gap:5px!important;padding:9px 10px!important;white-space:nowrap;font-size:12px!important;border-left:0!important;border-bottom:2px solid transparent}
+ .sidebar nav a>span{font-size:17px!important;width:auto!important}
+ main{width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:16px!important}
+ .page-view,.panel,#granel-view,#ensacado-view,#diesel-view,#manutencao-view,#mpquotes-view{max-width:100%;min-width:0}
+ .cement-week{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .cement-day,.cement-day-body,.cement-load-card{min-width:0!important}
+ .cement-week-head{flex-wrap:wrap}
+ .cement-tabs{flex-wrap:wrap}
+ .cement-form-grid,.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .module-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .table-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
+@media (max-width:650px){
+ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+ body,main{width:100%;max-width:100%;min-width:0}
+ main{padding:12px!important}
+ .cement-week{grid-template-columns:minmax(0,1fr)!important}
+ .cement-week-head{flex-direction:column;align-items:stretch}
+ .cement-load-card{min-width:0}
+ .cement-form-grid,.filter-grid,.module-cards{grid-template-columns:minmax(0,1fr)!important}
+ .table-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
