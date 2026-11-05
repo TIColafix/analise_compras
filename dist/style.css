@@ -2102,3 +2102,20 @@ html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor label{color:#f
  .cement-form-grid,.filter-grid,.module-cards{grid-template-columns:minmax(0,1fr)!important}
  .table-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 }
+
+/* Diesel: registro de preços e evolução */
+#diesel-view .diesel-prices-panel{padding:18px;min-width:0}
+#diesel-view .diesel-prices-panel>h3{margin:0 0 10px}
+#diesel-view .diesel-price-form{display:grid;grid-template-columns:1fr 1fr 1fr auto;align-items:end;gap:12px;margin:18px 0}
+#diesel-view .diesel-price-form label{min-width:0}
+#diesel-view .diesel-price-form input,#diesel-view .diesel-price-form select{width:100%;min-width:0}
+#diesel-view .diesel-price-form button{min-height:40px;padding:9px 15px;background:#2169c8;color:#fff;border:1px solid #5292eb;border-radius:7px;font-weight:700;cursor:pointer}
+#diesel-view .diesel-price-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+#diesel-view .diesel-price-kpis>div{padding:16px;border:1px solid #48617d;border-radius:10px;background:#24374f;display:flex;flex-direction:column;gap:8px;color:#fff}
+#diesel-view .diesel-price-kpis small{color:#c1d1e5;font-size:12px}
+#diesel-view .diesel-price-kpis strong{font-size:23px}
+#diesel-view .diesel-price-chart{background:#17283c;border:1px solid #3e5978;border-radius:10px;padding:18px;margin-bottom:20px;color:#e6f1ff}
+#diesel-view .diesel-price-chart small{color:#c2d4eb}
+#diesel-view .diesel-price-history{max-width:100%}
+@media(max-width:850px){#diesel-view .diesel-price-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){#diesel-view .diesel-price-form,#diesel-view .diesel-price-kpis{grid-template-columns:minmax(0,1fr)}}
