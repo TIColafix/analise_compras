@@ -265,13 +265,14 @@ createServer(async(req,res)=>{try{
   const phone=clean(input.phone,30),email=clean(input.email,180),category=clean(input.category,90)||'Outros';
   const materials=clean(input.materials,500),notes=clean(input.notes,1000),role=clean(input.role,100);
   const photo=clean(input.photo,200000);
+  const catalog=clean(input.catalog,3000000),catalogName=clean(input.catalogName,180);if(catalog&&!/^data:application\/pdf;base64,[A-Za-z0-9+/=]+$/.test(catalog))return reply(res,400,{error:'Catálogo PDF inválido.'});
   if(photo&&!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(photo))return reply(res,400,{error:'Imagem inválida.'});
   const stored=await readDocument('supplier-contacts',[]),records=Array.isArray(stored)?stored:[];
   const id=clean(input.id,80),previous=id?records.find(r=>r.id===id):null;
   if(id&&!previous)return reply(res,404,{error:'Contato não encontrado.'});
   if(records.length>=1500&&!previous)return reply(res,400,{error:'Limite de contatos atingido.'});
   const now=new Date().toISOString();
-  const record={id:previous?.id||randomUUID(),company,name,phone,email,category,materials,notes,role,photo,favorite:!!input.favorite,createdAt:previous?.createdAt||now,updatedAt:now};
+  const record={id:previous?.id||randomUUID(),company,name,phone,email,category,materials,notes,role,photo,catalog,catalogName,favorite:!!input.favorite,createdAt:previous?.createdAt||now,updatedAt:now};
   const updated=previous?records.map(r=>r.id===id?record:r):[...records,record];
   await writeDocument('supplier-contacts',updated);
   await audit(req,previous?'editar':'salvar','supplier-contact',{id:record.id,company});
