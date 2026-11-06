@@ -2134,3 +2134,14 @@ html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor label{color:#f
 #manutencao-prazos-view .deadline-table .deadlines-grid tbody tr.deadline-late:hover > td{background:#b53640!important}
 #manutencao-prazos-view .deadline-table .deadlines-grid tbody tr.deadline-delivered a,
 #manutencao-prazos-view .deadline-table .deadlines-grid tbody tr.deadline-late a{color:#fff!important}
+
+/* Dashboard: contraste e legibilidade do resumo de compras no modo escuro */
+.dash-status{grid-template-columns:minmax(120px,145px) minmax(0,1fr);align-items:center;min-width:0}
+.dash-status .dash-status-ring{width:112px;height:112px;margin:18px auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:radial-gradient(circle,#f7faff 0 54%,transparent 56%),conic-gradient(#2085ee 0 35%,#ef3340 35% 58%,#16aa72 58% 100%);box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.dash-status .dash-status-ring strong{color:#152b45!important;-webkit-text-fill-color:#152b45!important;font-size:28px;font-weight:800;line-height:1.1}
+.dash-status .dash-status-ring small{color:#3c526d!important;-webkit-text-fill-color:#3c526d!important;font-size:12px;font-weight:700}
+.dash-status .dash-status-list{min-width:0;gap:14px;padding:16px 18px 16px 6px}
+.dash-status .dash-status-list span{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;column-gap:9px;font-size:13px;line-height:1.35;color:#f2f7ff;font-weight:600}
+.dash-status .dash-status-list b{font-size:15px;font-weight:800;margin:0 0 0 8px;color:#fff}
+.dash-status .dash-status-list .dot{width:10px;height:10px;flex:none}
+@media(max-width:520px){.dash-status{grid-template-columns:115px minmax(0,1fr)}.dash-status .dash-status-ring{width:96px;height:96px}.dash-status .dash-status-list{padding:12px 10px 12px 0;gap:10px}.dash-status .dash-status-list span{font-size:11px;column-gap:6px}.dash-status .dash-status-list b{font-size:13px;margin-left:2px}}
