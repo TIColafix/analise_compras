@@ -252,6 +252,40 @@ createServer(async(req,res)=>{try{
   await audit(req,'excluir','cement',{id:removed.id,kind:removed.kind,scheduledDate:removed.scheduledDate,systemOrder:removed.systemOrder});
   return reply(res,200,{ok:true});
  }
+ if(path==='/api/supplier-contacts'&&req.method==='GET'){
+  const records=await readDocument('supplier-contacts',[]);
+  return reply(res,200,{records:Array.isArray(records)?records:[]});
+ }
+ if(path==='/api/supplier-contacts'&&req.method==='POST'){
+  if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
+  const input=await body(req);
+  const clean=(value,max=160)=>String(value??'').trim().slice(0,max);
+  const company=clean(input.company),name=clean(input.name);
+  if(!company||!name)return reply(res,400,{error:'Informe empresa e nome do contato.'});
+  const phone=clean(input.phone,30),email=clean(input.email,180),category=clean(input.category,90)||'Outros';
+  const materials=clean(input.materials,500),notes=clean(input.notes,1000),role=clean(input.role,100);
+  const photo=clean(input.photo,200000);
+  if(photo&&!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(photo))return reply(res,400,{error:'Imagem inválida.'});
+  const stored=await readDocument('supplier-contacts',[]),records=Array.isArray(stored)?stored:[];
+  const id=clean(input.id,80),previous=id?records.find(r=>r.id===id):null;
+  if(id&&!previous)return reply(res,404,{error:'Contato não encontrado.'});
+  if(records.length>=1500&&!previous)return reply(res,400,{error:'Limite de contatos atingido.'});
+  const now=new Date().toISOString();
+  const record={id:previous?.id||randomUUID(),company,name,phone,email,category,materials,notes,role,photo,favorite:!!input.favorite,createdAt:previous?.createdAt||now,updatedAt:now};
+  const updated=previous?records.map(r=>r.id===id?record:r):[...records,record];
+  await writeDocument('supplier-contacts',updated);
+  await audit(req,previous?'editar':'salvar','supplier-contact',{id:record.id,company});
+  return reply(res,200,{ok:true,record});
+ }
+ if(path.startsWith('/api/supplier-contacts/')&&req.method==='DELETE'){
+  if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada.'});
+  const id=decodeURIComponent(path.slice('/api/supplier-contacts/'.length));
+  const stored=await readDocument('supplier-contacts',[]),records=Array.isArray(stored)?stored:[];
+  if(!records.some(r=>r.id===id))return reply(res,404,{error:'Contato não encontrado.'});
+  await writeDocument('supplier-contacts',records.filter(r=>r.id!==id));
+  await audit(req,'excluir','supplier-contact',{id});
+  return reply(res,200,{ok:true});
+ }
  if(path==='/api/cement'&&req.method==='GET')return reply(res,200,await readLoads(root));
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/diesel-prices'&&req.method==='GET')return reply(res,200,{prices:await readDocument('diesel-prices',[])});
