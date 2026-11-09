@@ -9,7 +9,7 @@ import {randomUUID,randomBytes,createHmac,timingSafeEqual,scryptSync} from 'node
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {readDocument,writeDocument,appendAudit,readAudit,exportDatabaseSnapshot} from './database.mjs';
+import {readDocument,writeDocument,appendAudit,readAudit,exportDatabaseSnapshot,saveSupplierCatalog,getSupplierCatalog,deleteSupplierCatalog} from './database.mjs';
 const root=fileURLToPath(new URL('.',import.meta.url));
 const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
 const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'python');
@@ -252,6 +252,9 @@ createServer(async(req,res)=>{try{
   await audit(req,'excluir','cement',{id:removed.id,kind:removed.kind,scheduledDate:removed.scheduledDate,systemOrder:removed.systemOrder});
   return reply(res,200,{ok:true});
  }
+ if(path.startsWith('/api/supplier-catalog/')&&req.method==='GET'){const id=decodeURIComponent(path.slice('/api/supplier-catalog/'.length));const stored=await readDocument('supplier-contacts',[]);const contact=Array.isArray(stored)?stored.find(x=>x.id===id):null;if(!contact)return reply(res,404,{error:'Contato não encontrado'});const file=await getSupplierCatalog(id);if(file){res.writeHead(200,{'Content-Type':'application/pdf','Content-Disposition':'inline; filename="catalogo.pdf"','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'});return res.end(file.content)}if(contact.catalog){const raw=Buffer.from(contact.catalog.split(',')[1]||'','base64');res.writeHead(200,{'Content-Type':'application/pdf','Content-Disposition':'inline; filename="catalogo.pdf"','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'});return res.end(raw)}return reply(res,404,{error:'Catálogo não encontrado'});}
+ if(path.startsWith('/api/supplier-catalog/')&&req.method==='POST'){if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada'});const id=decodeURIComponent(path.slice('/api/supplier-catalog/'.length));const stored=await readDocument('supplier-contacts',[]);const records=Array.isArray(stored)?stored:[];const contact=records.find(x=>x.id===id);if(!contact)return reply(res,404,{error:'Contato não encontrado'});let size=0,chunks=[];for await(const chunk of req){size+=chunk.length;if(size>30*1024*1024)return reply(res,413,{error:'PDF excede o limite de 30 MB por arquivo'});chunks.push(chunk)}const buffer=Buffer.concat(chunks);if(buffer.subarray(0,5).toString()!=='%PDF-')return reply(res,400,{error:'Arquivo PDF inválido'});const name=String(req.headers['x-catalog-name']||'catalogo.pdf').slice(0,180);await saveSupplierCatalog(id,name,buffer);contact.catalog='';contact.catalogName=name;contact.hasCatalog=true;await writeDocument('supplier-contacts',records);return reply(res,200,{ok:true});}
+ if(path.startsWith('/api/supplier-catalog/')&&req.method==='DELETE'){if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada'});const id=decodeURIComponent(path.slice('/api/supplier-catalog/'.length));const records=await readDocument('supplier-contacts',[]);const contact=Array.isArray(records)?records.find(x=>x.id===id):null;if(!contact)return reply(res,404,{error:'Contato não encontrado'});await deleteSupplierCatalog(id);contact.catalog='';contact.catalogName='';contact.hasCatalog=false;await writeDocument('supplier-contacts',records);return reply(res,200,{ok:true});}
  if(path==='/api/supplier-contacts'&&req.method==='GET'){
   const records=await readDocument('supplier-contacts',[]);
   return reply(res,200,{records:Array.isArray(records)?records:[]});
@@ -272,7 +275,7 @@ createServer(async(req,res)=>{try{
   if(id&&!previous)return reply(res,404,{error:'Contato não encontrado.'});
   if(records.length>=1500&&!previous)return reply(res,400,{error:'Limite de contatos atingido.'});
   const now=new Date().toISOString();
-  const record={id:previous?.id||randomUUID(),company,name,phone,email,category,materials,notes,role,photo,catalog,catalogName,catalogUrl,favorite:!!input.favorite,createdAt:previous?.createdAt||now,updatedAt:now};
+  const record={id:previous?.id||randomUUID(),company,name,phone,email,category,materials,notes,role,photo,catalog,catalogName,catalogUrl,hasCatalog:!!(input.hasCatalog||catalog),favorite:!!input.favorite,createdAt:previous?.createdAt||now,updatedAt:now};
   const updated=previous?records.map(r=>r.id===id?record:r):[...records,record];
   await writeDocument('supplier-contacts',updated);
   await audit(req,previous?'editar':'salvar','supplier-contact',{id:record.id,company});
@@ -283,7 +286,7 @@ createServer(async(req,res)=>{try{
   const id=decodeURIComponent(path.slice('/api/supplier-contacts/'.length));
   const stored=await readDocument('supplier-contacts',[]),records=Array.isArray(stored)?stored:[];
   if(!records.some(r=>r.id===id))return reply(res,404,{error:'Contato não encontrado.'});
-  await writeDocument('supplier-contacts',records.filter(r=>r.id!==id));
+  await writeDocument('supplier-contacts',records.filter(r=>r.id!==id));await deleteSupplierCatalog(id);
   await audit(req,'excluir','supplier-contact',{id});
   return reply(res,200,{ok:true});
  }
