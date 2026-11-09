@@ -24,6 +24,7 @@ export async function initDatabase(){
     document_key text,
     detail jsonb not null default '{}'::jsonb
   )`);
+  await p.query(`create table if not exists supplier_catalog_files (contact_id text primary key, filename text not null, content bytea not null, updated_at timestamptz not null default now())`);
   return true;
 }
 export async function readDocument(key,fallback){
@@ -67,3 +68,7 @@ export async function exportDatabaseSnapshot(){
     throw error;
   }finally{client.release();}
 }
+
+export async function saveSupplierCatalog(id,name,buffer){const p=getPool();if(!p)throw Error('Banco não configurado');await initDatabase();await p.query('insert into supplier_catalog_files(contact_id,filename,content) values($1,$2,$3) on conflict(contact_id) do update set filename=excluded.filename,content=excluded.content,updated_at=now()',[id,name,buffer]);}
+export async function getSupplierCatalog(id){const p=getPool();if(!p)return null;await initDatabase();const r=await p.query('select filename,content from supplier_catalog_files where contact_id=$1',[id]);return r.rows[0]||null;}
+export async function deleteSupplierCatalog(id){const p=getPool();if(!p)return;await initDatabase();await p.query('delete from supplier_catalog_files where contact_id=$1',[id]);}
