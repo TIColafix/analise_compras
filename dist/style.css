@@ -2207,3 +2207,11 @@ html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor label{color:#f
 .agenda-form-actions{display:flex;gap:9px;justify-content:flex-end}.agenda-form-actions button{border:1px solid #5a7698;border-radius:12px;padding:10px 13px;background:#294461;color:white;cursor:pointer}.agenda-form-actions button[type=submit]{background:#147ac5;border-color:#147ac5}.agenda-form-message{font-size:12px;color:#ffcd83}
 @media(max-width:1050px){.agenda-layout{grid-template-columns:1fr}.agenda-detail{position:static}.agenda-stickers{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}}
 @media(max-width:560px){.agenda-hero{padding:20px;flex-direction:column;align-items:flex-start}.agenda-hero h2{font-size:22px}.agenda-stickers{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.agenda-sticker-main{min-height:205px}.agenda-form-grid{grid-template-columns:1fr}.agenda-form-grid label{grid-column:1/-1}}
+
+/* Dashboard: shortcut to local intranet */
+.dashboard-intranet-card{display:flex;align-items:center;gap:12px;margin:0 auto 0 22px;padding:12px 16px;min-width:210px;max-width:300px;border:1px solid #46688d;border-radius:14px;background:linear-gradient(135deg,#203a59,#14283f);color:#f3f8ff;text-decoration:none;box-shadow:0 5px 15px #0002;transition:transform .18s,border-color .18s,box-shadow .18s}
+.dashboard-intranet-card:hover{transform:translateY(-2px);border-color:#79baff;box-shadow:0 8px 22px #0004}
+.dashboard-intranet-icon{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:11px;background:#3077c4;color:white;font-size:25px;font-weight:700}
+.dashboard-intranet-card strong,.dashboard-intranet-card small{display:block;line-height:1.4}.dashboard-intranet-card strong{font-size:13px}.dashboard-intranet-card small{font-size:11px;color:#c2d6ee;margin-top:2px}
+@media(max-width:900px){main>header{flex-wrap:wrap;gap:12px}.dashboard-intranet-card{margin:0;min-width:0;max-width:100%;flex:1 1 210px}}
+@media(max-width:520px){.dashboard-intranet-card{flex:1 1 100%;width:100%}}
