@@ -2215,3 +2215,11 @@ html[data-colafix-theme="dark"] #manutencao-view #mn-quote-editor label{color:#f
 .dashboard-intranet-card strong,.dashboard-intranet-card small{display:block;line-height:1.4}.dashboard-intranet-card strong{font-size:13px}.dashboard-intranet-card small{font-size:11px;color:#c2d6ee;margin-top:2px}
 @media(max-width:900px){main>header{flex-wrap:wrap;gap:12px}.dashboard-intranet-card{margin:0;min-width:0;max-width:100%;flex:1 1 210px}}
 @media(max-width:520px){.dashboard-intranet-card{flex:1 1 100%;width:100%}}
+
+/* Keep the intranet shortcut in the marked space beside Dashboard, not above analysis date */
+main>header:has(.dashboard-intranet-card){display:grid;grid-template-columns:180px minmax(210px,300px) minmax(170px,1fr);align-items:center;column-gap:18px;row-gap:12px}
+main>header .dashboard-intranet-card{grid-column:2;grid-row:1;margin:0;width:100%;max-width:300px;min-width:0;box-sizing:border-box}
+main>header #analysis-label{grid-column:3;grid-row:1;justify-self:end;width:min(100%,190px)}
+main>header .heading{grid-column:1;grid-row:1}
+@media(max-width:800px){main>header:has(.dashboard-intranet-card){grid-template-columns:minmax(0,1fr) minmax(190px,250px)}main>header .heading{grid-column:1;grid-row:1}main>header .dashboard-intranet-card{grid-column:2;grid-row:1}main>header #analysis-label{grid-column:1/-1;grid-row:2;justify-self:stretch;width:100%;max-width:none}}
+@media(max-width:520px){main>header:has(.dashboard-intranet-card){grid-template-columns:1fr}main>header .heading{grid-column:1;grid-row:1}main>header .dashboard-intranet-card{grid-column:1;grid-row:2;max-width:none}main>header #analysis-label{grid-column:1;grid-row:3}}
