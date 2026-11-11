@@ -2231,3 +2231,8 @@ main>header .heading{grid-column:1;grid-row:1}
 .mpq-analysis h3{color:#fff!important;background:#28394f}
 .mpq-analysis .mpq-best{background:#d8f8e3!important;color:#153b2a!important}
 .mpq-analysis .mpq-best td,.mpq-analysis .mpq-best th{color:#153b2a!important}
+
+/* Melhor fornecedor: contraste alto na tabela escura, sem texto verde invisível */
+.mpq-analysis .table-scroll table tbody tr.mpq-best{background:#215d4a!important}
+.mpq-analysis .table-scroll table tbody tr.mpq-best td,.mpq-analysis .table-scroll table tbody tr.mpq-best td *{color:#ffffff!important;font-weight:700!important;text-shadow:none!important}
+.mpq-analysis .table-scroll table tbody tr.mpq-best td{border-color:#417c69!important}
