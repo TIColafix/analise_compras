@@ -2223,3 +2223,11 @@ main>header #analysis-label{grid-column:3;grid-row:1;justify-self:end;width:min(
 main>header .heading{grid-column:1;grid-row:1}
 @media(max-width:800px){main>header:has(.dashboard-intranet-card){grid-template-columns:minmax(0,1fr) minmax(190px,250px)}main>header .heading{grid-column:1;grid-row:1}main>header .dashboard-intranet-card{grid-column:2;grid-row:1}main>header #analysis-label{grid-column:1/-1;grid-row:2;justify-self:stretch;width:100%;max-width:none}}
 @media(max-width:520px){main>header:has(.dashboard-intranet-card){grid-template-columns:1fr}main>header .heading{grid-column:1;grid-row:1}main>header .dashboard-intranet-card{grid-column:1;grid-row:2;max-width:none}main>header #analysis-label{grid-column:1;grid-row:3}}
+
+/* Legibilidade da recomendação de fornecedores em ambos os temas */
+.mpq-analysis{color:#183b2b!important;background:#effcf4!important}
+.mpq-analysis h2{color:#075d37!important;font-weight:800!important;text-shadow:none!important}
+.mpq-analysis p{color:#264b3b!important;font-weight:600!important}
+.mpq-analysis h3{color:#fff!important;background:#28394f}
+.mpq-analysis .mpq-best{background:#d8f8e3!important;color:#153b2a!important}
+.mpq-analysis .mpq-best td,.mpq-analysis .mpq-best th{color:#153b2a!important}
