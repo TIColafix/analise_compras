@@ -21,16 +21,26 @@ function print(r){
  '</section><div class="total"><span>TOTAL DO CARREGAMENTO</span><strong>'+esc(money(r.total))+'</strong></div><div class="registered"><b>Registrado por:</b> '+esc(r.createdByName||'—')+'</div><div class="foot"><span>Documento gerado pelo sistema de carregamentos Areia Amigos.</span><button class="print" onclick="window.print()">▣ Imprimir</button></div></div></article><div class="toolbar"><button class="print" onclick="window.print()">▣ Imprimir recibo</button></div></body></html>';
  w.document.open();w.document.write(html);w.document.close();w.focus();
 }
-let pdfLibraryPromise;
-function loadPdfLibrary(){
- if(window.jspdf?.jsPDF)return Promise.resolve(window.jspdf.jsPDF);
- if(!pdfLibraryPromise)pdfLibraryPromise=new Promise((resolve,reject)=>{
- const el=document.createElement('script');el.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';el.onload=()=>window.jspdf?.jsPDF?resolve(window.jspdf.jsPDF):reject(Error('Biblioteca PDF indisponível'));el.onerror=()=>reject(Error('Não foi possível carregar o gerador de PDF. Verifique a conexão.'));document.head.append(el);
- }).catch(e=>{pdfLibraryPromise=null;throw e});
- return pdfLibraryPromise;
+// Gerador PDF local: não depende de CDN, conexão externa ou bibliotecas remotas.
+function loadPdfLibrary(){return Promise.resolve(class LocalPdf{
+ constructor(){this.ops=[];this.fill=[0,0,0];this.stroke=[0,0,0];this.color=[0,0,0];this.size=11;this.bold=false}
+ setFillColor(...c){this.fill=c}
+ setDrawColor(...c){this.stroke=c}
+ setTextColor(...c){this.color=c}
+ setFont(_family,weight){this.bold=weight==='bold'}
+ setFontSize(n){this.size=n}
+ rect(x,y,w,h,mode){this.ops.push(this.rgb(this.fill)+' rg '+this.n(x)+' '+this.n(297-y-h)+' '+this.n(w)+' '+this.n(h)+' re '+(mode==='F'?'f':'S'))}
+ line(x,y,x2,y2){this.ops.push(this.rgb(this.stroke)+' RG '+this.n(x)+' '+this.n(297-y)+' m '+this.n(x2)+' '+this.n(297-y2)+' l S')}
+ text(value,x,y){let v=String(value??'');this.ops.push(this.rgb(this.color)+' rg BT /'+(this.bold?'F2':'F1')+' '+this.n(this.size)+' Tf 1 0 0 1 '+this.n(x)+' '+this.n(297-y)+' Tm ('+this.escape(v)+') Tj ET')}
+ splitTextToSize(value,width){let words=String(value).split(/\\s+/),lines=[],line='';for(let word of words){let next=line?line+' '+word:word;if(next.length*this.size*.20>width&&line){lines.push(line);line=word}else line=next}if(line)lines.push(line);return lines}
+ n(v){return Number(v).toFixed(2)}
+ rgb(c){return c.map(x=>(x/255).toFixed(3)).join(' ')}
+ escape(s){return s.replace(/[\\u2013\\u2014]/g,'-').replace(/[\\u2018\\u2019]/g,"'").replace(/[\\u201c\\u201d]/g,'"').replace(/[\\u20ac]/g,'EUR').replace(/[^\\u0000-\\u00ff]/g,'?').replace(/([\\\\()])/g,'\\\\$1')}
+ output(){const stream=this.ops.join('\\n')+'\\n';let objects=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>','<< /Length '+stream.length+' >>\\nstream\\n'+stream+'endstream'];let result='%PDF-1.4\\n',offsets=[0];for(let i=0;i<objects.length;i++){offsets.push(result.length);result+=(i+1)+' 0 obj\\n'+objects[i]+'\\nendobj\\n'}let xref=result.length;result+='xref\\n0 '+(objects.length+1)+'\\n0000000000 65535 f \\n';for(let i=1;i<offsets.length;i++)result+=String(offsets[i]).padStart(10,'0')+' 00000 n \\n';result+='trailer\\n<< /Size '+(objects.length+1)+' /Root 1 0 R >>\\nstartxref\\n'+xref+'\\n%%EOF';return new Blob([Uint8Array.from(result,c=>c.charCodeAt(0)&255)],{type:'application/pdf'})}
+ })}
 }
 async function receiptPdf(r){
- const JsPDF=await loadPdfLibrary(),pdf=new JsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+ const JsPDF=await loadPdfLibrary(),pdf=new JsPDF();
  const navy=[9,30,52],blue=[17,47,78],orange=[247,139,18],ink=[15,33,55];
  const rect=(x,y,w,h,color)=>{pdf.setFillColor(...color);pdf.rect(x,y,w,h,'F')};
  const txt=(v,x,y,size=11,color=ink,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);pdf.setTextColor(...color);pdf.text(String(v??'—'),x,y)};
