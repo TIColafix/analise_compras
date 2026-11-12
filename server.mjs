@@ -137,8 +137,8 @@ createServer(async(req,res)=>{try{
  }
  if(isLimited(req)){
   if(path==='/'||path==='/index.html'){res.writeHead(302,{Location:'/areia','Cache-Control':'no-store'});return res.end();}
-  const allow=['/api/me','/api/areia-amigos','/api/areia-v3','/api/areia-drivers','/api/areia-amigos/extract','/style.css','/areia-amigos.js','/areia-v3.js','/favicon.svg'];
-  if(!hasAccess(req,'areiaamigos')&&!hasAccess(req,'areiaadmin')||!allow.includes(path)&&path!=='/images/areia-header.png'&&!path.startsWith('/api/areia-amigos/')&&!path.startsWith('/api/areia-drivers/'))return reply(res,403,{error:'Você não tem permissão para acessar este módulo.'});
+  const allow=['/api/me','/api/areia-amigos','/api/areia-v3','/api/areia-drivers',...(isAreiaAdmin(req)?['/api/users']:[]),'/api/areia-amigos/extract','/style.css','/areia-amigos.js','/areia-v3.js','/favicon.svg'];
+  if(!hasAccess(req,'areiaamigos')&&!hasAccess(req,'areiaadmin')||!allow.includes(path)&&path!=='/images/areia-header.png'&&!path.startsWith('/api/areia-amigos/')&&!path.startsWith('/api/areia-drivers/')&&!(isAreiaAdmin(req)&&path.startsWith('/api/users/')))return reply(res,403,{error:'Você não tem permissão para acessar este módulo.'});
  }
  if(path==='/api/areia-drivers'&&req.method==='GET'){const list=await readDocument('areia-v3-drivers',[]);return reply(res,200,{drivers:(Array.isArray(list)?list:[]).filter(x=>isAreiaAdmin(req)||x.enabled!==false).map(x=>isAreiaAdmin(req)?x:{id:x.id,name:x.name,company:x.company,plate:x.plate,phone:x.phone})});}
  if(path==='/api/areia-drivers'&&req.method==='POST'){if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente administrador.'});if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});const x=await body(req),list=await readDocument('areia-v3-drivers',[]),rows=Array.isArray(list)?list:[];const name=String(x.name||'').trim(),cpf=String(x.cpf||'').replace(/\D/g,''),plate=String(x.plate||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(name.length<3||cpf.length!==11||!/^([A-Z]{3}[0-9]{4}|[A-Z]{3}[0-9][A-Z][0-9]{2})$/.test(plate))return reply(res,400,{error:'Informe nome, CPF de 11 dígitos e placa válida.'});if(rows.some(y=>y.cpf===cpf))return reply(res,409,{error:'CPF já cadastrado.'});rows.push({id:randomBytes(12).toString('hex'),name,cpf,plate,company:String(x.company||'').trim().slice(0,100),phone:String(x.phone||'').trim().slice(0,30),enabled:true});await writeDocument('areia-v3-drivers',rows);await audit(req,'criar','areia-motoristas',{name});return reply(res,201,{ok:true});}
@@ -146,7 +146,7 @@ createServer(async(req,res)=>{try{
  if(path.startsWith('/api/areia-drivers/')&&req.method==='DELETE'){if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente administrador.'});if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada.'});const id=path.slice('/api/areia-drivers/'.length),list=await readDocument('areia-v3-drivers',[]),rows=Array.isArray(list)?list:[];await writeDocument('areia-v3-drivers',rows.filter(x=>x.id!==id));await audit(req,'excluir','areia-motoristas',{id});return reply(res,200,{ok:true});}
  if(path.startsWith('/api/users/')&&req.method==='DELETE'){if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente administrador.'});if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada.'});const user=decodeURIComponent(path.slice('/api/users/'.length)),list=await managedUsers();if(!list.some(x=>x.user===user))return reply(res,403,{error:'Conta protegida ou inexistente.'});await writeDocument('app-users',list.filter(x=>x.user!==user));for(const [token,s] of sessions)if(s.account.user===user)sessions.delete(token);await audit(req,'excluir','usuarios',{user});return reply(res,200,{ok:true});}
  if(path==='/api/users'&&req.method==='GET'){
-  if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
+  if(!isAreiaAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
   const users=await managedUsers();
   if(!users.some(u=>u.user==='gelson.osorio')){
    users.push({user:'gelson.osorio',name:'Gelson Osorio',enabled:false,permissions:['areiaamigos'],passwordHash:'',sessionVersion:0,createdAt:new Date().toISOString()});
@@ -156,10 +156,10 @@ createServer(async(req,res)=>{try{
    {user:process.env.APP_USER||'admin',name:'Paulo',enabled:true,role:'admin',permissions:['*'],source:'environment',protected:true},
    {user:process.env.ALISSON_USER||'alisson',name:'Alisson Santos',enabled:!!process.env.ALISSON_PASSWORD,role:'operator',permissions:['operacional'],source:'environment',protected:true}
   ];
-  return reply(res,200,{users:[...builtin,...users.map(({passwordHash,...u})=>u)]});
+  return reply(res,200,{users:[...(isAdmin(req)?builtin:[]),...users.filter(u=>isAdmin(req)||u.permissions?.includes('areiaamigos')).map(({passwordHash,...u})=>u)]});
  }
  if(path==='/api/users'&&req.method==='POST'){
-  if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
+  if(!isAreiaAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
   if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
   const input=await body(req),users=await managedUsers();
   const user=String(input.user||'').trim().toLowerCase(),name=String(input.name||'').trim();
@@ -173,10 +173,10 @@ createServer(async(req,res)=>{try{
   return reply(res,201,{ok:true});
  }
  if(path.startsWith('/api/users/')&&req.method==='PATCH'){
-  if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
+  if(!isAreiaAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
   if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
   const user=decodeURIComponent(path.slice('/api/users/'.length)),input=await body(req),users=await managedUsers(),found=users.find(x=>x.user===user);
-  if(!found)return reply(res,404,{error:'Conta existente gerenciada pelas variáveis do Railway. Para alterar seu acesso ou senha, atualize as variáveis correspondentes.'});
+  if(!found||!isAdmin(req)&&!found.permissions?.includes('areiaamigos'))return reply(res,404,{error:'Conta existente gerenciada pelas variáveis do Railway. Para alterar seu acesso ou senha, atualize as variáveis correspondentes.'});
   if(Object.hasOwn(input,'password')){
    if(typeof input.password!=='string'||input.password.length<6)return reply(res,400,{error:'Senha deve ter pelo menos 6 caracteres.'});
    found.passwordHash=hashPassword(input.password);found.sessionVersion=(found.sessionVersion||0)+1;
