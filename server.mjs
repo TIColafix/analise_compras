@@ -201,7 +201,7 @@ createServer(async(req,res)=>{try{
  if(isLimited(req)){
   if(path==='/'||path==='/index.html'){res.writeHead(302,{Location:'/areia','Cache-Control':'no-store'});return res.end();}
   const allow=['/api/me','/api/areia-amigos','/api/areia-v3','/api/areia-amigos/extract','/style.css','/areia-amigos.js','/areia-v3.js','/favicon.svg'];
-  if(!hasAccess(req,'areiaamigos')||!allow.includes(path)&&!path.startsWith('/api/areia-amigos/'))return reply(res,403,{error:'Você não tem permissão para acessar este módulo.'});
+  if(!hasAccess(req,'areiaamigos')||!allow.includes(path)&&path!=='/images/areia-header.png'&&!path.startsWith('/api/areia-amigos/'))return reply(res,403,{error:'Você não tem permissão para acessar este módulo.'});
  }
  if(path==='/api/users'&&req.method==='GET'){
   if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
