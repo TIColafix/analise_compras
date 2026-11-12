@@ -45,29 +45,27 @@ async function receiptPdf(r){
  const txt=(v,x,y,size=11,c=ink,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);pdf.setTextColor(...c);pdf.text(String(v??'—'),x,y)};
  const centered=(v,cx,y,size=11,c=ink,bold=false)=>{let str=String(v??'—');txt(str,cx-str.length*size*(bold?.105:.092),y,size,c,bold)};
  const wrap=(v,x,y,width,size=9,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);pdf.splitTextToSize(String(v??'—'),width).slice(0,2).forEach((line,i)=>txt(line,x,y+i*4,size,ink,bold))};
- // Mesmo modelo visual para PDF, impressão e WhatsApp: A4, cabeçalho e faixas compactas.
- rect(0,0,210,30,navy);rect(163,0,47,30,orange);
- // Faixa diagonal da marca, sem depender de imagens externas.
- if(typeof pdf.polygon==='function'){pdf.setFillColor(...navy);pdf.polygon([[163,0],[151,30],[163,30]],'F')}
- // Identidade do recibo: caminhão à esquerda, Areia Amigos em destaque, Fixcol discreta à direita.
- // Desenho vetorial em coordenadas A4: sem dependências externas ou distorção ao imprimir.
- pdf.setFillColor(255,160,23);pdf.roundedRect(9,12,18,6,0.9,0.9,'F');
- pdf.setFillColor(255,191,49);pdf.rect(11,10.4,13,2.3,'F');
- pdf.setFillColor(231,237,241);pdf.roundedRect(26.5,13.4,8.5,4.6,0.8,0.8,'F');
- pdf.setFillColor(115,177,210);pdf.rect(29.1,14,4.1,2.2,'F');
- pdf.setFillColor(26,40,56);pdf.rect(8.5,18,27,1,'F');
- [13.5,23,30.7].forEach(x=>{pdf.setFillColor(22,35,50);pdf.circle(x,19.1,1.8,'F');pdf.setFillColor(219,230,239);pdf.circle(x,19.1,0.7,'F')});
- txt('Areia',40,16.3,20,white,true);
- txt('Amigos',66.5,16.3,20,orange,true);
- txt('CONTROLE DE CARREGAMENTOS',40,23,7.3,white);
- // Fixcol é marca secundária e não substitui a identidade Areia Amigos.
- txt('Fix',175,13.6,10,[239,53,71],true);
- txt('col',183.5,13.6,10,navy,true);
- rect(8,36,194,14,navy);centered('RECIBO DIGITAL DE CARREGAMENTO',105,45.2,12.2,white,true);
+ // Cabecalho compacto inspirado no recibo aprovado, desenhado em vetores.
+ rect(0,0,210,27,navy);rect(164,0,46,27,orange);
+ pdf.setFillColor(...orange);pdf.polygon([[164,0],[150,27],[164,27]],'F');
+ // Caminhao basculante com cacamba inclinada, cabine, janelas e rodas.
+ pdf.setFillColor(13,21,30);pdf.roundedRect(5.5,18.5,40,1.5,0.5,0.5,'F');
+ pdf.setFillColor(244,145,8);pdf.polygon([[7,9],[32,7],[30,17],[8,17]],'F');
+ pdf.setFillColor(255,187,38);pdf.polygon([[9,8.2],[31,6.5],[30,9],[9,11]],'F');
+ pdf.setDrawColor(107,65,13);[12,18,24,29].forEach(x=>pdf.line(x,10,x-1,16));
+ pdf.setFillColor(228,235,238);pdf.polygon([[32,9],[39,9],[43,13],[43,18],[32,18]],'F');
+ pdf.setFillColor(81,145,178);pdf.polygon([[35,10],[38,10],[41,13],[35,13]],'F');
+ pdf.setFillColor(30,39,48);pdf.rect(32,17,12,1.4,'F');
+ [13,27,37,42].forEach(x=>{pdf.setFillColor(19,28,39);pdf.circle(x,19,2.25,'F');pdf.setFillColor(214,222,230);pdf.circle(x,19,0.85,'F')});
+ txt('Areia',49,12.7,17,white,true);txt('Amigos',76,12.7,17,orange,true);
+ txt('CONTROLE DE CARREGAMENTOS',49,19.2,6.2,white);
+ txt('Fix',174,12.6,11,[227,34,60],true);txt('col',183.5,12.6,11,navy,true);
+ pdf.setDrawColor(227,34,60);pdf.line(172,15.7,198,15.7);
+ rect(6,31,198,13,navy);centered('RECIBO DIGITAL DE CARREGAMENTO',105,39.4,11.6,white,true);
  const dt=new Date(r.createdAt),date=isNaN(dt)?'—':dt.toLocaleDateString('pt-BR'),time=isNaN(dt)?'—':dt.toLocaleTimeString('pt-BR');
- const metas=[[8,52,'RECIBO Nº',String(r.number)],[63,84,'DATA DO CARREGAMENTO',date],[150,52,'HORÁRIO',time]];
- metas.forEach(([x,w,label,value],i)=>{rect(x,55,w,20,i===0?orange:pale);centered(label,x+w/2,61.5,7,i===0?white:muted);centered(value,x+w/2,70,12,i===0?white:ink,true)});
- let y=81;
+ const metas=[[6,55,'RECIBO Nº',String(r.number)],[64,85,'DATA DO CARREGAMENTO',date],[152,52,'HORÁRIO',time]];
+ metas.forEach(([x,w,label,value],i)=>{rect(x,47,w,17,i===0?orange:pale);centered(label,x+w/2,53,7,i===0?white:muted);centered(value,x+w/2,61,12,i===0?white:ink,true)});
+ let y=69;
  const section=(title,rows)=>{rect(8,y,194,10,blue);txt(title,12,y+6.8,10,white,true);y+=10;rows.forEach(([label,value],i)=>{rect(8,y,194,10,i%2?pale:white);txt(label,12,y+6.7,9,muted);wrap(value,91,y+6.7,105,9,true);y+=10});y+=4};
  section('Dados do carregamento',[['Motorista',r.driver],['Empresa',r.company],['Placa',r.plate]]);
  section('Material e quantidade',[['Material',r.material],['Quantidade',Number(r.quantity||0).toLocaleString('pt-BR')+' m³'],['Valor unitário',money(r.unitPrice)+'/m³']]);
