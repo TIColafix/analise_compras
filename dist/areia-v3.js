@@ -27,6 +27,7 @@ function loadPdfLibrary(){return Promise.resolve(class LocalPdf{
  setFont(_family,weight){this.bold=weight==='bold'}
  setFontSize(n){this.size=n}
  rect(x,y,w,h,mode){this.ops.push(this.rgb(this.fill)+' rg '+this.n(x)+' '+this.n(297-y-h)+' '+this.n(w)+' '+this.n(h)+' re '+(mode==='F'?'f':'S'))}
+ circle(x,y,r,mode){this.ops.push(this.rgb(this.fill)+' rg '+this.n(x+r)+' '+this.n(297-y)+' m '+this.n(x+r)+' '+this.n(297-y+r*.5523)+' '+this.n(x+r*.5523)+' '+this.n(297-y+r)+' '+this.n(x)+' '+this.n(297-y+r)+' c '+this.n(x-r*.5523)+' '+this.n(297-y+r)+' '+this.n(x-r)+' '+this.n(297-y+r*.5523)+' '+this.n(x-r)+' '+this.n(297-y)+' c '+this.n(x-r)+' '+this.n(297-y-r*.5523)+' '+this.n(x-r*.5523)+' '+this.n(297-y-r)+' '+this.n(x)+' '+this.n(297-y-r)+' c '+this.n(x+r*.5523)+' '+this.n(297-y-r)+' '+this.n(x+r)+' '+this.n(297-y-r*.5523)+' '+this.n(x+r)+' '+this.n(297-y)+' c '+(mode==='F'?'f':'S'))}
  polygon(points,mode){let p=points.map((a,i)=>(i?' '+this.n(a[0])+' '+this.n(297-a[1])+' l':this.n(a[0])+' '+this.n(297-a[1])+' m')).join('');this.ops.push(this.rgb(this.fill)+' rg '+p+' h '+(mode==='F'?'f':'S'))}
  line(x,y,x2,y2){this.ops.push(this.rgb(this.stroke)+' RG '+this.n(x)+' '+this.n(297-y)+' m '+this.n(x2)+' '+this.n(297-y2)+' l S')}
  text(value,x,y){let v=String(value??'');this.ops.push(this.rgb(this.color)+' rg BT /'+(this.bold?'F2':'F1')+' '+this.n(this.size/2.83465)+' Tf 1 0 0 1 '+this.n(x)+' '+this.n(297-y)+' Tm ('+this.escape(v)+') Tj ET')}
@@ -47,9 +48,14 @@ async function receiptPdf(r){
  rect(0,0,210,30,navy);rect(163,0,47,30,orange);
  // Faixa diagonal da marca, sem depender de imagens externas.
  if(typeof pdf.polygon==='function'){pdf.setFillColor(...navy);pdf.polygon([[163,0],[151,30],[163,30]],'F')}
- rect(10,13,8,4.2,orange);rect(12,10.5,5,3.5,[255,190,51]);rect(10.8,17.2,2,2,ink);rect(15.5,17.2,2,2,ink);
- txt('Areia',23,14.7,19,white,true);txt('Amigos',46,14.7,19,orange,true);
- txt('C O N T R O L E   D E   C A R R E G A M E N T O S',23,22,6.4,white);
+ // Caminhão vetorial com cabine, caçamba, janelas e rodas — nítido no PDF e na impressão.
+ rect(9.2,12,9.8,5.4,orange);rect(19,13.4,5.6,4,[255,187,48]);
+ rect(20.1,14,2.8,1.9,[188,224,246]);rect(8.7,17.2,16.5,1.1,[220,230,240]);
+ pdf.setFillColor(15,30,49);pdf.circle(12.5,18.6,1.7,'F');pdf.circle(21.5,18.6,1.7,'F');
+ pdf.setFillColor(230,237,246);pdf.circle(12.5,18.6,.7,'F');pdf.circle(21.5,18.6,.7,'F');
+ // Marca FIXCOL com contraste e peso tipográfico inspirados na identidade Colafix.
+ txt('Fix',29,15.8,21,[239,53,71],true);txt('col',47.5,15.8,21,white,true);
+ txt('AREIA AMIGOS  |  CONTROLE DE CARREGAMENTOS',29,23,7.3,white);
  rect(8,36,194,14,navy);centered('RECIBO DIGITAL DE CARREGAMENTO',105,45.2,12.2,white,true);
  const dt=new Date(r.createdAt),date=isNaN(dt)?'—':dt.toLocaleDateString('pt-BR'),time=isNaN(dt)?'—':dt.toLocaleTimeString('pt-BR');
  const metas=[[8,52,'RECIBO Nº',String(r.number)],[63,84,'DATA DO CARREGAMENTO',date],[150,52,'HORÁRIO',time]];
