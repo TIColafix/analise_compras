@@ -246,6 +246,7 @@ createServer(async(req,res)=>{try{
 
  // Novo Controle de Carregamentos — dados separados do legado.
  if(path==='/api/areia-v3'&&req.method==='GET'){
+  if(isAdmin(req)){const backup=await readDocument('areia-amigos-legacy-backup',null);if(!backup){const legacy=await readDocument('areia-amigos',[]);await writeDocument('areia-amigos-legacy-backup',{createdAt:new Date().toISOString(),records:Array.isArray(legacy)?legacy:[]});await audit(req,'backup-automatico','areia-amigos',{count:Array.isArray(legacy)?legacy.length:0});}}
   const account=credentials(req),all=await readDocument('areia-v3-loads',[]),prices=await readDocument('areia-v3-prices',[]);
   const entries=Array.isArray(all)?all:[],catalog=Array.isArray(prices)?prices:[];
   return reply(res,200,{admin:isAdmin(req),user:account?.user,name:account?.name,records:isAdmin(req)?entries:entries.filter(x=>x.createdBy===account?.user),prices:catalog,legacyCount:isAdmin(req)?(await readDocument('areia-amigos',[])).length:undefined});
