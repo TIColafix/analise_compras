@@ -249,6 +249,28 @@ createServer(async(req,res)=>{try{
  }
 
  // Novo Controle de Carregamentos — dados separados do legado.
+ if(path==='/api/areia-receivables'&&req.method==='GET'){
+  if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente administrador.'});
+  const payments=await readDocument('areia-v3-commission-payments',[]);
+  return reply(res,200,{payments:Array.isArray(payments)?payments:[]});
+ }
+ if(path==='/api/areia-receivables'&&req.method==='POST'){
+  if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente administrador.'});
+  if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
+  const input=await body(req),company=String(input.company||'').trim(),amount=Number(input.amount),date=String(input.date||''),note=String(input.note||'').trim().slice(0,250);
+  if(!company||!Number.isFinite(amount)||amount<=0||Math.round(amount*100)!==amount*100&&Math.abs(Math.round(amount*100)-amount*100)>0.00001||!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||Number.isNaN(Date.parse(date)))return reply(res,400,{error:'Informe empresa, valor positivo e data válida.'});
+  const records=await readDocument('areia-v3-loads',[]),loads=Array.isArray(records)?records:[];
+  const key=x=>String(x||'').trim().toLocaleLowerCase('pt-BR');
+  const matches=loads.filter(x=>key(x.company)===key(company));
+  if(!matches.length)return reply(res,404,{error:'Empresa não encontrada nos carregamentos.'});
+  const payments=await readDocument('areia-v3-commission-payments',[]),list=Array.isArray(payments)?payments:[];
+  const due=matches.reduce((sum,x)=>sum+Math.round(Number(x.total||0)*5),0);
+  const paid=list.filter(x=>key(x.company)===key(company)).reduce((sum,x)=>sum+x.amountCents,0);
+  const cents=Math.round(amount*100);
+  if(cents>due-paid)return reply(res,400,{error:'Pagamento maior que o saldo a receber.'});
+  const item={id:randomBytes(12).toString('hex'),company:matches[0].company,amountCents:cents,date,note,createdAt:new Date().toISOString(),createdBy:credentials(req)?.user};
+  list.push(item);await writeDocument('areia-v3-commission-payments',list);await audit(req,'registrar-pagamento','areia-fixcol',{id:item.id,company:item.company,amountCents:cents});return reply(res,201,{ok:true,item});
+ }
  if(path==='/api/areia-v3'&&req.method==='GET'){
   if(isAreiaAdmin(req)){const backup=await readDocument('areia-amigos-legacy-backup',null);if(!backup){const legacy=await readDocument('areia-amigos',[]);await writeDocument('areia-amigos-legacy-backup',{createdAt:new Date().toISOString(),records:Array.isArray(legacy)?legacy:[]});await audit(req,'backup-automatico','areia-amigos',{count:Array.isArray(legacy)?legacy.length:0});}}
   const account=credentials(req),all=await readDocument('areia-v3-loads',[]),prices=await readDocument('areia-v3-prices',[]);
