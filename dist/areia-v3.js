@@ -27,6 +27,7 @@ function loadPdfLibrary(){return Promise.resolve(class LocalPdf{
  setFont(_family,weight){this.bold=weight==='bold'}
  setFontSize(n){this.size=n}
  rect(x,y,w,h,mode){this.ops.push(this.rgb(this.fill)+' rg '+this.n(x)+' '+this.n(297-y-h)+' '+this.n(w)+' '+this.n(h)+' re '+(mode==='F'?'f':'S'))}
+ roundedRect(x,y,w,h,rx,ry,mode){this.rect(x,y,w,h,mode)}
  circle(x,y,r,mode){this.ops.push(this.rgb(this.fill)+' rg '+this.n(x+r)+' '+this.n(297-y)+' m '+this.n(x+r)+' '+this.n(297-y+r*.5523)+' '+this.n(x+r*.5523)+' '+this.n(297-y+r)+' '+this.n(x)+' '+this.n(297-y+r)+' c '+this.n(x-r*.5523)+' '+this.n(297-y+r)+' '+this.n(x-r)+' '+this.n(297-y+r*.5523)+' '+this.n(x-r)+' '+this.n(297-y)+' c '+this.n(x-r)+' '+this.n(297-y-r*.5523)+' '+this.n(x-r*.5523)+' '+this.n(297-y-r)+' '+this.n(x)+' '+this.n(297-y-r)+' c '+this.n(x+r*.5523)+' '+this.n(297-y-r)+' '+this.n(x+r)+' '+this.n(297-y-r*.5523)+' '+this.n(x+r)+' '+this.n(297-y)+' c '+(mode==='F'?'f':'S'))}
  polygon(points,mode){let p=points.map((a,i)=>(i?' '+this.n(a[0])+' '+this.n(297-a[1])+' l':this.n(a[0])+' '+this.n(297-a[1])+' m')).join('');this.ops.push(this.rgb(this.fill)+' rg '+p+' h '+(mode==='F'?'f':'S'))}
  line(x,y,x2,y2){this.ops.push(this.rgb(this.stroke)+' RG '+this.n(x)+' '+this.n(297-y)+' m '+this.n(x2)+' '+this.n(297-y2)+' l S')}
