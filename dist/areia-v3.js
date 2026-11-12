@@ -31,7 +31,7 @@ function loadPdfLibrary(){return Promise.resolve(class LocalPdf{
  setFontSize(n){this.size=n}
  rect(x,y,w,h,mode){this.ops.push(this.rgb(this.fill)+' rg '+this.n(x)+' '+this.n(297-y-h)+' '+this.n(w)+' '+this.n(h)+' re '+(mode==='F'?'f':'S'))}
  line(x,y,x2,y2){this.ops.push(this.rgb(this.stroke)+' RG '+this.n(x)+' '+this.n(297-y)+' m '+this.n(x2)+' '+this.n(297-y2)+' l S')}
- text(value,x,y){let v=String(value??'');this.ops.push(this.rgb(this.color)+' rg BT /'+(this.bold?'F2':'F1')+' '+this.n(this.size)+' Tf 1 0 0 1 '+this.n(x)+' '+this.n(297-y)+' Tm ('+this.escape(v)+') Tj ET')}
+ text(value,x,y){let v=String(value??'');this.ops.push(this.rgb(this.color)+' rg BT /'+(this.bold?'F2':'F1')+' '+this.n(this.size/2.83465)+' Tf 1 0 0 1 '+this.n(x)+' '+this.n(297-y)+' Tm ('+this.escape(v)+') Tj ET')}
  splitTextToSize(value,width){let words=String(value).split(/\s+/),lines=[],line='';for(let word of words){let next=line?line+' '+word:word;if(next.length*this.size*.20>width&&line){lines.push(line);line=word}else line=next}if(line)lines.push(line);return lines}
  n(v){return Number(v).toFixed(2)}
  rgb(c){return c.map(x=>(x/255).toFixed(3)).join(' ')}
