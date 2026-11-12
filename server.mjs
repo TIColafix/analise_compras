@@ -137,7 +137,7 @@ createServer(async(req,res)=>{try{
  }
  if(isLimited(req)){
   if(path==='/'||path==='/index.html'){res.writeHead(302,{Location:'/areia','Cache-Control':'no-store'});return res.end();}
-  const allow=['/api/me','/api/areia-amigos','/api/areia-v3','/api/areia-drivers',...(isAreiaAdmin(req)?['/api/users']:[]),'/api/areia-amigos/extract','/style.css','/areia-amigos.js','/areia-v3.js','/favicon.svg'];
+  const allow=['/api/me','/api/areia-amigos','/api/areia-v3','/api/areia-drivers','/api/areia-companies',...(isAreiaAdmin(req)?['/api/users']:[]),'/api/areia-amigos/extract','/style.css','/areia-amigos.js','/areia-v3.js','/favicon.svg'];
   if(!hasAccess(req,'areiaamigos')&&!hasAccess(req,'areiaadmin')||!allow.includes(path)&&path!=='/images/areia-header.png'&&!path.startsWith('/api/areia-amigos/')&&!path.startsWith('/api/areia-drivers/')&&!(isAreiaAdmin(req)&&path.startsWith('/api/users/')))return reply(res,403,{error:'Você não tem permissão para acessar este módulo.'});
  }
  if(path==='/api/areia-drivers'&&req.method==='GET'){const list=await readDocument('areia-v3-drivers',[]);return reply(res,200,{drivers:(Array.isArray(list)?list:[]).filter(x=>isAreiaAdmin(req)||x.enabled!==false).map(x=>isAreiaAdmin(req)?x:{id:x.id,name:x.name,company:x.company,plate:x.plate,phone:x.phone})});}
@@ -271,6 +271,18 @@ createServer(async(req,res)=>{try{
   const item={id:randomBytes(12).toString('hex'),company:matches[0].company,amountCents:cents,date,note,createdAt:new Date().toISOString(),createdBy:credentials(req)?.user};
   list.push(item);await writeDocument('areia-v3-commission-payments',list);await audit(req,'registrar-pagamento','areia-fixcol',{id:item.id,company:item.company,amountCents:cents});return reply(res,201,{ok:true,item});
  }
+ if(path==='/api/areia-companies'&&req.method==='GET'){const rows=await readDocument('areia-v3-companies',[]);return reply(res,200,{companies:Array.isArray(rows)?rows.filter(x=>isAreiaAdmin(req)||x.enabled!==false):[]});}
+ if(path==='/api/areia-companies'&&req.method==='POST'){
+  if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente administrador.'});
+  if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
+  const x=await body(req),rows=await readDocument('areia-v3-companies',[]),list=Array.isArray(rows)?rows:[],name=String(x.name||'').trim().slice(0,120),id=String(x.id||'');
+  if(!name)return reply(res,400,{error:'Informe o nome da empresa.'});
+  if(list.some(y=>y.name.toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR')&&y.id!==id))return reply(res,409,{error:'Empresa já cadastrada.'});
+  const prices=Object.fromEntries(['Areia Fina Branca','Areia Fina Amarelinha','Areia Média','Aterro','Areia'].map(m=>[m,Number(x.prices?.[m])]));
+  if(Object.values(prices).some(v=>!Number.isFinite(v)||v<0))return reply(res,400,{error:'Informe preços válidos para todos os materiais.'});
+  const existing=list.find(y=>y.id===id);if(existing){existing.name=name;existing.prices=prices;existing.enabled=x.enabled!==false;}else list.push({id:randomUUID(),name,prices,enabled:true});
+  await writeDocument('areia-v3-companies',list);await audit(req,'empresa-precos','areia-v3',{name});return reply(res,200,{ok:true});
+ }
  if(path==='/api/areia-v3'&&req.method==='GET'){
   if(isAreiaAdmin(req)){const backup=await readDocument('areia-amigos-legacy-backup',null);if(!backup){const legacy=await readDocument('areia-amigos',[]);await writeDocument('areia-amigos-legacy-backup',{createdAt:new Date().toISOString(),records:Array.isArray(legacy)?legacy:[]});await audit(req,'backup-automatico','areia-amigos',{count:Array.isArray(legacy)?legacy.length:0});}}
   const account=credentials(req),all=await readDocument('areia-v3-loads',[]),prices=await readDocument('areia-v3-prices',[]);
@@ -317,14 +329,14 @@ createServer(async(req,res)=>{try{
    const before=Object.fromEntries(fields.map(k=>[k,record[k]]));
    const patch=input.patch||{};for(const k of fields){if(patch[k]!==undefined)record[k]=k==='quantity'?Number(patch[k]):String(patch[k]).trim().slice(0,150);}
    if(!record.driver||!record.company||!record.plate||!record.material||!(record.quantity>0))return reply(res,400,{error:'Dados incompletos.'});
-   const match=catalog.find(x=>x.name===record.material);record.unitPrice=match?Number(match.price):record.unitPrice;record.total=Math.round(record.quantity*record.unitPrice*100)/100;
+   const companies=await readDocument('areia-v3-companies',[]),client=companies.find(x=>x.name.toLocaleLowerCase('pt-BR')===record.company.toLocaleLowerCase('pt-BR'));const match=catalog.find(x=>x.name===record.material);record.unitPrice=client?Number(client.prices[record.material]):match?Number(match.price):record.unitPrice;record.total=Math.round(record.quantity*record.unitPrice*100)/100;
    record.corrections=record.corrections||[];record.corrections.push({at:new Date().toISOString(),by:account.user,reason,before,after:Object.fromEntries(fields.map(k=>[k,record[k]]))});
    await writeDocument('areia-v3-loads',records);await audit(req,'corrigir','areia-v3',{id:record.id,reason});return reply(res,200,{ok:true,record});
   }
   if(input.action!=='create')return reply(res,400,{error:'Ação inválida.'});
   const driver=String(input.driver||'').trim().slice(0,120),company=String(input.company||'').trim().slice(0,120),plate=String(input.plate||'').trim().toUpperCase().slice(0,15),phone=String(input.phone||'').replace(/\D/g,'').slice(0,15),material=String(input.material||'').trim(),quantity=Number(input.quantity);
-  const item=catalog.find(x=>x.name===material);
-  if(!driver||!company||!plate||!item||!Number.isFinite(quantity)||quantity<=0||quantity>100000)return reply(res,400,{error:'Preencha motorista, empresa, placa, material cadastrado e quantidade válida.'});
+  const companies=await readDocument('areia-v3-companies',[]),client=(Array.isArray(companies)?companies:[]).find(x=>x.name.toLocaleLowerCase('pt-BR')===company.toLocaleLowerCase('pt-BR')&&x.enabled!==false);const item=client?{name:material,price:client.prices?.[material]}:null;
+  if(!driver||!company||!plate||!item||!Number.isFinite(Number(item.price))||!Number.isFinite(quantity)||quantity<=0||quantity>100000)return reply(res,400,{error:'Preencha motorista, empresa, placa, material cadastrado e quantidade válida.'});
   const last=records.reduce((m,x)=>Math.max(m,Number(x.number)||0),0),number=Math.max(last+1,1);
   const record={id:randomUUID(),number,createdAt:new Date().toISOString(),createdBy:account.user,createdByName:account.name,driver,company,plate,phone,material,quantity,unitPrice:Number(item.price),total:Math.round(quantity*Number(item.price)*100)/100,corrections:[]};
   records.unshift(record);await writeDocument('areia-v3-loads',records);await audit(req,'criar','areia-v3',{id:record.id,number});return reply(res,200,{ok:true,record});
