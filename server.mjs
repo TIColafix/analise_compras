@@ -553,7 +553,7 @@ createServer(async(req,res)=>{try{
  if(req.method!=='GET')return reply(res,405,{error:'Método não permitido.'});
  if(path.startsWith('/images/')){
   let imageName;
-  try{imageName=decodeURIComponent(path.slice('/images/'.length));}catch{return reply(res,404,{error:'Imagem não encontrada.'});}
+  try{imageName=decodeURIComponent(path.slice('/images/'.length));if(imageName==='areia-header.png')imageName='Banner Areia Amigos com Caminhão.png';}catch{return reply(res,404,{error:'Imagem não encontrada.'});}
   if(!/^(?:mp\/)?[^/\\\\]+\.(?:png|jpg|jpeg|webp|svg)$/i.test(imageName)||imageName.includes('..'))return reply(res,404,{error:'Imagem não encontrada.'});
   const content=await readFile(join(root,'dist','images',...imageName.split('/')));
   const extension=imageName.split('.').pop().toLowerCase();
