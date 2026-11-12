@@ -84,6 +84,7 @@ label{display:block;font-size:13px;font-weight:700;margin:15px 0 8px;color:#e8ed
 async function formBody(req){let size=0,chunks=[];for await(const c of req){size+=c.length;if(size>8192)throw Error('Requisição inválida.');chunks.push(c)}return new URLSearchParams(Buffer.concat(chunks).toString())}
 function sessionCookie(token,remember=false){return `colafix_session=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=${remember?2592000:43200}`;}
 function clearSessionCookie(){return 'colafix_session=; Path=/; HttpOnly; SameSite=Strict; Secure; Max-Age=0';}
+function askAreiaLogin(res){res.writeHead(302,{Location:'/areia/login','Cache-Control':'no-store'});res.end();}
 function askLogin(res){res.writeHead(302,{Location:'/login','Cache-Control':'no-store'});res.end();}
 function allowedHost(value){if(!value)return false;if(!process.env.RAILWAY_ENVIRONMENT)return value==='127.0.0.1:4173'||value==='localhost:4173';if(publicOrigin){try{return value===new URL(publicOrigin).host}catch{return false}}return true;}
 const names=['Necessidades de compra do dia.csv','PERFIL ITENS 27.04.pdf','SALDO ALMOXARIFADOS 27.04.pdf'];
@@ -91,76 +92,8 @@ function runPurchasePdf(file){return new Promise((resolve,reject)=>{const p=spaw
 function run(mode,folder){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_erp.py'),mode,folder],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',reject);p.on('close',c=>c?reject(Error(err.trim()||'Falha na importação.')):resolve(out));});}
 async function body(req){let size=0,chunks=[];for await(const chunk of req){size+=chunk.length;if(size>40*1024*1024)throw Error('Limite de 30 MB por lote excedido.');chunks.push(chunk);}return JSON.parse(Buffer.concat(chunks).toString());}
 const reply=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
-function limitedAreiaPage(){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Colafix · Areia Amigos</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css"><style>
-body{margin:0;background:#f1f5f9}
-.limited-layout{display:contents}
-.limited-layout .sidebar{position:fixed;inset:0 auto 0 0;width:224px;height:100vh;overflow-y:auto;flex:none}
-.limited-layout main{width:100%;max-width:1800px;margin:0 auto;padding:28px;min-width:0;display:block}
-.limited-layout main>header{padding:0;background:transparent;border:0;display:grid;grid-template-columns:minmax(0,1fr) 180px;gap:20px;min-height:70px;margin-bottom:20px}
-.limited-layout .limited-main{padding:0;width:100%;max-width:none;margin:0}
-.limited-layout .sidebar nav a.active{background:#404754;color:white}
-.limited-layout #areiaamigos-view{display:block!important}
-.limited-layout .aa-saved-overlay{z-index:9999}
-/* Layout independente sem sobreposicao do menu */
-.limited-layout{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:100vh}
-.limited-layout .sidebar{position:sticky;top:0;inset:auto;width:224px;max-height:100vh;min-width:0}
-.limited-layout main{box-sizing:border-box;max-width:none;width:100%;min-width:0;padding:20px 24px}
-.limited-layout main>header{display:none}
-.limited-layout .limited-main{width:100%;min-width:0;max-width:100%}
-@media(max-width:1000px){.limited-layout{grid-template-columns:185px minmax(0,1fr)}.limited-layout .sidebar{width:185px}.limited-layout main{padding:14px}}
-@media(max-width:760px){.limited-layout{display:block}.limited-layout .sidebar{position:relative;width:100%;height:auto;max-height:none;overflow:visible;padding:12px}.limited-layout .sidebar .brand{margin:0}.limited-layout .sidebar nav{display:flex;gap:8px;flex-wrap:wrap}.limited-layout .sidebar .sidebar-foot,.limited-layout .sidebar .nav-caption{display:none}.limited-layout main{padding:10px}.limited-layout main>header{display:none}}
-
-@media(min-width:761px) and (max-width:1150px){.limited-layout .sidebar{width:200px}.limited-layout main{padding:22px}}
-@media(max-width:760px){.limited-layout .sidebar{position:relative;width:100%;height:auto;overflow:visible}.limited-layout main{padding:14px}.limited-layout main>header{display:block;min-height:0}.limited-layout .limited-main{padding:0}}
-/* Somente a pagina exclusiva do carregador; nao altera outras plataformas */
-@media(max-width:760px){
- .limited-layout>.sidebar{position:relative!important;width:100%!important;max-height:none!important;height:auto!important;padding:0 12px!important;min-height:44px!important;background:#242b36!important}
- .limited-layout>.sidebar .brand,.limited-layout>.sidebar .nav-caption,.limited-layout>.sidebar .sidebar-foot{display:none!important}
- .limited-layout>.sidebar nav{display:flex!important;justify-content:flex-end!important;align-items:center!important;min-height:44px!important;gap:0!important;margin:0!important;padding:0!important}
- .limited-layout>.sidebar nav a.active{display:none!important}
- .limited-layout>.sidebar nav a[href="/logout"]{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;width:auto!important;min-width:84px!important;min-height:34px!important;padding:7px 12px!important;margin:0!important;background:#344358!important;color:#fff!important;border:1px solid #536781!important;border-radius:8px!important;font-size:12px!important;text-decoration:none!important}
- .limited-layout>.sidebar nav a[href="/logout"] span{display:inline!important;font-size:14px!important}
- .limited-layout main{padding:0!important}
-}
-@media(min-width:1200px){
- .limited-layout main{padding:20px 24px!important}
- .limited-layout #areiaamigos-view .av-shell{grid-template-columns:200px minmax(0,1fr)!important}
- .limited-layout #areiaamigos-view .av-page{padding:20px!important}
- .limited-layout #areiaamigos-view .av-layout.av-load-layout{grid-template-columns:minmax(0,1.55fr) minmax(260px,.85fr)!important}
- .limited-layout #areiaamigos-view .av-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-}
-
-/* Areia Amigos: um unico menu no desktop e area de trabalho sem esmagamento */
-@media(min-width:761px){
- .limited-layout{display:block!important}
- .limited-layout>.sidebar{display:none!important}
- .limited-layout>main{width:100%!important;max-width:1920px!important;margin:0 auto!important;padding:20px 28px!important}
- .limited-layout #areiaamigos-view .av-shell{grid-template-columns:220px minmax(0,1fr)!important}
- .limited-layout #areiaamigos-view .av-page{padding:24px!important}
- .limited-layout #areiaamigos-view .av-layout.av-load-layout{grid-template-columns:minmax(0,1.4fr) minmax(320px,.85fr)!important}
- .limited-layout #areiaamigos-view .av-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-}
-#areiaamigos-view .av-logout{display:block;margin:18px 12px;padding:12px 16px;color:#dbe8fa;text-decoration:none;border:1px solid #39546e;border-radius:9px;font-weight:700;text-align:center}
-#areiaamigos-view .av-logout:hover{background:#223b56}
-@media(max-width:760px){#areiaamigos-view .av-logout{display:none!important}}
-
-/* The shared style.css adds body padding-left:224px for the main platform. This standalone Areia page must reset it. */
-html body{padding-left:0!important;margin:0!important;width:100%!important;max-width:none!important}
-/* Full viewport width on desktop; isolate from global app layout rules */
-@media(min-width:761px){
- html,body{width:100%;max-width:none;margin:0;overflow-x:hidden}
- body>.limited-layout{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
- body>.limited-layout>main{display:block!important;position:static!important;float:none!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;margin-left:0!important;padding:12px 16px!important;box-sizing:border-box!important}
- body>.limited-layout>main>.limited-main{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0!important}
- body>.limited-layout>main>.limited-main>#areiaamigos-view{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
- #areiaamigos-view .av-shell{width:100%!important;max-width:none!important;margin:0!important;grid-template-columns:220px minmax(0,1fr)!important}
- #areiaamigos-view .av-main-content{width:100%!important;min-width:0!important}
- #areiaamigos-view .av-layout.av-load-layout{grid-template-columns:minmax(0,1.6fr) minmax(340px,.85fr)!important}
-}
-@media(min-width:761px) and (max-width:1150px){
- #areiaamigos-view .av-layout.av-load-layout{grid-template-columns:minmax(0,1fr)!important}
-}
-</style></head><body><div class="limited-layout"><aside class="sidebar"><div class="brand" aria-label="Colafix"><span>Cola</span>fix<small>GESTÃO DE SUPRIMENTOS</small></div><p class="nav-caption">ÁREA DE TRABALHO</p><nav aria-label="Navegação principal"><a href="/areia" class="active" aria-current="page"><span aria-hidden="true">🚚</span>Areia Amigos</a><a href="/logout"><span aria-hidden="true">🚪</span>Sair</a></nav><div class="sidebar-foot">BASES LOCAIS<small>Compras e materiais</small></div></aside><main><header><div class="heading"><h1>Areia Amigos</h1><span>Controle de recebimento de cargas</span></div></header><div class="limited-main"><section id="areiaamigos-view"></section></div></main></div><script type="module" src="/areia-v3.js?v=fullwidth-bodyreset-20261112"></script><script>fetch("/api/me",{cache:"no-store"});setInterval(()=>{if(!document.hidden)fetch("/api/me",{cache:"no-store"}).catch(()=>{});},30000);</script></body></html>`;}
+function limitedAreiaPage(){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Areia Amigos | Controle de Carregamentos</title><link rel="stylesheet" href="/style.css"><style>html,body{margin:0;min-height:100%;background:#081625}#areiaamigos-view{min-height:100vh;width:100%}#areiaamigos-view .av-shell{min-height:100vh}#areiaamigos-view .av-main-content{min-width:0}#areiaamigos-view .av-layout.av-load-layout{grid-template-columns:minmax(0,1.6fr) minmax(320px,.85fr)}@media(max-width:1150px){#areiaamigos-view .av-layout.av-load-layout{grid-template-columns:minmax(0,1fr)}} </style></head><body><div id="areiaamigos-view"></div><script src="/areia-v3.js?v=standalone-20261112"></script><script>fetch('/api/me',{cache:'no-store'});</script></body></html>`}
+function areiaLoginPage(message=''){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Areia Amigos | Acesso</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#06182b,#123454);color:white;font-family:Arial,sans-serif;padding:20px}.panel{width:min(420px,100%);background:#0c2036;border:1px solid #38516b;border-radius:18px;padding:32px;box-shadow:0 20px 65px #0005}.banner{width:100%;border-radius:10px;margin-bottom:18px}h1{font-size:23px;margin:0 0 6px}p{color:#b5c7d9;font-size:14px}label{display:block;margin:18px 0 6px;font-size:13px;font-weight:bold}input:not([type=checkbox]){width:100%;padding:14px;background:#071625;color:white;border:1px solid #5b7088;border-radius:9px;font-size:16px}button{width:100%;background:#ff930b;border:0;padding:15px;border-radius:9px;font-size:16px;font-weight:bold;margin-top:22px;cursor:pointer}.error{color:#ffb0b0}.remember{display:flex;gap:8px;align-items:center;font-size:13px;margin-top:15px}</style></head><body><main class="panel"><img class="banner" src="/images/areia-header.png" alt="Areia Amigos"><h1>Acesso ao carregamento</h1><p>Entre com seu usuário autorizado do Areia Amigos.</p>${message?'<p class="error">'+message+'</p>':''}<form method="POST" action="/areia/login"><label for="user">Usuário</label><input id="user" name="username" autocomplete="username" required><label for="pass">Senha</label><input id="pass" name="password" type="password" autocomplete="current-password" required><label class="remember"><input name="remember" type="checkbox" value="1">Manter login neste dispositivo</label><button type="submit">Entrar no Areia Amigos</button></form></main></body></html>`}
 
 function usersPage(){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Colafix · Usuários</title><style>body{margin:0;background:#f1f5f9;color:#142944;font:15px Arial,sans-serif}header{background:#242b36;color:white;padding:20px 28px;display:flex;justify-content:space-between;align-items:center}header a{color:white}main{max-width:1050px;margin:28px auto;padding:0 18px}section{background:white;border:1px solid #d8e1ee;border-radius:12px;padding:24px;margin-bottom:18px}h1{margin:0}h2{margin-top:0}label{display:block;font-weight:600;margin:12px 0 5px}input{box-sizing:border-box;width:100%;padding:11px;border:1px solid #b8c9dc;border-radius:7px;font-size:15px}button{padding:10px 14px;border:0;border-radius:7px;background:#0877e7;color:white;font-weight:600;cursor:pointer}button:disabled{opacity:.55}button.secondary{background:#52647c}button.danger{background:#b42332}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end}.row{border-top:1px solid #e1e8f2;padding:18px 0;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}.actions{display:flex;gap:8px;flex-wrap:wrap}.hint{color:#66778b;font-size:13px}.msg{padding:10px;margin:12px 0;border-radius:7px;background:#e4f5e8} .error{background:#ffe7e7;color:#a32121}@media(max-width:720px){.grid{grid-template-columns:1fr}}html{color-scheme:light}html[data-colafix-theme="dark"]{color-scheme:dark}html[data-colafix-theme="dark"] body{background:#101720;color:#e6edf5}html[data-colafix-theme="dark"] section{background:#1c293a;border-color:#3b506b;color:#edf3ff}html[data-colafix-theme="dark"] header{background:#080e17;border-bottom:1px solid #3b506b}html[data-colafix-theme="dark"] header a{color:#d5e6ff}html[data-colafix-theme="dark"] input{background:#142236;border-color:#526781;color:#f6f9ff}html[data-colafix-theme="dark"] input::placeholder{color:#a7bad3}html[data-colafix-theme="dark"] .hint{color:#b6c8e0}html[data-colafix-theme="dark"] .row{border-color:#3b506b}html[data-colafix-theme="dark"] .msg{background:#20422f;color:#d7ffe6}html[data-colafix-theme="dark"] .msg.error{background:#4a252b;color:#ffdde1}.theme-users-switch{position:fixed;bottom:20px;right:20px;z-index:1000;background:#eaf2ff;color:#14243a;border:1px solid #b7c9e0;border-radius:999px;padding:12px 17px;box-shadow:0 5px 18px #0003}html[data-colafix-theme="dark"] .theme-users-switch{background:#26394f;color:#f4f8ff;border-color:#506782}</style></head><body><header><strong>Colafix · Administração de usuários</strong><a href="/">← Voltar ao sistema</a></header><main><h1>Usuários</h1><p>Cadastre, libere ou bloqueie acessos. Senhas são armazenadas com hash seguro; não são exibidas novamente.</p><div id="message" aria-live="polite"></div><section><h2>Novo usuário</h2><form id="new"><div class="grid"><div><label>Nome completo</label><input name="name" required minlength="3" autocomplete="off"></div><div><label>Usuário de login</label><input name="user" required pattern="[a-zA-Z][a-zA-Z0-9._-]{2,39}" autocomplete="off"></div><div><label>Senha inicial (mínimo 6 caracteres)</label><input name="password" type="password" minlength="6" autocomplete="new-password" placeholder="Opcional: ativar depois"></div></div><p class="hint">Permissão inicial: apenas Areia Amigos. Se deixar a senha em branco, a conta fica bloqueada até você definir uma.</p><button>Criar usuário</button></form></section><section><h2>🟢 Conectados agora</h2><p class="hint">Usuários com atividade nos últimos 2 minutos. Atualização automática a cada 30 segundos.</p><div id="online">Carregando…</div></section><section><h2>Contas cadastradas</h2><div id="users">Carregando…</div></section></main><button type="button" class="theme-users-switch" id="theme-users-switch">🌙 Modo escuro</button><script>
 (function(){const key='colafix-theme';const apply=()=>{const dark=localStorage.getItem(key)==='dark';document.documentElement.setAttribute('data-colafix-theme',dark?'dark':'light');document.getElementById('theme-users-switch').textContent=dark?'☀️ Modo claro':'🌙 Modo escuro'};document.getElementById('theme-users-switch').addEventListener('click',()=>{localStorage.setItem(key,localStorage.getItem(key)==='dark'?'light':'dark');apply()});apply()})();
@@ -177,6 +110,8 @@ load();loadOnline();setInterval(loadOnline,30000);
 createServer(async(req,res)=>{try{
  if(!allowedHost(req.headers.host))return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
+ if(path==='/areia/login'&&req.method==='GET'){if(authorized(req)){res.writeHead(302,{Location:'/areia','Cache-Control':'no-store'});return res.end()}res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});return res.end(areiaLoginPage())}
+ if(path==='/areia/login'&&req.method==='POST'){const f=await formBody(req),acc=await accountFor(String(f.get('username')||''),String(f.get('password')||''));if(!acc||acc.role==='limited'&&!acc.permissions?.includes('areiaamigos')){res.writeHead(401,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});return res.end(areiaLoginPage('Usuário, senha ou permissão inválidos.'))}const token=randomBytes(32).toString('hex'),remember=f.get('remember')==='1';sessions.set(token,{account:acc,createdAt:Date.now(),lastSeen:Date.now(),remember});res.writeHead(303,{Location:'/areia','Set-Cookie':sessionCookie(token,remember),'Cache-Control':'no-store'});return res.end()}
  if(path==='/login'&&req.method==='GET'){if(authorized(req)){res.writeHead(302,{Location:'/', 'Cache-Control':'no-store'});return res.end()}res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});return res.end(loginPage())}
  if(path==='/login'&&req.method==='POST'){const f=await formBody(req),acc=await accountFor(String(f.get('username')||f.get('user')||''),String(f.get('password')||''));if(!acc){res.writeHead(401,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});return res.end(loginPage('Usuário ou senha inválidos.'))}const token=randomBytes(32).toString('hex'),remember=f.get('remember')==='1';sessions.set(token,{account:acc,createdAt:Date.now(),lastSeen:Date.now(),remember});res.writeHead(303,{Location:'/', 'Set-Cookie':sessionCookie(token,remember),'Cache-Control':'no-store'});return res.end()}
  await refreshManagedSession(req);
@@ -187,7 +122,7 @@ createServer(async(req,res)=>{try{
   res.writeHead(200,{'Content-Type':'image/png','Cache-Control':'public, max-age=3600'});
   return res.end(content);
  }
- if(path!=='/api/health'&&!authorized(req)){if(path.startsWith('/api/'))return reply(res,401,{error:'Sessão expirada. Entre novamente para continuar.',loginRequired:true});return askLogin(res);}
+ if(path!=='/api/health'&&!authorized(req)){if(path==='/areia')return askAreiaLogin(res);if(path.startsWith('/api/'))return reply(res,401,{error:'Sessão expirada. Entre novamente para continuar.',loginRequired:true});return askLogin(res);}
  if(path==='/usuarios'&&req.method==='GET'){
   if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
   res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});
