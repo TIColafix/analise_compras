@@ -48,14 +48,20 @@ async function receiptPdf(r){
  rect(0,0,210,30,navy);rect(163,0,47,30,orange);
  // Faixa diagonal da marca, sem depender de imagens externas.
  if(typeof pdf.polygon==='function'){pdf.setFillColor(...navy);pdf.polygon([[163,0],[151,30],[163,30]],'F')}
- // Caminhão vetorial com cabine, caçamba, janelas e rodas — nítido no PDF e na impressão.
- rect(9.2,12,9.8,5.4,orange);rect(19,13.4,5.6,4,[255,187,48]);
- rect(20.1,14,2.8,1.9,[188,224,246]);rect(8.7,17.2,16.5,1.1,[220,230,240]);
- pdf.setFillColor(15,30,49);pdf.circle(12.5,18.6,1.7,'F');pdf.circle(21.5,18.6,1.7,'F');
- pdf.setFillColor(230,237,246);pdf.circle(12.5,18.6,.7,'F');pdf.circle(21.5,18.6,.7,'F');
- // Marca FIXCOL com contraste e peso tipográfico inspirados na identidade Colafix.
- txt('Fix',29,15.8,21,[239,53,71],true);txt('col',47.5,15.8,21,white,true);
- txt('AREIA AMIGOS  |  CONTROLE DE CARREGAMENTOS',29,23,7.3,white);
+ // Identidade do recibo: caminhão à esquerda, Areia Amigos em destaque, Fixcol discreta à direita.
+ // Desenho vetorial em coordenadas A4: sem dependências externas ou distorção ao imprimir.
+ pdf.setFillColor(255,160,23);pdf.roundedRect(9,12,18,6,0.9,0.9,'F');
+ pdf.setFillColor(255,191,49);pdf.rect(11,10.4,13,2.3,'F');
+ pdf.setFillColor(231,237,241);pdf.roundedRect(26.5,13.4,8.5,4.6,0.8,0.8,'F');
+ pdf.setFillColor(115,177,210);pdf.rect(29.1,14,4.1,2.2,'F');
+ pdf.setFillColor(26,40,56);pdf.rect(8.5,18,27,1,'F');
+ [13.5,23,30.7].forEach(x=>{pdf.setFillColor(22,35,50);pdf.circle(x,19.1,1.8,'F');pdf.setFillColor(219,230,239);pdf.circle(x,19.1,0.7,'F')});
+ txt('Areia',40,16.3,20,white,true);
+ txt('Amigos',66.5,16.3,20,orange,true);
+ txt('CONTROLE DE CARREGAMENTOS',40,23,7.3,white);
+ // Fixcol é marca secundária e não substitui a identidade Areia Amigos.
+ txt('Fix',175,13.6,10,[239,53,71],true);
+ txt('col',183.5,13.6,10,navy,true);
  rect(8,36,194,14,navy);centered('RECIBO DIGITAL DE CARREGAMENTO',105,45.2,12.2,white,true);
  const dt=new Date(r.createdAt),date=isNaN(dt)?'—':dt.toLocaleDateString('pt-BR'),time=isNaN(dt)?'—':dt.toLocaleTimeString('pt-BR');
  const metas=[[8,52,'RECIBO Nº',String(r.number)],[63,84,'DATA DO CARREGAMENTO',date],[150,52,'HORÁRIO',time]];
