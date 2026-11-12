@@ -40,21 +40,25 @@ function loadPdfLibrary(){return Promise.resolve(class LocalPdf{
  })}
 async function receiptPdf(r){
  const JsPDF=await loadPdfLibrary(),pdf=new JsPDF();
- const navy=[9,30,52],blue=[17,47,78],orange=[247,139,18],ink=[15,33,55];
+ const navy=[7,28,50],blue=[16,46,79],orange=[255,143,11],ink=[15,33,55],pale=[240,243,247],white=[255,255,255];
  const rect=(x,y,w,h,color)=>{pdf.setFillColor(...color);pdf.rect(x,y,w,h,'F')};
  const txt=(v,x,y,size=11,color=ink,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);pdf.setTextColor(...color);pdf.text(String(v??'—'),x,y)};
- const wrap=(v,x,y,width,size=11,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);let lines=pdf.splitTextToSize(String(v??'—'),width);txt(lines[0]||'—',x,y,size,ink,bold);for(let i=1;i<lines.length;i++)txt(lines[i],x,y+i*5,size,ink,bold)};
- rect(0,0,210,37,navy);rect(179,0,31,37,orange);txt('AREIA',16,18,25,[255,255,255],true);txt('AMIGOS',53,18,25,orange,true);txt('CONTROLE DE CARREGAMENTOS',16,27,9,[222,232,245]);
- rect(14,45,182,15,navy);txt('RECIBO DIGITAL DE CARREGAMENTO',45,55,13,[255,255,255],true); 
+ const wrap=(v,x,y,width,size=11,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);let lines=pdf.splitTextToSize(String(v??'—'),width);lines.slice(0,2).forEach((line,i)=>txt(line,x,y+i*4.5,size,ink,bold))};
+ // Layout A4 em milímetros, com a mesma hierarquia do recibo de impressão.
+ rect(0,0,210,31,navy);rect(166,0,44,31,orange);
+ txt('AREIA',23,14,19,white,true);txt('AMIGOS',65,14,19,orange,true);
+ txt('CONTROLE DE CARREGAMENTOS',23,22,8,white);
+ rect(8,37,194,13,navy);txt('RECIBO DIGITAL DE CARREGAMENTO',49,45.5,12,white,true);
  const dt=new Date(r.createdAt),date=isNaN(dt)?'—':dt.toLocaleDateString('pt-BR'),time=isNaN(dt)?'—':dt.toLocaleTimeString('pt-BR');
- [[14,45,'RECIBO Nº',String(r.number)],[63,77,'DATA DO CARREGAMENTO',date],[144,52,'HORÁRIO',time]].forEach(([x,w,label,value],i)=>{rect(x,66,w,22,i===0?orange:[238,242,247]);txt(label,x+4,73,8,i===0?[255,255,255]:ink);txt(value,x+4,82,13,i===0?[255,255,255]:ink,true)});
- let y=96;
- const section=(title,rows)=>{rect(14,y,182,12,blue);txt(title,19,y+8,12,[255,255,255],true);y+=12;rows.forEach(([label,value],i)=>{rect(14,y,182,14,i%2?[241,245,249]:[255,255,255]);txt(label,19,y+9,10,[54,72,94]);wrap(value,90,y+9,100,11,true);y+=14});y+=6};
+ const metas=[[8,52,'RECIBO Nº',String(r.number)],[64,81,'DATA DO CARREGAMENTO',date],[148,54,'HORÁRIO',time]];
+ metas.forEach(([x,w,label,value],i)=>{rect(x,55,w,18,i===0?orange:pale);txt(label,x+5,61,7,i===0?white:[70,88,108]);txt(value,x+5,69,12,i===0?white:ink,true)});
+ let y=79;
+ const section=(title,rows)=>{rect(8,y,194,10,blue);txt(title,12,y+7,10,white,true);y+=10;rows.forEach(([label,value],i)=>{rect(8,y,194,10,i%2?pale:white);txt(label,12,y+6.8,9,[54,72,94]);wrap(value,91,y+6.8,105,9,true);y+=10});y+=4};
  section('Dados do carregamento',[['Motorista',r.driver],['Empresa',r.company],['Placa',r.plate]]);
  section('Material e quantidade',[['Material',r.material],['Quantidade',Number(r.quantity||0).toLocaleString('pt-BR')+' m³'],['Valor unitário',money(r.unitPrice)+'/m³']]);
- rect(14,y,182,23,navy);rect(108,y,88,23,orange);txt('TOTAL DO CARREGAMENTO',19,y+14,12,[255,255,255],true);txt(money(r.total),114,y+15,20,[255,255,255],true);y+=31;
- rect(14,y,182,15,[241,245,249]);txt('Registrado por: '+String(r.createdByName||'—'),19,y+10,10,ink,true);y+=25;
- pdf.setDrawColor(...orange);pdf.line(14,y,196,y);txt('Documento gerado pelo sistema de carregamentos Areia Amigos.',14,y+8,9,[88,105,124]);
+ rect(8,y,194,19,navy);rect(111,y,91,19,orange);txt('TOTAL DO CARREGAMENTO',13,y+12,11,white,true);txt(money(r.total),118,y+12,16,white,true);y+=24;
+ rect(8,y,194,13,pale);txt('Registrado por: '+String(r.createdByName||'—'),12,y+8.5,9,ink,true);y+=21;
+ pdf.setDrawColor(...orange);pdf.line(8,y,202,y);txt('Documento gerado pelo sistema de carregamentos Areia Amigos.',8,y+7,8,[88,105,124]);
  const name='Areia-Amigos-Recibo-'+String(r.number).replace(/[^a-zA-Z0-9_-]/g,'')+'.pdf';
  return {file:new File([pdf.output('blob')],name,{type:'application/pdf'}),name};
 }
