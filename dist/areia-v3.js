@@ -45,7 +45,7 @@ async function receiptPdf(r){
  const txt=(v,x,y,size=11,color=ink,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);pdf.setTextColor(...color);pdf.text(String(v??'—'),x,y)};
  const wrap=(v,x,y,width,size=11,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);let lines=pdf.splitTextToSize(String(v??'—'),width);txt(lines[0]||'—',x,y,size,ink,bold);for(let i=1;i<lines.length;i++)txt(lines[i],x,y+i*5,size,ink,bold)};
  rect(0,0,210,37,navy);rect(179,0,31,37,orange);txt('AREIA',16,18,25,[255,255,255],true);txt('AMIGOS',53,18,25,orange,true);txt('CONTROLE DE CARREGAMENTOS',16,27,9,[222,232,245]);
- rect(14,45,182,15,navy);txt('RECIBO DIGITAL DE CARREGAMENTO',105,55,15,[255,255,255],true); 
+ rect(14,45,182,15,navy);txt('RECIBO DIGITAL DE CARREGAMENTO',45,55,13,[255,255,255],true); 
  const dt=new Date(r.createdAt),date=isNaN(dt)?'—':dt.toLocaleDateString('pt-BR'),time=isNaN(dt)?'—':dt.toLocaleTimeString('pt-BR');
  [[14,45,'RECIBO Nº',String(r.number)],[63,77,'DATA DO CARREGAMENTO',date],[144,52,'HORÁRIO',time]].forEach(([x,w,label,value],i)=>{rect(x,66,w,22,i===0?orange:[238,242,247]);txt(label,x+4,73,8,i===0?[255,255,255]:ink);txt(value,x+4,82,13,i===0?[255,255,255]:ink,true)});
  let y=96;
