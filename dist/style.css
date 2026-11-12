@@ -2246,3 +2246,13 @@ main>header .heading{grid-column:1;grid-row:1}
 /* Intranet shortcut belongs exclusively to the main Dashboard. */
 main>header .dashboard-intranet-card{display:none!important}
 main:has(#dashboard-view:not([hidden]))>header .dashboard-intranet-card{display:flex!important}
+
+/* Restore natural heading width on all pages; the old fixed 180px dashboard column crushed long titles. */
+main>header:has(.dashboard-intranet-card){grid-template-columns:minmax(0,1fr) minmax(210px,300px) minmax(155px,190px)}
+main>header .heading{min-width:0;max-width:100%;overflow-wrap:normal;word-break:normal}
+main>header .heading h1{max-width:none;overflow-wrap:normal;word-break:normal}
+main:has(#dashboard-view[hidden])>header:has(.dashboard-intranet-card){grid-template-columns:minmax(0,1fr) auto}
+main:has(#dashboard-view[hidden])>header .heading{grid-column:1;grid-row:1}
+main:has(#dashboard-view[hidden])>header #analysis-label{grid-column:2;grid-row:1}
+@media(max-width:1000px){main>header:has(.dashboard-intranet-card){grid-template-columns:minmax(0,1fr) minmax(190px,250px)}main>header .heading{grid-column:1;grid-row:1}main>header .dashboard-intranet-card{grid-column:2;grid-row:1}main>header #analysis-label{grid-column:1/-1;grid-row:2;justify-self:stretch;width:100%;max-width:none}main:has(#dashboard-view[hidden])>header:has(.dashboard-intranet-card){grid-template-columns:minmax(0,1fr) auto}main:has(#dashboard-view[hidden])>header #analysis-label{grid-column:2;grid-row:1}}
+@media(max-width:620px){main>header:has(.dashboard-intranet-card),main:has(#dashboard-view[hidden])>header:has(.dashboard-intranet-card){grid-template-columns:minmax(0,1fr)}main>header .heading{grid-column:1;grid-row:1}main>header .dashboard-intranet-card{grid-column:1;grid-row:2}main>header #analysis-label,main:has(#dashboard-view[hidden])>header #analysis-label{grid-column:1;grid-row:3;justify-self:stretch;width:100%;max-width:none}main:has(#dashboard-view[hidden])>header #analysis-label{grid-row:2}}
