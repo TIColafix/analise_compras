@@ -27,6 +27,7 @@ function loadPdfLibrary(){return Promise.resolve(class LocalPdf{
  setFont(_family,weight){this.bold=weight==='bold'}
  setFontSize(n){this.size=n}
  rect(x,y,w,h,mode){this.ops.push(this.rgb(this.fill)+' rg '+this.n(x)+' '+this.n(297-y-h)+' '+this.n(w)+' '+this.n(h)+' re '+(mode==='F'?'f':'S'))}
+ polygon(points,mode){let p=points.map((a,i)=>(i?' '+this.n(a[0])+' '+this.n(297-a[1])+' l':this.n(a[0])+' '+this.n(297-a[1])+' m')).join('');this.ops.push(this.rgb(this.fill)+' rg '+p+' h '+(mode==='F'?'f':'S'))}
  line(x,y,x2,y2){this.ops.push(this.rgb(this.stroke)+' RG '+this.n(x)+' '+this.n(297-y)+' m '+this.n(x2)+' '+this.n(297-y2)+' l S')}
  text(value,x,y){let v=String(value??'');this.ops.push(this.rgb(this.color)+' rg BT /'+(this.bold?'F2':'F1')+' '+this.n(this.size/2.83465)+' Tf 1 0 0 1 '+this.n(x)+' '+this.n(297-y)+' Tm ('+this.escape(v)+') Tj ET')}
  splitTextToSize(value,width){let words=String(value).split(/\s+/),lines=[],line='';for(let word of words){let next=line?line+' '+word:word;if(next.length*this.size*.20>width&&line){lines.push(line);line=word}else line=next}if(line)lines.push(line);return lines}
@@ -37,25 +38,29 @@ function loadPdfLibrary(){return Promise.resolve(class LocalPdf{
  })}
 async function receiptPdf(r){
  const JsPDF=await loadPdfLibrary(),pdf=new JsPDF();
- const navy=[7,28,50],blue=[16,46,79],orange=[255,143,11],ink=[15,33,55],pale=[240,243,247],white=[255,255,255];
- const rect=(x,y,w,h,color)=>{pdf.setFillColor(...color);pdf.rect(x,y,w,h,'F')};
- const txt=(v,x,y,size=11,color=ink,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);pdf.setTextColor(...color);pdf.text(String(v??'—'),x,y)};
- const wrap=(v,x,y,width,size=11,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);let lines=pdf.splitTextToSize(String(v??'—'),width);lines.slice(0,2).forEach((line,i)=>txt(line,x,y+i*4.5,size,ink,bold))};
- // Layout A4 em milímetros, com a mesma hierarquia do recibo de impressão.
- rect(0,0,210,31,navy);rect(166,0,44,31,orange);
- txt('AREIA',23,14,19,white,true);txt('AMIGOS',65,14,19,orange,true);
- txt('CONTROLE DE CARREGAMENTOS',23,22,8,white);
- rect(8,37,194,13,navy);txt('RECIBO DIGITAL DE CARREGAMENTO',49,45.5,12,white,true);
+ const navy=[7,28,50],blue=[16,46,79],orange=[255,143,11],ink=[15,33,55],pale=[240,243,247],white=[255,255,255],muted=[66,86,108];
+ const rect=(x,y,w,h,c)=>{pdf.setFillColor(...c);pdf.rect(x,y,w,h,'F')};
+ const txt=(v,x,y,size=11,c=ink,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);pdf.setTextColor(...c);pdf.text(String(v??'—'),x,y)};
+ const centered=(v,cx,y,size=11,c=ink,bold=false)=>{let str=String(v??'—');txt(str,cx-str.length*size*(bold?.105:.092),y,size,c,bold)};
+ const wrap=(v,x,y,width,size=9,bold=false)=>{pdf.setFont('helvetica',bold?'bold':'normal');pdf.setFontSize(size);pdf.splitTextToSize(String(v??'—'),width).slice(0,2).forEach((line,i)=>txt(line,x,y+i*4,size,ink,bold))};
+ // Mesmo modelo visual para PDF, impressão e WhatsApp: A4, cabeçalho e faixas compactas.
+ rect(0,0,210,30,navy);rect(163,0,47,30,orange);
+ // Faixa diagonal da marca, sem depender de imagens externas.
+ if(typeof pdf.polygon==='function'){pdf.setFillColor(...navy);pdf.polygon([[163,0],[151,30],[163,30]],'F')}
+ rect(10,13,8,4.2,orange);rect(12,10.5,5,3.5,[255,190,51]);rect(10.8,17.2,2,2,ink);rect(15.5,17.2,2,2,ink);
+ txt('Areia',23,14.7,19,white,true);txt('Amigos',46,14.7,19,orange,true);
+ txt('C O N T R O L E   D E   C A R R E G A M E N T O S',23,22,6.4,white);
+ rect(8,36,194,14,navy);centered('RECIBO DIGITAL DE CARREGAMENTO',105,45.2,12.2,white,true);
  const dt=new Date(r.createdAt),date=isNaN(dt)?'—':dt.toLocaleDateString('pt-BR'),time=isNaN(dt)?'—':dt.toLocaleTimeString('pt-BR');
- const metas=[[8,52,'RECIBO Nº',String(r.number)],[64,81,'DATA DO CARREGAMENTO',date],[148,54,'HORÁRIO',time]];
- metas.forEach(([x,w,label,value],i)=>{rect(x,55,w,18,i===0?orange:pale);txt(label,x+5,61,7,i===0?white:[70,88,108]);txt(value,x+5,69,12,i===0?white:ink,true)});
- let y=79;
- const section=(title,rows)=>{rect(8,y,194,10,blue);txt(title,12,y+7,10,white,true);y+=10;rows.forEach(([label,value],i)=>{rect(8,y,194,10,i%2?pale:white);txt(label,12,y+6.8,9,[54,72,94]);wrap(value,91,y+6.8,105,9,true);y+=10});y+=4};
+ const metas=[[8,52,'RECIBO Nº',String(r.number)],[63,84,'DATA DO CARREGAMENTO',date],[150,52,'HORÁRIO',time]];
+ metas.forEach(([x,w,label,value],i)=>{rect(x,55,w,20,i===0?orange:pale);centered(label,x+w/2,61.5,7,i===0?white:muted);centered(value,x+w/2,70,12,i===0?white:ink,true)});
+ let y=81;
+ const section=(title,rows)=>{rect(8,y,194,10,blue);txt(title,12,y+6.8,10,white,true);y+=10;rows.forEach(([label,value],i)=>{rect(8,y,194,10,i%2?pale:white);txt(label,12,y+6.7,9,muted);wrap(value,91,y+6.7,105,9,true);y+=10});y+=4};
  section('Dados do carregamento',[['Motorista',r.driver],['Empresa',r.company],['Placa',r.plate]]);
  section('Material e quantidade',[['Material',r.material],['Quantidade',Number(r.quantity||0).toLocaleString('pt-BR')+' m³'],['Valor unitário',money(r.unitPrice)+'/m³']]);
- rect(8,y,194,19,navy);rect(111,y,91,19,orange);txt('TOTAL DO CARREGAMENTO',13,y+12,11,white,true);txt(money(r.total),118,y+12,16,white,true);y+=24;
+ rect(8,y,194,19,navy);rect(109,y,93,19,orange);txt('TOTAL DO CARREGAMENTO',13,y+12,11,white,true);txt(money(r.total),117,y+12,16,white,true);y+=24;
  rect(8,y,194,13,pale);txt('Registrado por: '+String(r.createdByName||'—'),12,y+8.5,9,ink,true);y+=21;
- pdf.setDrawColor(...orange);pdf.line(8,y,202,y);txt('Documento gerado pelo sistema de carregamentos Areia Amigos.',8,y+7,8,[88,105,124]);
+ pdf.setDrawColor(...orange);pdf.line(8,y,202,y);txt('Documento gerado pelo sistema de carregamentos Areia Amigos.',8,y+7,8,muted);
  const name='Areia-Amigos-Recibo-'+String(r.number).replace(/[^a-zA-Z0-9_-]/g,'')+'.pdf';
  return {file:new File([pdf.output('blob')],name,{type:'application/pdf'}),name};
 }
