@@ -267,6 +267,20 @@ createServer(async(req,res)=>{try{
    await writeDocument('areia-amigos-legacy-backup',{createdAt:new Date().toISOString(),records:legacy});
    await audit(req,'backup','areia-amigos',{count:legacy.length});return reply(res,200,{ok:true,count:legacy.length});
   }
+  if(input.action==='delete'){
+   if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode excluir recibos.'});
+   const index=records.findIndex(x=>x.id===input.id);
+   if(index<0)return reply(res,404,{error:'Recibo não encontrado.'});
+   const removed=records[index];
+   const deleted=await readDocument('areia-v3-deleted-loads',[]);
+   const history=Array.isArray(deleted)?deleted:[];
+   history.push({record:removed,deletedAt:new Date().toISOString(),deletedBy:account.user});
+   await writeDocument('areia-v3-deleted-loads',history);
+   records.splice(index,1);
+   await writeDocument('areia-v3-loads',records);
+   await audit(req,'excluir','areia-v3',{id:removed.id,number:removed.number});
+   return reply(res,200,{ok:true,number:removed.number});
+  }
   if(input.action==='correct'){
    if(!isAdmin(req))return reply(res,403,{error:'Somente administrador.'});
    const record=records.find(x=>x.id===input.id);if(!record)return reply(res,404,{error:'Recibo não encontrado.'});
