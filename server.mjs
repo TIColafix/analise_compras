@@ -258,7 +258,7 @@ createServer(async(req,res)=>{try{
   if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente administrador.'});
   if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
   const input=await body(req),company=String(input.company||'').trim(),amount=Number(String(input.amount??'').replace(',','.')),rawDate=String(input.date||'').trim(),date=/^\d{2}[\/-]\d{2}[\/-]\d{4}$/.test(rawDate)?rawDate.slice(6)+'-'+rawDate.slice(3,5)+'-'+rawDate.slice(0,2):rawDate,note=String(input.note||'').trim().slice(0,250);
-  if(!company||!Number.isFinite(amount)||amount<=0||Math.round(amount*100)!==amount*100&&Math.abs(Math.round(amount*100)-amount*100)>0.00001||!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||Number.isNaN(Date.parse(date)))return reply(res,400,{error:'Informe empresa, valor positivo e data válida.'});
+  if(!company||!Number.isFinite(amount)||amount<=0||Math.round(amount*100)!==amount*100&&Math.abs(Math.round(amount*100)-amount*100)>0.00001||!/^\d{4}-\d{2}-\d{2}$/.test(date)||Number.isNaN(Date.parse(date)))return reply(res,400,{error:'Informe empresa, valor positivo e data válida.'});
   const records=await readDocument('areia-v3-loads',[]),loads=Array.isArray(records)?records:[];
   const key=x=>String(x||'').trim().toLocaleLowerCase('pt-BR');
   const matches=loads.filter(x=>key(x.company)===key(company));
