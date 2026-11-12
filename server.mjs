@@ -243,6 +243,51 @@ createServer(async(req,res)=>{try{
    return reply(res,200,{ok:true,records:updated});
   }finally{busy=false}
  }
+
+ // Novo Controle de Carregamentos — dados separados do legado.
+ if(path==='/api/areia-v3'&&req.method==='GET'){
+  const account=credentials(req),all=await readDocument('areia-v3-loads',[]),prices=await readDocument('areia-v3-prices',[]);
+  const entries=Array.isArray(all)?all:[],catalog=Array.isArray(prices)?prices:[];
+  return reply(res,200,{admin:isAdmin(req),user:account?.user,name:account?.name,records:isAdmin(req)?entries:entries.filter(x=>x.createdBy===account?.user),prices:catalog,legacyCount:isAdmin(req)?(await readDocument('areia-amigos',[])).length:undefined});
+ }
+ if(path==='/api/areia-v3'&&req.method==='POST'){
+  if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
+  const input=await body(req),account=credentials(req),all=await readDocument('areia-v3-loads',[]),records=Array.isArray(all)?all:[],prices=await readDocument('areia-v3-prices',[]),catalog=Array.isArray(prices)?prices:[];
+  if(input.action==='prices'){
+   if(!isAdmin(req))return reply(res,403,{error:'Somente administrador.'});
+   const items=Array.isArray(input.items)?input.items:[];
+   if(items.length>50||items.some(x=>!String(x.name||'').trim()||!Number.isFinite(Number(x.price))||Number(x.price)<0))return reply(res,400,{error:'Preços inválidos.'});
+   const clean=items.map(x=>({name:String(x.name).trim().slice(0,100),price:Number(x.price)}));
+   await writeDocument('areia-v3-prices',clean);await audit(req,'precos','areia-v3',{items:clean.length});return reply(res,200,{ok:true});
+  }
+  if(input.action==='backup'){
+   if(!isAdmin(req))return reply(res,403,{error:'Somente administrador.'});
+   const existing=await readDocument('areia-amigos-legacy-backup',null);
+   if(existing)return reply(res,200,{ok:true,alreadyExists:true,count:existing.records?.length||0});
+   const legacy=await readDocument('areia-amigos',[]);
+   await writeDocument('areia-amigos-legacy-backup',{createdAt:new Date().toISOString(),records:legacy});
+   await audit(req,'backup','areia-amigos',{count:legacy.length});return reply(res,200,{ok:true,count:legacy.length});
+  }
+  if(input.action==='correct'){
+   if(!isAdmin(req))return reply(res,403,{error:'Somente administrador.'});
+   const record=records.find(x=>x.id===input.id);if(!record)return reply(res,404,{error:'Recibo não encontrado.'});
+   const reason=String(input.reason||'').trim();if(reason.length<5)return reply(res,400,{error:'Informe o motivo da correção.'});
+   const fields=['driver','company','plate','phone','material','quantity'];
+   const before=Object.fromEntries(fields.map(k=>[k,record[k]]));
+   const patch=input.patch||{};for(const k of fields){if(patch[k]!==undefined)record[k]=k==='quantity'?Number(patch[k]):String(patch[k]).trim().slice(0,150);}
+   if(!record.driver||!record.company||!record.plate||!record.material||!(record.quantity>0))return reply(res,400,{error:'Dados incompletos.'});
+   const match=catalog.find(x=>x.name===record.material);record.unitPrice=match?Number(match.price):record.unitPrice;record.total=Math.round(record.quantity*record.unitPrice*100)/100;
+   record.corrections=record.corrections||[];record.corrections.push({at:new Date().toISOString(),by:account.user,reason,before,after:Object.fromEntries(fields.map(k=>[k,record[k]]))});
+   await writeDocument('areia-v3-loads',records);await audit(req,'corrigir','areia-v3',{id:record.id,reason});return reply(res,200,{ok:true,record});
+  }
+  if(input.action!=='create')return reply(res,400,{error:'Ação inválida.'});
+  const driver=String(input.driver||'').trim().slice(0,120),company=String(input.company||'').trim().slice(0,120),plate=String(input.plate||'').trim().toUpperCase().slice(0,15),phone=String(input.phone||'').replace(/\D/g,'').slice(0,15),material=String(input.material||'').trim(),quantity=Number(input.quantity);
+  const item=catalog.find(x=>x.name===material);
+  if(!driver||!company||!plate||!item||!Number.isFinite(quantity)||quantity<=0||quantity>100000)return reply(res,400,{error:'Preencha motorista, empresa, placa, material cadastrado e quantidade válida.'});
+  const last=records.reduce((m,x)=>Math.max(m,Number(x.number)||0),0),number=Math.max(last+1,1);
+  const record={id:randomUUID(),number,createdAt:new Date().toISOString(),createdBy:account.user,createdByName:account.name,driver,company,plate,phone,material,quantity,unitPrice:Number(item.price),total:Math.round(quantity*Number(item.price)*100)/100,corrections:[]};
+  records.unshift(record);await writeDocument('areia-v3-loads',records);await audit(req,'criar','areia-v3',{id:record.id,number});return reply(res,200,{ok:true,record});
+ }
  if(path==='/api/areia-amigos'&&req.method==='GET'){const records=await readDocument('areia-amigos',[]);const account=credentials(req);const all=Array.isArray(records)?records:[];return reply(res,200,{records:isAdmin(req)?all:all.filter(r=>r.createdBy===account?.user),canManage:isAdmin(req)});}
  if(path.startsWith('/api/cement/')&&req.method==='DELETE'){
   if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode excluir cargas.'});
