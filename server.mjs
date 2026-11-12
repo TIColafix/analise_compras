@@ -278,8 +278,8 @@ createServer(async(req,res)=>{try{
   const x=await body(req),rows=await readDocument('areia-v3-companies',[]),list=Array.isArray(rows)?rows:[],name=String(x.name||'').trim().slice(0,120),id=String(x.id||'');
   if(!name)return reply(res,400,{error:'Informe o nome da empresa.'});
   if(list.some(y=>y.name.toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR')&&y.id!==id))return reply(res,409,{error:'Empresa já cadastrada.'});
-  const prices=Object.fromEntries(['Areia Fina Branca','Areia Fina Amarelinha','Areia Média','Aterro','Areia'].map(m=>[m,Number(x.prices?.[m])]));
-  if(Object.values(prices).some(v=>!Number.isFinite(v)||v<0))return reply(res,400,{error:'Informe preços válidos para todos os materiais.'});
+  const prices=Object.fromEntries(['Areia Fina Branca','Areia Fina Amarelinha','Areia Média','Aterro','Areia'].map(m=>[m,x.prices?.[m]===null||x.prices?.[m]===undefined||x.prices?.[m]===''?0:Number(x.prices[m])]));
+  if(Object.values(prices).some(v=>!Number.isFinite(v)||v<0))return reply(res,400,{error:'Os preços devem ser positivos ou zero para materiais indisponíveis.'});
   const existing=list.find(y=>y.id===id);if(existing){existing.name=name;existing.prices=prices;existing.enabled=x.enabled!==false;}else list.push({id:randomUUID(),name,prices,enabled:true});
   await writeDocument('areia-v3-companies',list);await audit(req,'empresa-precos','areia-v3',{name});return reply(res,200,{ok:true});
  }
@@ -329,14 +329,14 @@ createServer(async(req,res)=>{try{
    const before=Object.fromEntries(fields.map(k=>[k,record[k]]));
    const patch=input.patch||{};for(const k of fields){if(patch[k]!==undefined)record[k]=k==='quantity'?Number(patch[k]):String(patch[k]).trim().slice(0,150);}
    if(!record.driver||!record.company||!record.plate||!record.material||!(record.quantity>0))return reply(res,400,{error:'Dados incompletos.'});
-   const companies=await readDocument('areia-v3-companies',[]),client=companies.find(x=>x.name.toLocaleLowerCase('pt-BR')===record.company.toLocaleLowerCase('pt-BR'));const match=catalog.find(x=>x.name===record.material);record.unitPrice=client?Number(client.prices[record.material]):match?Number(match.price):record.unitPrice;record.total=Math.round(record.quantity*record.unitPrice*100)/100;
+   const companies=await readDocument('areia-v3-companies',[]),client=companies.find(x=>x.name.toLocaleLowerCase('pt-BR')===record.company.toLocaleLowerCase('pt-BR'));const match=catalog.find(x=>x.name===record.material);record.unitPrice=client&&Number(client.prices?.[record.material])>0?Number(client.prices[record.material]):record.unitPrice;record.total=Math.round(record.quantity*record.unitPrice*100)/100;
    record.corrections=record.corrections||[];record.corrections.push({at:new Date().toISOString(),by:account.user,reason,before,after:Object.fromEntries(fields.map(k=>[k,record[k]]))});
    await writeDocument('areia-v3-loads',records);await audit(req,'corrigir','areia-v3',{id:record.id,reason});return reply(res,200,{ok:true,record});
   }
   if(input.action!=='create')return reply(res,400,{error:'Ação inválida.'});
   const driver=String(input.driver||'').trim().slice(0,120),company=String(input.company||'').trim().slice(0,120),plate=String(input.plate||'').trim().toUpperCase().slice(0,15),phone=String(input.phone||'').replace(/\D/g,'').slice(0,15),material=String(input.material||'').trim(),quantity=Number(input.quantity);
   const companies=await readDocument('areia-v3-companies',[]),client=(Array.isArray(companies)?companies:[]).find(x=>x.name.toLocaleLowerCase('pt-BR')===company.toLocaleLowerCase('pt-BR')&&x.enabled!==false);const item=client?{name:material,price:client.prices?.[material]}:null;
-  if(!driver||!company||!plate||!item||!Number.isFinite(Number(item.price))||!Number.isFinite(quantity)||quantity<=0||quantity>100000)return reply(res,400,{error:'Preencha motorista, empresa, placa, material cadastrado e quantidade válida.'});
+  if(!driver||!company||!plate||!item||!Number.isFinite(Number(item.price))||Number(item.price)<=0||!Number.isFinite(quantity)||quantity<=0||quantity>100000)return reply(res,400,{error:'Preencha motorista, empresa, placa, material cadastrado e quantidade válida.'});
   const last=records.reduce((m,x)=>Math.max(m,Number(x.number)||0),0),number=Math.max(last+1,1);
   const record={id:randomUUID(),number,createdAt:new Date().toISOString(),createdBy:account.user,createdByName:account.name,driver,company,plate,phone,material,quantity,unitPrice:Number(item.price),total:Math.round(quantity*Number(item.price)*100)/100,corrections:[]};
   records.unshift(record);await writeDocument('areia-v3-loads',records);await audit(req,'criar','areia-v3',{id:record.id,number});return reply(res,200,{ok:true,record});
