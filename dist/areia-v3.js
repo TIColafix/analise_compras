@@ -65,22 +65,35 @@ async function receiptPdf(r){
  return {file:new File([pdf.output('blob')],name,{type:'application/pdf'}),name};
 }
 function downloadReceiptPdf(file){const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=file.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
+async function receiptImage(r){
+ const canvas=document.createElement('canvas');canvas.width=900;canvas.height=1120;
+ const ctx=canvas.getContext('2d');const navy='#071c32',orange='#ff8f0b',ink='#10233a';
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,900,1120);
+ try{const img=new Image();img.src=AREIA_HEADER;await img.decode();ctx.drawImage(img,0,0,900,135)}
+ catch(e){ctx.fillStyle=navy;ctx.fillRect(0,0,900,135);ctx.fillStyle='#fff';ctx.font='bold 40px Arial';ctx.fillText('Areia Amigos',45,78)}
+ const rect=(x,y,w,h,color)=>{ctx.fillStyle=color;ctx.fillRect(x,y,w,h)};
+ const txt=(value,x,y,size=23,color=ink,bold=false)=>{ctx.font=(bold?'bold ':'')+size+'px Arial';ctx.fillStyle=color;ctx.fillText(String(value??'—'),x,y)};
+ const center=(value,x,y,size=23,color=ink,bold=false)=>{ctx.font=(bold?'bold ':'')+size+'px Arial';ctx.fillStyle=color;ctx.textAlign='center';ctx.fillText(String(value??'—'),x,y);ctx.textAlign='left'};
+ rect(25,157,850,66,navy);center('RECIBO DIGITAL DE CARREGAMENTO',450,200,28,'#fff',true);
+ const date=new Date(r.createdAt),dateText=isNaN(date)?'—':date.toLocaleDateString('pt-BR'),timeText=isNaN(date)?'—':date.toLocaleTimeString('pt-BR');
+ [[25,235,230,'RECIBO Nº',r.number,orange],[270,235,345,'DATA DO CARREGAMENTO',dateText,'#edf1f5'],[630,235,245,'HORÁRIO',timeText,'#edf1f5']].forEach(([x,y,w,label,value,bg])=>{rect(x,y,w,100,bg);center(label,x+w/2,y+34,17,bg===orange?'#fff':ink);center(value,x+w/2,y+78,27,bg===orange?'#fff':ink,true)});
+ let y=355;
+ function section(title,rows){rect(25,y,850,48,navy);center(title,450,y+33,24,'#fff',true);y+=48;rows.forEach(([label,value],i)=>{rect(25,y,850,55,i%2?'#fff':'#e8edf2');txt(label,45,y+36,22);txt(value,375,y+36,23,ink,true);y+=55});y+=18}
+ section('Dados do carregamento',[['Motorista',r.driver],['Empresa',r.company],['Placa',r.plate]]);
+ section('Material e quantidade',[['Material',r.material],['Quantidade',Number(r.quantity||0).toLocaleString('pt-BR')+' m³'],['Valor unitário',money(r.unitPrice)+'/m³']]);
+ rect(25,y,850,85,navy);rect(495,y,380,85,orange);txt('TOTAL DO CARREGAMENTO',43,y+53,24,'#fff',true);center(money(r.total),685,y+55,34,'#fff',true);
+ y+=110;txt('Registrado por: '+String(r.createdByName||'—'),35,y,19,ink);
+ const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Falha ao criar imagem')),'image/png'));
+ return new File([blob],'Areia-Amigos-Recibo-'+String(r.number).replace(/[^a-zA-Z0-9_-]/g,'')+'.png',{type:'image/png'});
+}
 async function shareReceiptPdf(r){
- const {file}=await receiptPdf(r);
- const number=String(r.phone||'').replace(/\D/g,'');
- const target=number?(number.startsWith('55')?number:'55'+number):'';
- const message='Recibo Areia Amigos nº '+r.number+' — comprovante de carregamento.';
- // Android/Chrome: share the actual PDF through the native share sheet.
- if(typeof navigator.share==='function' && typeof navigator.canShare==='function' && navigator.canShare({files:[file]})){
-  try{await navigator.share({title:'Recibo Areia Amigos nº '+r.number,text:message,files:[file]});return}
-  catch(e){if(e.name==='AbortError')return;console.warn('Compartilhamento de PDF indisponível:',e)}
+ const file=await receiptImage(r);
+ if(navigator.share&&navigator.canShare?.({files:[file]})){
+  try{await navigator.share({files:[file]});return}
+  catch(e){if(e.name==='AbortError')return;console.warn('Falha no compartilhamento da imagem:',e)}
  }
- // WhatsApp links cannot attach local files. Open the conversation and download a copy for manual attachment.
- const url='https://wa.me/'+target+'?text='+encodeURIComponent(message);
- const opened=window.open(url,'_blank');
- if(!opened)window.location.href=url;
- downloadReceiptPdf(file);
- alert('Seu navegador não permitiu anexar o PDF automaticamente. O recibo foi baixado; anexe-o pelo clipe de documentos no WhatsApp.');
+ const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=file.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+ alert('A imagem do recibo foi salva. Para enviar pelo WhatsApp, selecione a imagem na galeria ou nos downloads.');
 }
 
 function receiptCard(r){const d=new Date(r.createdAt),date=isNaN(d)?'—':d.toLocaleDateString('pt-BR'),time=isNaN(d)?'—':d.toLocaleTimeString('pt-BR');const line=(a,b)=>'<div class="av-card-line"><span>'+a+'</span><strong>'+esc(b??'—')+'</strong></div>';return '<article class="av-paper"><header class="av-paper-brand av-official-brand"><img src="'+AREIA_HEADER+'" alt="Areia Amigos e Fixcol"></header><div class="av-paper-body"><h3>▤ RECIBO DIGITAL DE CARREGAMENTO</h3><div class="av-paper-meta"><div><small>RECIBO Nº</small><strong>'+esc(r.number)+'</strong></div><div><small>DATA DO CARREGAMENTO</small><strong>'+date+'</strong></div><div><small>HORÁRIO</small><strong>'+time+'</strong></div></div><h4>Dados do carregamento</h4>'+line('Motorista',r.driver)+line('Empresa',r.company)+line('Placa',r.plate)+'<h4>Material e quantidade</h4>'+line('Material',r.material)+line('Quantidade',Number(r.quantity||0).toLocaleString('pt-BR')+' m³')+line('Valor unitário',money(r.unitPrice)+'/m³')+'<div class="av-paper-total"><span>TOTAL DO CARREGAMENTO</span><strong>'+money(r.total)+'</strong></div></div></article>'}
