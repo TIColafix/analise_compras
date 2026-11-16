@@ -3,7 +3,8 @@ name: Publicar GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -17,23 +18,89 @@ concurrency:
 
 jobs:
   deploy:
+    name: Publicar aplicação
     runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout
+      - name: Checkout do repositório
         uses: actions/checkout@v4
 
-      - name: Configurar Pages
+      - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Preparar arquivos
+      - name: Preparar arquivos para publicação
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Verificar arquivos necessários
+          test -f dist/index.html
+          test -f dist/style.css
+
+          # Copiar distribuição sem modificar o original
+          mkdir -p _site
+          cp -a dist/. _site/
+
+          # Corrigir caminhos absolutos para GitHub Pages
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          site = Path("_site")
+          base = "/analise_compras/"
+
+          # Corrigir referências nos arquivos HTML
+          for file in site.rglob("*.html"):
+              html = file.read_text(encoding="utf-8")
+
+              # Corrigir src e href iniciados por /
+              html = re.sub(
+                  r'(\b(?:src|href)\s*=\s*["\'])/(?!/)',
+                  r'\1' + base.lstrip("/"),
+                  html,
+                  flags=re.IGNORECASE
+              )
+
+              file.write_text(html, encoding="utf-8")
+
+          print("Arquivos HTML preparados.")
+
+          # Corrigir referências absolutas a recursos
+          # locais nos arquivos CSS
+          for file in site.rglob("*.css"):
+              css = file.read_text(encoding="utf-8")
+
+              css = re.sub(
+                  r'url\(\s*(["\']?)/(?!/)',
+                  lambda m: "url(" + m.group(1) + base,
+                  css
+              )
+
+              file.write_text(css, encoding="utf-8")
+
+          print("Arquivos CSS preparados.")
+          PY
+
+          # Impedir processamento Jekyll
+          touch _site/.nojekyll
+
+          echo "Arquivos preparados com sucesso."
+          ls -lah _site/
+
+      - name: Enviar arquivos para GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./_site
 
-      - name: Publicar
+      - name: Publicar GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Exibir endereço publicado
+        run: |
+          echo "Publicação concluída."
+          echo "URL: https://ticolafix.github.io/analise_compras/"
