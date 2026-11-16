@@ -13,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages
+  group: pages-analise-compras
   cancel-in-progress: true
 
 jobs:
@@ -38,49 +38,71 @@ jobs:
           set -euo pipefail
 
           test -f dist/index.html
+          test -f dist/style.css
 
           mkdir -p _site
           cp -a dist/. _site/
 
           python3 - <<'PY'
           from pathlib import Path
+          from html.parser import HTMLParser
           import re
 
           site = Path("_site")
           base = "/analise_compras/"
 
+          # Corrigir apenas referencias a arquivos
+          # locais existentes na pasta publicada.
           for file in site.rglob("*.html"):
               html = file.read_text(encoding="utf-8")
 
-              # Remover bases antigas ou duplicadas
+              # Remover tags base antigas.
               html = re.sub(
-                  r'<base\b[^>]*>',
-                  '',
+                  r"<base\b[^>]*>",
+                  "",
                   html,
                   flags=re.IGNORECASE
               )
 
-              # Corrigir apenas recursos locais
-              # conhecidos que existem na pasta dist
               def fix_resource(match):
                   attr = match.group(1)
                   quote = match.group(2)
                   url = match.group(3)
 
-                  path = url.split("?", 1)[0]
-                  path = path.split("#", 1)[0]
+                  # Preservar URLs externas e especiais.
+                  if url.startswith((
+                      "http:", "https:", "//",
+                      "data:", "blob:", "#",
+                      "mailto:", "tel:"
+                  )):
+                      return match.group(0)
 
-                  while path.startswith(base):
-                      path = path[len(base):]
+                  # Separar caminho de query/hash.
+                  parts = re.match(
+                      r"([^?#]*)(.*)",
+                      url
+                  )
 
+                  path = parts.group(1)
+                  suffix = parts.group(2)
+
+                  # Remover prefixos duplicados.
                   path = path.lstrip("/")
 
-                  if (site / path).is_file():
-                      suffix = url[len(url.split("?", 1)[0]):] \
-                          if "?" in url else ""
+                  while path.startswith(
+                      base.lstrip("/")
+                  ):
+                      path = path[
+                          len(base.lstrip("/")):
+                      ]
+
+                  # Resolver arquivo local.
+                  candidate = site / path
+
+                  if candidate.is_file():
                       return (
-                          f'{attr}={quote}./{path}'
-                          f'{suffix}{quote}'
+                          f'{attr}={quote}'
+                          f'./{path}{suffix}{quote}'
                       )
 
                   return match.group(0)
@@ -92,18 +114,33 @@ jobs:
                   flags=re.IGNORECASE
               )
 
-              file.write_text(html, encoding="utf-8")
+              file.write_text(
+                  html,
+                  encoding="utf-8"
+              )
 
-          print("HTML preparado para GitHub Pages")
+          print("HTML preparado com sucesso.")
           PY
 
+          # Desabilitar processamento Jekyll.
           touch _site/.nojekyll
 
-      - name: Enviar arquivos
+          echo "Arquivos preparados:"
+          ls -lah _site/
+
+      - name: Enviar artefato do site
         uses: actions/upload-pages-artifact@v3
         with:
+          name: pages-analise-compras
           path: ./_site
 
-      - name: Publicar
+      - name: Publicar no GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: pages-analise-compras
+
+      - name: Exibir URL
+        run: |
+          echo "GitHub Pages publicado:"
+          echo "https://ticolafix.github.io/analise_compras/"
