@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Publicar aplicação
+    name: Publicar aplicacao
     runs-on: ubuntu-latest
 
     environment:
@@ -26,26 +26,22 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout do repositório
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Preparar arquivos para publicação
+      - name: Preparar arquivos
         shell: bash
         run: |
           set -euo pipefail
 
-          # Verificar arquivos necessários
           test -f dist/index.html
-          test -f dist/style.css
 
-          # Copiar distribuição sem modificar o original
           mkdir -p _site
           cp -a dist/. _site/
 
-          # Corrigir caminhos absolutos para GitHub Pages
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -53,54 +49,61 @@ jobs:
           site = Path("_site")
           base = "/analise_compras/"
 
-          # Corrigir referências nos arquivos HTML
           for file in site.rglob("*.html"):
               html = file.read_text(encoding="utf-8")
 
-              # Corrigir src e href iniciados por /
+              # Remover bases antigas ou duplicadas
               html = re.sub(
-                  r'(\b(?:src|href)\s*=\s*["\'])/(?!/)',
-                  r'\1' + base.lstrip("/"),
+                  r'<base\b[^>]*>',
+                  '',
+                  html,
+                  flags=re.IGNORECASE
+              )
+
+              # Corrigir apenas recursos locais
+              # conhecidos que existem na pasta dist
+              def fix_resource(match):
+                  attr = match.group(1)
+                  quote = match.group(2)
+                  url = match.group(3)
+
+                  path = url.split("?", 1)[0]
+                  path = path.split("#", 1)[0]
+
+                  while path.startswith(base):
+                      path = path[len(base):]
+
+                  path = path.lstrip("/")
+
+                  if (site / path).is_file():
+                      suffix = url[len(url.split("?", 1)[0]):] \
+                          if "?" in url else ""
+                      return (
+                          f'{attr}={quote}./{path}'
+                          f'{suffix}{quote}'
+                      )
+
+                  return match.group(0)
+
+              html = re.sub(
+                  r'\b(src|href)\s*=\s*(["\'])(.*?)\2',
+                  fix_resource,
                   html,
                   flags=re.IGNORECASE
               )
 
               file.write_text(html, encoding="utf-8")
 
-          print("Arquivos HTML preparados.")
-
-          # Corrigir referências absolutas a recursos
-          # locais nos arquivos CSS
-          for file in site.rglob("*.css"):
-              css = file.read_text(encoding="utf-8")
-
-              css = re.sub(
-                  r'url\(\s*(["\']?)/(?!/)',
-                  lambda m: "url(" + m.group(1) + base,
-                  css
-              )
-
-              file.write_text(css, encoding="utf-8")
-
-          print("Arquivos CSS preparados.")
+          print("HTML preparado para GitHub Pages")
           PY
 
-          # Impedir processamento Jekyll
           touch _site/.nojekyll
 
-          echo "Arquivos preparados com sucesso."
-          ls -lah _site/
-
-      - name: Enviar arquivos para GitHub Pages
+      - name: Enviar arquivos
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./_site
 
-      - name: Publicar GitHub Pages
+      - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
-
-      - name: Exibir endereço publicado
-        run: |
-          echo "Publicação concluída."
-          echo "URL: https://ticolafix.github.io/analise_compras/"
