@@ -66,7 +66,7 @@ createServer(async(req,res)=>{try{
   if(req.method==='GET')return await exportSql(req,res);
   return reply(res,405,{error:'Método não permitido.'});
  }
- if(req.headers.host!=='127.0.0.1:4173'&&req.headers.host!=='localhost:4173')return reply(res,403,{error:'Endereço não autorizado.'});
+ if(!['127.0.0.1:4173','localhost:4173','analisecompras-production.up.railway.app'].includes(req.headers.host))return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
  if(path==='/api/external-summary'&&req.method==='GET'){
@@ -134,4 +134,4 @@ createServer(async(req,res)=>{try{
  }
  if(req.method!=='GET')return reply(res,405,{error:'Método não permitido.'});
  const file=files[path];if(!file)return reply(res,404,{error:'Não encontrado.'});const content=await readFile(join(root,'dist',file));res.writeHead(200,{'Content-Type':types[file.split('.').pop()],'Cache-Control':'no-store'});res.end(content);
-}catch(e){reply(res,400,{error:e.message});}}).listen(Number(process.env.PORT)||4173,process.env.PORT?'0.0.0.0':'127.0.0.1',()=>console.log('Monitoramento MRP iniciado'));
+}catch(e){reply(res,400,{error:e.message});}}).listen(Number(process.env.PORT)||8080,'0.0.0.0',()=>console.log('Monitoramento MRP iniciado'));
