@@ -4,7 +4,9 @@ import {readMaintenance,saveMaintenance} from './maintenance-store.mjs';
 import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile,rename} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
-import {randomUUID} from 'node:crypto';
+import {randomUUID,timingSafeEqual} from 'node:crypto';
+import {tmpdir} from 'node:os';
+import {unlink,stat} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 const root=fileURLToPath(new URL('.',import.meta.url));
@@ -18,9 +20,40 @@ function runPurchasePdf(file){return new Promise((resolve,reject)=>{const p=spaw
 function run(mode,folder){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_erp.py'),mode,folder],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',reject);p.on('close',c=>c?reject(Error(err.trim()||'Falha na importação.')):resolve(out));});}
 async function body(req){let size=0,chunks=[];for await(const chunk of req){size+=chunk.length;if(size>40*1024*1024)throw Error('Limite de 30 MB por lote excedido.');chunks.push(chunk);}return JSON.parse(Buffer.concat(chunks).toString());}
 const reply=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
+
+const backupEqual=(a,b)=>{const x=Buffer.from(String(a)),y=Buffer.from(String(b));return x.length===y.length&&timingSafeEqual(x,y);};
+async function exportSql(req,res){
+ const user=process.env.BACKUP_ADMIN_USER,pass=process.env.BACKUP_ADMIN_PASSWORD,db=process.env.DATABASE_URL;
+ if(!user||!pass||!db)return reply(res,503,{error:'Backup indisponível: configure BACKUP_ADMIN_USER, BACKUP_ADMIN_PASSWORD e DATABASE_URL.'});
+ let provided='';
+ try{const header=String(req.headers.authorization||'');if(header.startsWith('Basic '))provided=Buffer.from(header.slice(6),'base64').toString('utf8');}catch{}
+ const sep=provided.indexOf(':');
+ if(sep<0||!backupEqual(provided.slice(0,sep),user)||!backupEqual(provided.slice(sep+1),pass)){
+  res.writeHead(401,{'WWW-Authenticate':'Basic realm="Backup Colafix"','Cache-Control':'no-store','Content-Type':'application/json'});
+  return res.end(JSON.stringify({error:'Acesso restrito ao administrador de backup.'}));
+ }
+ const target=join(tmpdir(),'colafix-'+randomUUID()+'.sql');
+ try{
+  await new Promise((resolve,reject)=>{
+   const child=spawn('pg_dump',['--dbname='+db,'--format=plain','--no-owner','--no-acl','--encoding=UTF8','--file='+target],{env:process.env,stdio:['ignore','ignore','pipe']});
+   let error='',done=false;
+   const timer=setTimeout(()=>{child.kill('SIGKILL');},120000);
+   child.stderr.on('data',d=>{error=(error+d.toString()).slice(-2000);});
+   child.on('error',e=>{if(!done){done=true;clearTimeout(timer);reject(e);}});
+   child.on('close',code=>{if(!done){done=true;clearTimeout(timer);code===0?resolve():reject(Error('pg_dump falhou: '+error.replace(/postgres(?:ql)?:\\/\\/[^\\s]+/g,'[conexao oculta]')));}});
+  });
+  const info=await stat(target);if(!info.size)throw Error('O arquivo de backup está vazio.');
+  res.writeHead(200,{'Content-Type':'application/sql','Content-Disposition':'attachment; filename="colafix_backup_completo.sql"','Content-Length':info.size,'Cache-Control':'no-store, private','X-Content-Type-Options':'nosniff'});
+  const {createReadStream}=await import('node:fs');
+  await new Promise((resolve,reject)=>{const stream=createReadStream(target);stream.on('error',reject);res.on('close',resolve);stream.on('end',resolve);stream.pipe(res);});
+ }catch(e){if(!res.headersSent)reply(res,500,{error:e.code==='ENOENT'?'pg_dump não está instalado no servidor.':'Não foi possível gerar o backup. Verifique os logs do servidor.'});}
+ finally{await unlink(target).catch(()=>{});}
+}
+
 createServer(async(req,res)=>{try{
  if(req.headers.host!=='127.0.0.1:4173'&&req.headers.host!=='localhost:4173')return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
+ if(path==='/api/admin/backup-sql'&&req.method==='GET')return await exportSql(req,res);
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
  if(path==='/api/external-summary'&&req.method==='GET'){
   const get=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
