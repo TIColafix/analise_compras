@@ -51,8 +51,21 @@ async function exportSql(req,res){
 }
 
 createServer(async(req,res)=>{try{
+ const origin=req.headers.origin||'';
+ const allowedOrigin='https://ticolafix.github.io';
+ if(origin===allowedOrigin){
+  res.setHeader('Access-Control-Allow-Origin',allowedOrigin);
+  res.setHeader('Vary','Origin');
+  res.setHeader('Access-Control-Allow-Headers','Authorization, Content-Type');
+  res.setHeader('Access-Control-Allow-Methods','GET, OPTIONS');
+ }
  const backupPath=new URL(req.url,'http://localhost').pathname;
- if(backupPath==='/api/admin/backup-sql'&&req.method==='GET')return await exportSql(req,res);
+ if(backupPath==='/api/admin/backup-sql'){
+  if(origin&&origin!==allowedOrigin)return reply(res,403,{error:'Origem não autorizada.'});
+  if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}
+  if(req.method==='GET')return await exportSql(req,res);
+  return reply(res,405,{error:'Método não permitido.'});
+ }
  if(req.headers.host!=='127.0.0.1:4173'&&req.headers.host!=='localhost:4173')return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
@@ -121,4 +134,4 @@ createServer(async(req,res)=>{try{
  }
  if(req.method!=='GET')return reply(res,405,{error:'Método não permitido.'});
  const file=files[path];if(!file)return reply(res,404,{error:'Não encontrado.'});const content=await readFile(join(root,'dist',file));res.writeHead(200,{'Content-Type':types[file.split('.').pop()],'Cache-Control':'no-store'});res.end(content);
-}catch(e){reply(res,400,{error:e.message});}}).listen(4173,'127.0.0.1',()=>console.log('Monitoramento MRP: http://127.0.0.1:4173'));
+}catch(e){reply(res,400,{error:e.message});}}).listen(Number(process.env.PORT)||4173,process.env.PORT?'0.0.0.0':'127.0.0.1',()=>console.log('Monitoramento MRP iniciado'));
