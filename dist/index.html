@@ -20,7 +20,7 @@ document.getElementById('backup-sql-download')?.addEventListener('click',async()
  button.disabled=true;status.textContent='Gerando backup. Aguarde...';
  try{
   const auth=btoa(Array.from(new TextEncoder().encode(user+':'+password),b=>String.fromCharCode(b)).join(''));
-  const response=await fetch('/api/admin/backup-sql',{headers:{Authorization:'Basic '+auth},cache:'no-store'});
+  const response=await fetch('https://analisecompras-production.up.railway.app/api/admin/backup-sql',{headers:{Authorization:'Basic '+auth},cache:'no-store'});
   if(!response.ok){let message='Falha HTTP '+response.status;try{message=(await response.json()).error||message;}catch{}throw Error(message);}
   const blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement('a');
   link.href=url;link.download='colafix_backup_completo.sql';document.body.append(link);link.click();link.remove();
