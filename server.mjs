@@ -40,7 +40,7 @@ async function exportSql(req,res){
    const timer=setTimeout(()=>{child.kill('SIGKILL');},120000);
    child.stderr.on('data',d=>{error=(error+d.toString()).slice(-2000);});
    child.on('error',e=>{if(!done){done=true;clearTimeout(timer);reject(e);}});
-   child.on('close',code=>{if(!done){done=true;clearTimeout(timer);code===0?resolve():reject(Error('pg_dump falhou: '+error.replace(/postgres(?:ql)?:\\/\\/[^\\s]+/g,'[conexao oculta]')));}});
+   child.on('close',code=>{if(!done){done=true;clearTimeout(timer);code===0?resolve():reject(Error('pg_dump falhou. Consulte os logs privados.'));}});
   });
   const info=await stat(target);if(!info.size)throw Error('O arquivo de backup está vazio.');
   res.writeHead(200,{'Content-Type':'application/sql','Content-Disposition':'attachment; filename="colafix_backup_completo.sql"','Content-Length':info.size,'Cache-Control':'no-store, private','X-Content-Type-Options':'nosniff'});
