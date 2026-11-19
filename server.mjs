@@ -1,5 +1,5 @@
 import {existsSync} from 'node:fs';
-import {readLoads,saveLoad,readDiesel,saveDiesel,readDeliveryDeadlines,saveDeliveryDeadline} from './cement-store.mjs';
+import {readLoads,saveLoad,saveMonthlyOrder,readDiesel,saveDiesel,readDeliveryDeadlines,saveDeliveryDeadline} from './cement-store.mjs';
 import {readMaintenance,saveMaintenance} from './maintenance-store.mjs';
 import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile,rename} from 'node:fs/promises';
@@ -68,7 +68,7 @@ createServer(async(req,res)=>{try{
  }
  if(!['127.0.0.1:4173','localhost:4173','agenda-analisecompras-node.diqfid.easypanel.host'].includes(req.headers.host))return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
- if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
+ if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1,storage:'local-files',databaseConfigured:Boolean(process.env.DATABASE_URL),dataFilePresent:existsSync(join(root,'dist/data.json'))});
  if(path==='/api/external-summary'&&req.method==='GET'){
   const get=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
   let dollar=null,weather=[];
