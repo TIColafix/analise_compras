@@ -51,9 +51,10 @@ async function exportSql(req,res){
 }
 
 createServer(async(req,res)=>{try{
+ const backupPath=new URL(req.url,'http://localhost').pathname;
+ if(backupPath==='/api/admin/backup-sql'&&req.method==='GET')return await exportSql(req,res);
  if(req.headers.host!=='127.0.0.1:4173'&&req.headers.host!=='localhost:4173')return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
- if(path==='/api/admin/backup-sql'&&req.method==='GET')return await exportSql(req,res);
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
  if(path==='/api/external-summary'&&req.method==='GET'){
   const get=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
