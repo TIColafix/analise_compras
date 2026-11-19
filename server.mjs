@@ -66,7 +66,7 @@ createServer(async(req,res)=>{try{
   if(req.method==='GET')return await exportSql(req,res);
   return reply(res,405,{error:'Método não permitido.'});
  }
- if(!['127.0.0.1:4173','localhost:4173','analisecompras-production.up.railway.app'].includes(req.headers.host))return reply(res,403,{error:'Endereço não autorizado.'});
+ if(!['127.0.0.1:4173','localhost:4173','agenda-analisecompras-node.diqfid.easypanel.host'].includes(req.headers.host))return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
  if(path==='/api/external-summary'&&req.method==='GET'){
@@ -88,7 +88,7 @@ createServer(async(req,res)=>{try{
  if(path==='/api/maintenance'&&req.method==='GET')return reply(res,200,await readMaintenance(root));
  if(path.startsWith('/api/')){
   if(req.method!=='POST')return reply(res,405,{error:'Método não permitido.'});
-  if(!['http://127.0.0.1:4173','http://localhost:4173'].includes(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Importação permitida apenas pela aplicação local.'});
+  if(!['http://127.0.0.1:4173','http://localhost:4173','https://agenda-analisecompras-node.diqfid.easypanel.host'].includes(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Importação permitida apenas pela aplicação local.'});
   if(busy)return reply(res,409,{error:'Uma importação está em andamento. Aguarde.'});
   busy=true;try{const input=await body(req);
    if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:1});
