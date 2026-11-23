@@ -39,6 +39,13 @@ test('administra usuários no banco e protege módulos e conta Diego',async()=>{
     const updated=await login('operador','senha-operador');
     assert.equal((await api(updated.cookie,'/api/diesel')).status,403);
     assert.equal((await api(updated.cookie,'/api/indirect-materials')).status,200);
+    assert.equal((await api(admin,'/api/users/operador','PATCH',{enabled:false})).status,200);
+    assert.equal((await api(updated.cookie,'/api/indirect-materials')).status,401);
+    assert.equal((await login('operador','senha-operador')).status,401);
+    r=await api(admin,'/api/users');assert.deepEqual(r.body.users.find(u=>u.user==='operador').permissions,['insumos']);
+    assert.equal((await api(admin,'/api/users/operador','PATCH',{enabled:true})).status,200);
+    const reactivated=await login('operador','senha-operador');assert.equal(reactivated.status,303);
+    assert.equal((await api(reactivated.cookie,'/api/indirect-materials')).status,200);
     r=await api(admin,'/api/users','POST',{user:'granel',name:'Granel',password:'senha-granel',permissions:['cimento-granel']});assert.equal(r.status,201);
     const bulk=await login('granel','senha-granel');
     r=await api(bulk.cookie,'/api/cement');assert.deepEqual(r.body.loads.map(x=>x.id),['bulk']);assert.equal(r.body.bagPrices,null);
