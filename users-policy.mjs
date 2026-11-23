@@ -2,12 +2,22 @@ export const MODULES=['materia-prima','insumos','manutencao','diesel','areiaamig
 export const ROOT_USER='diego';
 export const isProtectedUser=user=>String(user||'').toLowerCase()===ROOT_USER;
 export function userRole(user){return isProtectedUser(user.user)||user.role==='admin'?'admin':user.role==='operator'?'operator':'limited';}
+export function validateRole(role){if(!['limited','admin'].includes(role))throw Error('Perfil inválido.');return role;}
 export function validateModules(value){
   if(!Array.isArray(value)||value.some(x=>!MODULES.includes(x)&&x!=='areiaadmin')||value.includes('areiaadmin')&&!value.includes('areiaamigos'))throw Error('Selecione módulos válidos; administrar Areia Amigos exige acesso ao módulo.');
   return [...new Set(value)];
 }
+export function validateAdminModules(value,permissions){
+  if(!Array.isArray(value)||value.some(x=>!MODULES.includes(x)||!permissions.includes(x)))throw Error('A administração exige acesso ao mesmo módulo.');
+  return [...new Set(value)];
+}
 export function sanitizeUser(user){const {passwordHash,...safe}=user;return {...safe,role:userRole(user),protected:isProtectedUser(user.user)};}
 export function hasModule(account,module){return account?.role==='admin'||account?.role==='operator'||!!account?.permissions?.includes(module);}
+export function hasModuleAdmin(account,module){
+  if(account?.role==='admin')return true;
+  if(account?.role!=='limited'||!hasModule(account,module))return false;
+  return !!account.adminModules?.includes(module)||(module==='areiaamigos'&&!!account.permissions?.includes('areiaadmin'));
+}
 export function categoryModule(category){return category==='MP'?'materia-prima':'manutencao';}
 export function cementModule(kind){return kind==='granel'?'cimento-granel':kind==='ensacado'?'cimento-ensacado':null;}
 

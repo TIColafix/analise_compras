@@ -1,5 +1,11 @@
 # Continuidade do projeto Compras/MRP
 
+## Gestão de usuários — 23/11/2026
+
+A lista de `/usuarios` foi compactada e o cadastro/edição permite escolher usuário, administrador geral ou administrador de módulos. O administrador geral gerencia usuários; o administrador de módulo recebe acesso adicional apenas nos módulos selecionados, sem gestão de contas. As regras adicionais de administração foram aplicadas a Areia Amigos e às exclusões de cargas de cimento e solicitações de matéria-prima/manutenção; os demais módulos mantêm suas regras atuais. Diego continua protegido. As permissões são guardadas no cadastro de usuários do banco, sem migração de esquema.
+
+Validação: testes específicos de usuários (política, interface e integração com banco simulado) aprovados. Suíte Node completa: 18 aprovações, 16 falhas e 4 testes PostgreSQL não executados; falhas da engine usam base local diferente da referência ou backup ausente e o teste de cimento rejeita os produtos da amostra. Os três testes Python não passaram pela ausência dos PDFs de referência. Nenhum dado operacional foi alterado. Alterações ainda não publicadas.
+
 Aplicação local da Colafix. Executar node server.mjs, ou ABRIR-APLICACAO.cmd, porta 4173. Sem build e sem dependências npm. Python: scripts/requirements.txt.
 
 - dist/app.js, engine.js, index.html, style.css: interface e regras MRP/estoque/dashboard.

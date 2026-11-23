@@ -7,6 +7,7 @@ test('lista apresenta permissões, protege Diego e filtra contas por situação 
   const elements=new Map();
   function element(id){
     if(!elements.has(id))elements.set(id,{id,value:id==='#status-filter'?'all':'',textContent:'',innerHTML:'',hidden:false,dataset:{},listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},querySelectorAll(){return [];},reset(){},scrollIntoView(){}});
+    if(id==='#user-form'&&!elements.get(id).elements)elements.get(id).elements={profile:{value:'limited',addEventListener(){}}};
     return elements.get(id);
   }
   const records=[{user:'diego',name:'Diego',role:'admin',enabled:true,protected:true},{user:'ana',name:'Ana Teste',role:'limited',enabled:false,permissions:['diesel']},{user:'antigo',name:'Conta <teste>',role:'limited',enabled:true,source:'environment',permissions:['insumos']}];

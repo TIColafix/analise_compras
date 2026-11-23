@@ -12,7 +12,7 @@ import {tmpdir} from 'node:os';
 import {allowLocalAdmin} from './auth-mode.mjs';
 import {loadBuildInfo,releaseLabel} from './build-info.mjs';
 import {sendDataJson} from './data-response.mjs';
-import {MODULES,isProtectedUser,userRole,validateModules,sanitizeUser,hasModule,categoryModule,cementModule,routeAllowed} from './users-policy.mjs';
+import {MODULES,isProtectedUser,userRole,validateRole,validateModules,validateAdminModules,sanitizeUser,hasModule,hasModuleAdmin,categoryModule,cementModule,routeAllowed} from './users-policy.mjs';
 import {readDocument,writeDocument,updateMainData,updateManagedUsers,appendAudit,readAudit,exportDatabaseSnapshot,saveSupplierCatalog,getSupplierCatalog,deleteSupplierCatalog} from './database.mjs';
 const root=fileURLToPath(new URL('.',import.meta.url));
 const releaseInfo=releaseLabel(loadBuildInfo({cwd:root}));
@@ -46,7 +46,7 @@ function validPassword(password,stored){
 }
 async function accountFor(user,pass){
  const found=(await managedUsers()).find(x=>x.user===user);
- if(found)return found.enabled&&validPassword(pass,found.passwordHash)?{user:found.user,name:found.name,role:userRole(found),permissions:found.permissions||[],managed:true,sessionVersion:found.sessionVersion||0}:null;
+ if(found)return found.enabled&&validPassword(pass,found.passwordHash)?{user:found.user,name:found.name,role:userRole(found),permissions:found.permissions||[],adminModules:found.adminModules||[],managed:true,sessionVersion:found.sessionVersion||0}:null;
  const adminUser=process.env.APP_USER||'',adminPass=process.env.APP_PASSWORD||'';
  if(adminUser&&adminPass&&user===adminUser&&pass===adminPass)return {user,name:'Paulo',role:'admin'};
  const au=process.env.ALISSON_USER||'alisson',ap=process.env.ALISSON_PASSWORD||'';
@@ -63,14 +63,14 @@ function credentials(req){
 function authorized(req){return !!credentials(req);}
 function actor(req){return credentials(req)?.name||'desconhecido';}
 function isAdmin(req){return credentials(req)?.role==='admin';}
-function isAreiaAdmin(req){const acc=credentials(req);return isAdmin(req)||acc?.role==='limited'&&acc.permissions?.includes('areiaadmin');}
+function isAreiaAdmin(req){return hasModuleAdmin(credentials(req),'areiaamigos');}
 async function refreshManagedSession(req){
  const token=cookies(req).colafix_session,session=token&&sessions.get(token);
  if(!session)return;
  const user=(await managedUsers()).find(x=>x.user===session.account.user);
  if(!session.account.managed){if(user)sessions.delete(token);return;}
  if(!user?.enabled||!user.passwordHash||(user.sessionVersion||0)!==session.account.sessionVersion){sessions.delete(token);return;}
- session.account={...session.account,name:user.name,role:userRole(user),permissions:user.permissions||[]};
+ session.account={...session.account,name:user.name,role:userRole(user),permissions:user.permissions||[],adminModules:user.adminModules||[]};
 }
 function isLimited(req){return credentials(req)?.role==='limited';}
 function hasAccess(req,module){return hasModule(credentials(req),module);}
@@ -187,8 +187,8 @@ createServer(async(req,res)=>{try{
   const input=await body(req),user=String(input.user||'').trim().toLowerCase(),name=String(input.name||'').trim(),password=String(input.password||'');
   if(!/^[a-z][a-z0-9._-]{2,39}$/.test(user)||name.length<3||name.length>100)throw Error('Informe nome e usuário válido (3 a 40 caracteres).');
   if(password.length<8||password.length>256)throw Error('A senha deve ter entre 8 e 256 caracteres.');
-  const permissions=isProtectedUser(user)?[]:validateModules(input.permissions||[]);
-  await updateManagedUsers(actor(req),users=>{const prior=users.find(u=>u.user===user);if(prior&&!prior.deleted||!prior&&(user===process.env.APP_USER||user===(process.env.ALISSON_USER||'alisson')&&process.env.ALISSON_PASSWORD))throw Error('Usuário já existe.');const created={user,name,permissions,enabled:true,passwordHash:hashPassword(password),sessionVersion:randomUUID(),createdAt:new Date().toISOString()};if(prior)users[users.indexOf(prior)]=created;else users.push(created);return {action:'criar-usuario',detail:{user}};});
+  const role=isProtectedUser(user)?'admin':validateRole(input.role||'limited'),permissions=role==='admin'?[]:validateModules(input.permissions||[]),adminModules=role==='admin'?[]:validateAdminModules(input.adminModules||[],permissions);
+  await updateManagedUsers(actor(req),users=>{const prior=users.find(u=>u.user===user);if(prior&&!prior.deleted||!prior&&(user===process.env.APP_USER||user===(process.env.ALISSON_USER||'alisson')&&process.env.ALISSON_PASSWORD))throw Error('Usuário já existe.');const created={user,name,role,permissions,adminModules,enabled:true,passwordHash:hashPassword(password),sessionVersion:randomUUID(),createdAt:new Date().toISOString()};if(prior)users[users.indexOf(prior)]=created;else users.push(created);return {action:'criar-usuario',detail:{user,role,adminModules}};});
   return reply(res,201,{ok:true});
  }
  if(path.startsWith('/api/users/')&&['PATCH','DELETE'].includes(req.method)){
@@ -196,16 +196,19 @@ createServer(async(req,res)=>{try{
   const user=decodeURIComponent(path.slice('/api/users/'.length)).toLowerCase(),input=req.method==='PATCH'?await body(req):{};
   await updateManagedUsers(actor(req),users=>{const index=users.findIndex(u=>u.user===user),found=users[index];if(!found||found.deleted)throw Error('Usuário não encontrado no banco.');const removesAdmin=req.method==='DELETE'||input.enabled===false;if(removesAdmin&&userRole(found)==='admin'&&!users.some(u=>isProtectedUser(u.user)&&u.enabled&&!u.deleted))throw Error('Ative o administrador Diego antes de remover outro administrador.');if(req.method==='DELETE'){if(isProtectedUser(user))throw Error('O administrador Diego não pode ser excluído.');if(user===process.env.APP_USER||user===(process.env.ALISSON_USER||'alisson')){found.deleted=true;found.enabled=false;found.passwordHash='';found.sessionVersion=randomUUID();}else users.splice(index,1);return {action:'excluir-usuario',detail:{user}};}
    if(Object.hasOwn(input,'name')){if(typeof input.name!=='string'||input.name.trim().length<3||input.name.trim().length>100)throw Error('Nome inválido.');found.name=input.name.trim();}
+   if(Object.hasOwn(input,'role')){const role=validateRole(input.role);if(isProtectedUser(user)&&role!=='admin')throw Error('O administrador Diego não pode perder o perfil administrativo.');if(userRole(found)==='admin'&&role!=='admin'&&!users.some(u=>isProtectedUser(u.user)&&u.enabled&&!u.deleted))throw Error('Ative o administrador Diego antes de alterar outro administrador.');found.role=role;found.sessionVersion=randomUUID();}
    if(Object.hasOwn(input,'password')){if(typeof input.password!=='string'||input.password.length<8||input.password.length>256)throw Error('Senha deve ter entre 8 e 256 caracteres.');found.passwordHash=hashPassword(input.password);found.sessionVersion=randomUUID();}
    if(Object.hasOwn(input,'enabled')){if(typeof input.enabled!=='boolean')throw Error('Situação inválida.');if(isProtectedUser(user)&&!input.enabled)throw Error('O administrador Diego não pode ser inativado.');if(input.enabled&&!found.passwordHash)throw Error('Defina uma senha antes de reativar o acesso.');found.enabled=input.enabled;found.sessionVersion=randomUUID();}
    if(Object.hasOwn(input,'permissions')){if(isProtectedUser(user))throw Error('As permissões do administrador Diego não podem ser alteradas.');found.permissions=validateModules(input.permissions);found.sessionVersion=randomUUID();}
+   if(Object.hasOwn(input,'adminModules')){if(isProtectedUser(user))throw Error('As permissões do administrador Diego não podem ser alteradas.');found.adminModules=validateAdminModules(input.adminModules,found.permissions||[]);found.sessionVersion=randomUUID();}
+   else if(found.adminModules?.length&&userRole(found)!=='admin')validateAdminModules(found.adminModules,found.permissions||[]);
    return {action:'alterar-usuario',detail:{user,enabled:found.enabled}};
   });
   return reply(res,200,{ok:true});
  }
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:2,database:!!process.env.DATABASE_URL});
  if(path==='/api/online'&&req.method==='GET'){if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});const now=Date.now(),active=new Map();for(const s of sessions.values()){if(now-(s.lastSeen||s.createdAt)>120000)continue;const key=s.account.user;const prev=active.get(key);if(!prev||prev.lastSeen<s.lastSeen)active.set(key,{user:key,name:s.account.name,role:s.account.role,lastSeen:s.lastSeen});}return reply(res,200,{users:[...active.values()].sort((a,b)=>b.lastSeen-a.lastSeen),checkedAt:now,windowSeconds:120});}
- if(path==='/api/me'&&req.method==='GET'){const token=cookies(req).colafix_session;if(token&&sessions.has(token))sessions.get(token).lastSeen=Date.now();const c=credentials(req);return reply(res,200,{ok:true,user:c?.user,name:c?.name,role:c?.role,permissions:c?.permissions||[]});}
+ if(path==='/api/me'&&req.method==='GET'){const token=cookies(req).colafix_session;if(token&&sessions.has(token))sessions.get(token).lastSeen=Date.now();const c=credentials(req);return reply(res,200,{ok:true,user:c?.user,name:c?.name,role:c?.role,permissions:c?.permissions||[],adminModules:c?.adminModules||[]});}
  if(path==='/api/import/runtime'&&req.method==='GET')return reply(res,200,await pythonReady());
  if(path==='/api/external-summary'&&req.method==='GET'){
   const get=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
@@ -238,7 +241,7 @@ createServer(async(req,res)=>{try{
  }
  if(path==='/data.json'&&req.method==='GET'){const data=await readDocument('main-data',null);if(data!==null)return await sendDataJson(req,res,data);}
  if(path.startsWith('/api/areia-amigos/')&&req.method==='DELETE'){
-  if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode excluir recibos.'});
+  if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente o administrador do módulo pode excluir recibos.'});
   if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada.'});
   const id=decodeURIComponent(path.slice('/api/areia-amigos/'.length));
   if(!id)return reply(res,400,{error:'Identificador obrigatório.'});
@@ -345,12 +348,14 @@ createServer(async(req,res)=>{try{
   const record={id:randomUUID(),number,createdAt:new Date().toISOString(),createdBy:account.user,createdByName:account.name,driver,company,plate,phone,material,quantity,unitPrice:Number(item.price),total:Math.round(quantity*Number(item.price)*100)/100,corrections:[]};
   records.unshift(record);await writeDocument('areia-v3-loads',records);await audit(req,'criar','areia-v3',{id:record.id,number});return reply(res,200,{ok:true,record});
  }
- if(path==='/api/areia-amigos'&&req.method==='GET'){const records=await readDocument('areia-amigos',[]);const account=credentials(req);const all=Array.isArray(records)?records:[];return reply(res,200,{records:isAdmin(req)?all:all.filter(r=>r.createdBy===account?.user),canManage:isAdmin(req)});}
+ if(path==='/api/areia-amigos'&&req.method==='GET'){const records=await readDocument('areia-amigos',[]);const account=credentials(req);const all=Array.isArray(records)?records:[];return reply(res,200,{records:isAreiaAdmin(req)?all:all.filter(r=>r.createdBy===account?.user),canManage:isAreiaAdmin(req)});}
  if(path.startsWith('/api/cement/')&&req.method==='DELETE'){
-  if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode excluir cargas.'});
   if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada.'});
   const id=decodeURIComponent(path.slice('/api/cement/'.length));
   if(!id)return reply(res,400,{error:'Identificador obrigatório.'});
+  const selected=(await readLoads(root)).loads.find(r=>r.id===id);
+  if(!selected)return reply(res,404,{error:'Carga não encontrada.'});
+  if(!hasModuleAdmin(credentials(req),cementModule(selected.kind)))return reply(res,403,{error:'Somente o administrador deste módulo pode excluir cargas.'});
   const removed=await deleteCementLoad(root,id);
   await audit(req,'excluir','cement',{id:removed.id,kind:removed.kind,scheduledDate:removed.scheduledDate,systemOrder:removed.systemOrder});
   return reply(res,200,{ok:true});
@@ -433,8 +438,11 @@ createServer(async(req,res)=>{try{
  if(path==='/api/maintenance'&&req.method==='GET'){const data=await readMaintenance(root);return reply(res,200,{...data,requests:(data.requests||[]).filter(r=>hasAccess(req,categoryModule(r.category)))});}
  if(path==='/api/audit'&&req.method==='GET'){if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode consultar a auditoria.'});return reply(res,200,{ok:true,entries:await readAudit(300)});}
  if(path.startsWith('/api/maintenance/')&&req.method==='DELETE'){
-  if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode excluir solicitações.'});
+  if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada.'});
   const id=decodeURIComponent(path.slice('/api/maintenance/'.length));
+  const selected=(await readMaintenance(root)).requests.find(r=>r.id===id);
+  if(!selected)return reply(res,404,{error:'Solicitação não encontrada.'});
+  if(!hasModuleAdmin(credentials(req),categoryModule(selected.category)))return reply(res,403,{error:'Somente o administrador deste módulo pode excluir solicitações.'});
   const removed=await deleteMaintenance(root,id);
   await audit(req,'excluir','maintenance',{id:removed.id,number:removed.number||'',description:removed.description||'',category:removed.category||''});
   return reply(res,200,{ok:true,removed:{id:removed.id,number:removed.number||''}});
@@ -508,7 +516,7 @@ createServer(async(req,res)=>{try{
    return reply(res,200,{ok:true,data:clean});
   }catch(e){return reply(res,502,{error:e.name==='AbortError'?'Tempo limite excedido ao consultar o Gemini.':e.message})}finally{clearTimeout(timer)}
  }
- if(path==='/api/areia-amigos'){const account=credentials(req);const existingRecords=await readDocument('areia-amigos',[]);const existing=Array.isArray(existingRecords)?existingRecords.find(r=>r.id===input.id):null;if(existing&&!isAdmin(req))return reply(res,403,{error:'Recibo salvo não pode ser editado pelo carregador. Solicite correção ao administrador.'});if(!isAdmin(req)&&Array.isArray(input.quantities)&&input.quantities.filter(q=>Number(q)>0).length!==1)return reply(res,400,{error:'Informe exatamente um material por recibo.'});if(!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(input.image||'')||input.image.length>7e6)throw Error('Anexe uma imagem JPG, PNG ou WEBP de até 5 MB.');if(!/^\d{4}-\d{2}-\d{2}$/.test(input.date||'')||!String(input.receipt||'').trim())throw Error('Informe a data e o número do recibo.');const previous=await readDocument('areia-amigos',[]),records=Array.isArray(previous)?previous:[];const duplicate=records.find(x=>String(x.receipt||'').trim()===String(input.receipt||'').trim()&&String(x.id)!==String(input.id||''));if(duplicate)return reply(res,409,{error:'Recibo nº '+String(input.receipt).trim()+' já está cadastrado. Não é permitido salvar recibos duplicados.'});const entry={id:String(input.id||randomUUID()),receipt:String(input.receipt).trim().slice(0,80),date:input.date,time:String(input.time||'').slice(0,5),client:String(input.client||'').slice(0,180),plate:String(input.plate||'').slice(0,32),total:Number(input.total)||0,quantities:Array.from({length:5},(_,i)=>Math.max(0,Number(input.quantities?.[i])||0)),image:input.image,createdBy:existing?.createdBy||account?.user||'',createdByName:existing?.createdByName||account?.name||'',createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};const index=records.findIndex(x=>x.id===entry.id);if(index>=0)records[index]=entry;else records.unshift(entry);await writeDocument('areia-amigos',records);await audit(req,'salvar','areia-amigos',{id:entry.id,receipt:entry.receipt});return reply(res,200,{ok:true,records});}
+ if(path==='/api/areia-amigos'){const account=credentials(req);const existingRecords=await readDocument('areia-amigos',[]);const existing=Array.isArray(existingRecords)?existingRecords.find(r=>r.id===input.id):null;if(existing&&!isAreiaAdmin(req))return reply(res,403,{error:'Recibo salvo não pode ser editado pelo carregador. Solicite correção ao administrador.'});if(!isAreiaAdmin(req)&&Array.isArray(input.quantities)&&input.quantities.filter(q=>Number(q)>0).length!==1)return reply(res,400,{error:'Informe exatamente um material por recibo.'});if(!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(input.image||'')||input.image.length>7e6)throw Error('Anexe uma imagem JPG, PNG ou WEBP de até 5 MB.');if(!/^\d{4}-\d{2}-\d{2}$/.test(input.date||'')||!String(input.receipt||'').trim())throw Error('Informe a data e o número do recibo.');const previous=await readDocument('areia-amigos',[]),records=Array.isArray(previous)?previous:[];const duplicate=records.find(x=>String(x.receipt||'').trim()===String(input.receipt||'').trim()&&String(x.id)!==String(input.id||''));if(duplicate)return reply(res,409,{error:'Recibo nº '+String(input.receipt).trim()+' já está cadastrado. Não é permitido salvar recibos duplicados.'});const entry={id:String(input.id||randomUUID()),receipt:String(input.receipt).trim().slice(0,80),date:input.date,time:String(input.time||'').slice(0,5),client:String(input.client||'').slice(0,180),plate:String(input.plate||'').slice(0,32),total:Number(input.total)||0,quantities:Array.from({length:5},(_,i)=>Math.max(0,Number(input.quantities?.[i])||0)),image:input.image,createdBy:existing?.createdBy||account?.user||'',createdByName:existing?.createdByName||account?.name||'',createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};const index=records.findIndex(x=>x.id===entry.id);if(index>=0)records[index]=entry;else records.unshift(entry);await writeDocument('areia-amigos',records);await audit(req,'salvar','areia-amigos',{id:entry.id,receipt:entry.receipt});return reply(res,200,{ok:true,records});}
  if(path==='/api/cement'){if(!cementModule(input.kind)||!hasAccess(req,cementModule(input.kind)))return reply(res,403,{error:'Sem acesso ao tipo de cimento.'});const load=await saveLoad(root,input);await audit(req,'salvar','cement',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}if(path==='/api/cement-bag-products'){const products=await saveBagProducts(root,input);await audit(req,'salvar','cement-bag-products',{count:products.length});return reply(res,200,{ok:true,products});}if(path==='/api/cement-bag-prices'){const bagPrices=await saveBagPrices(root,input);await audit(req,'salvar','cement-bag-prices',{period:bagPrices.period||'',updatedAt:bagPrices.updatedAt||''});return reply(res,200,{ok:true,bagPrices});}if(path==='/api/cement-monthly-order'){const orders=await saveMonthlyOrder(root,input);await audit(req,'salvar','cement-monthly-order',{supplier:input.supplier||''});return reply(res,200,{ok:true,orders});}
    if(path==='/api/diesel-prices'){const price=Number(input.price),date=String(input.date||''),company=String(input.company||'Todas');if(!Number.isFinite(price)||price<=0||price>1000||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!['Todas','Colafix','Fixcol','Argamazza'].includes(company))return reply(res,400,{error:'Informe uma data e um preço por litro válidos.'});const current=await readDocument('diesel-prices',[]);const record={id:randomUUID(),date,company,price,createdAt:new Date().toISOString()};const prices=[...current,record].slice(-1000);await writeDocument('diesel-prices',prices);await audit(req,'salvar','diesel-prices',{id:record.id,date,company,price});return reply(res,200,{ok:true,prices});}
    if(path==='/api/diesel'){const load=await saveDiesel(root,input);await audit(req,'salvar','diesel',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}
