@@ -16,7 +16,7 @@ import {readDocument,writeDocument,updateMainData,updateManagedUsers,appendAudit
 const root=fileURLToPath(new URL('.',import.meta.url));
 const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
 const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'python');
-const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/bulk-prices.js':'bulk-prices.js','/areia-amigos.js':'areia-amigos.js','/areia-v3.js':'areia-v3.js','/diesel.js':'diesel.js','/supplier-agenda.js':'supplier-agenda.js','/deadlines.js':'deadlines.js','/maintenance-deadlines.js':'maintenance-deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js','/mp-report.js':'mp-report.js','/indirect-materials.js':'indirect-materials.js','/users-admin.js':'users-admin.js','/migration':'migration.html','/migration.html':'migration.html'};
+const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/bulk-prices.js':'bulk-prices.js','/areia-amigos.js':'areia-amigos.js','/areia-v3.js':'areia-v3.js','/diesel.js':'diesel.js','/supplier-agenda.js':'supplier-agenda.js','/deadlines.js':'deadlines.js','/maintenance-deadlines.js':'maintenance-deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js','/mp-report.js':'mp-report.js','/indirect-materials.js':'indirect-materials.js','/users-admin.js':'users-admin.js','/change-password.js':'change-password.js','/migration':'migration.html','/migration.html':'migration.html'};
 const types={html:'text/html; charset=utf-8',css:'text/css',js:'text/javascript',svg:'image/svg+xml',json:'application/json; charset=utf-8'};
 const pending=new Map();const sessions=new Map();let busy=false;
 async function pythonReady(){return new Promise(resolve=>{const p=spawn(python,['-c','import sys,pypdf; print(sys.version.split()[0],pypdf.__version__)'],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',e=>resolve({ok:false,error:e.message}));p.on('close',c=>resolve(c===0?{ok:true,detail:out.trim()}:{ok:false,error:err.trim()||'Python indisponível'}));});}
@@ -123,6 +123,35 @@ createServer(async(req,res)=>{try{
   if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
   res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});
   return res.end(await readFile(join(root,'dist','users-admin.html')));
+ }
+ if(path==='/minha-senha'&&req.method==='GET'){
+  res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});
+  return res.end(await readFile(join(root,'dist','change-password.html')));
+ }
+ if(path==='/api/me/password'&&req.method==='POST'){
+  if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
+  const token=cookies(req).colafix_session,session=token&&sessions.get(token);
+  if(!session)return reply(res,401,{error:'Entre com seu usuário para alterar a senha.'});
+  const input=await body(req),current=input.currentPassword,next=input.newPassword,account=session.account;
+  if(typeof current!=='string'||typeof next!=='string'||next.length<8||next.length>256||current.length>256)return reply(res,400,{error:'Informe a senha atual e uma nova senha de 8 a 256 caracteres.'});
+  if(current===next)return reply(res,400,{error:'A nova senha deve ser diferente da senha atual.'});
+  try{
+   await updateManagedUsers(account.name,users=>{
+    let found=users.find(u=>u.user===account.user);
+    if(found){
+     if(!account.managed||!found.enabled||found.deleted||(found.sessionVersion||0)!==account.sessionVersion||!validPassword(current,found.passwordHash)){const e=Error('Senha atual inválida ou sessão expirada.');e.code='PASSWORD_INVALID';throw e;}
+    }else{
+     const admin=account.user===process.env.APP_USER&&account.role==='admin'&&process.env.APP_PASSWORD===current;
+     const operator=account.user===(process.env.ALISSON_USER||'alisson')&&account.role==='operator'&&process.env.ALISSON_PASSWORD===current;
+     if(account.managed||!admin&&!operator){const e=Error('Senha atual inválida ou sessão expirada.');e.code='PASSWORD_INVALID';throw e;}
+     found={user:account.user,name:account.name,role:admin?'admin':'limited',permissions:operator?[...MODULES]:[],enabled:true,createdAt:new Date().toISOString()};users.push(found);
+    }
+    found.passwordHash=hashPassword(next);found.sessionVersion=randomUUID();
+    return {action:'alterar-propria-senha',detail:{user:account.user}};
+   });
+  }catch(error){if(error.code==='PASSWORD_INVALID')return reply(res,400,{error:error.message});throw error;}
+  sessions.delete(token);
+  res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Set-Cookie':clearSessionCookie()});return res.end(JSON.stringify({ok:true}));
  }
  if(path==='/areia'&&req.method==='GET'){
   if(!hasAccess(req,'areiaamigos')&&!hasAccess(req,'areiaadmin'))return reply(res,403,{error:'Sem acesso a Areia Amigos.'});

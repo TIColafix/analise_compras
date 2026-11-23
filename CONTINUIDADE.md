@@ -318,3 +318,15 @@ Testes com usuários fictícios verificaram criação, isolamento de APIs, prote
 ### Inativação de usuários
 
 Na gestão de usuários, o controle de situação agora é identificado como **Inativar/Reativar** e a lista mostra **Ativo/Inativo**. A inativação preserva cadastro, senha e permissões, impede novos logins e encerra sessões existentes; a reativação mantém os módulos anteriores. Diego continua protegido contra inativação. Testes de integração com contas fictícias verificaram bloqueio do login, revogação da sessão, preservação das permissões e reativação. A validação na hospedagem continua pendente.
+
+### Ativação do administrador Diego
+
+A pedido do usuário, foi criada no documento `app-users` do PostgreSQL a conta administrativa protegida `diego`, com a senha informada armazenada em hash e sem alterar outros usuários. A operação foi auditada; o login e a função de administrador foram confirmados na hospedagem e a sessão de teste encerrada. A senha não foi registrada neste arquivo. Como a credencial foi informada na conversa, recomenda-se trocá-la pela área de usuários após o primeiro acesso.
+
+### Alteração da própria senha
+
+Criada a página `/minha-senha`, acessível pelo menu principal, pela administração e pelo Areia Amigos. O usuário autenticado informa a senha atual e uma nova senha; após a gravação em hash e auditoria na mesma transação, as sessões anteriores são invalidadas e é necessário entrar novamente. A conta protegida Diego mantém seus privilégios. Usuários ainda configurados no ambiente podem alterar a própria senha: após validar a senha atual, sua conta é migrada ao banco com acesso equivalente, sem modificar os demais usuários. O acesso local automático não corresponde a uma conta individual e exige login para trocar senha.
+
+Os testes de integração com usuários fictícios verificaram senha atual inválida, origem não autorizada, usuários limitados, Diego, contas legadas e revogação de sessões. Nenhuma senha real foi alterada por esta implementação; a alteração depende de instalação na hospedagem.
+
+Na gestão administrativa, o botão **Redefinir senha** permite ao administrador definir uma nova senha para qualquer conta no banco, inclusive Diego, sem exigir a senha anterior e sem alterar módulos. As sessões anteriores da conta são invalidadas. Contas ainda mantidas em variáveis do ambiente devem ser migradas para o banco antes da redefinição pela tela. Testes com contas fictícias confirmaram a redefinição de Diego, sua permanência como administrador e o bloqueio da mesma ação por usuário sem privilégios.
