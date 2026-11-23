@@ -82,17 +82,12 @@ def initial_data(batch):
   if not row.get('unit') and r.get('unit'):row['unit']=r['unit']
  return dict(meta=dict(files=[],counts={},imported=datetime.datetime.now().isoformat(timespec='seconds'),erpImports=[],preferredDate=snapshot),catalog=list(catalog.values()),params=[],daily=[],weekly=[],monthly=[],movements=[],history=[],issues=[],parameterEdits=[],paramSnapshots=[],requests=[],reportProfiles=[])
 
-def import_erp(folder=ROOT/'source-data/erp'):
- batch=parse_erp(folder);target=ROOT/'dist/data.json'
- if target.exists():
-  data=json.loads(target.read_text(encoding='utf8'))
- else:
-  target.parent.mkdir(parents=True,exist_ok=True);data=initial_data(batch)
+def apply_batch(data,batch):
+ # O chamador fornece uma cópia isolada quando deseja preservar o original.
+ if data is None:data=initial_data(batch)
  snapshot=batch['date'];signature=hashlib.sha256(json.dumps(batch['files'],sort_keys=True).encode()).hexdigest()
- if any(r.get('signature')==signature for r in data['meta'].get('erpImports',[])):print('Lote ERP já importado; nenhuma duplicação.');return
+ if any(r.get('signature')==signature for r in data['meta'].get('erpImports',[])):return data,None
  if any(r['date']==snapshot for r in data['meta'].get('erpImports',[])):raise ValueError('Já existe outro lote nesta data. Para preservar o histórico, a substituição não é permitida.')
- backup=ROOT/'source-data/backups';backup.mkdir(parents=True,exist_ok=True)
- if target.exists():shutil.copy2(target,backup/('before-'+datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')+'.json'))
  audit=dict(date=snapshot,files=batch['files'],counts={k:len(batch[k]) for k in ['requests','params','stocks','movements']},notes=[],changes=[])
  def replace_rows(key,new,keyfn):
   keys={keyfn(r) for r in new};old=[r for r in data.get(key,[]) if keyfn(r) in keys];data[key]=[r for r in data.get(key,[]) if keyfn(r) not in keys]+new;audit['changes'].append(dict(table=key,replaced=len(old),imported=len(new)))
@@ -133,6 +128,19 @@ def import_erp(folder=ROOT/'source-data/erp'):
  data['meta'].setdefault('erpImports',[]).append(dict(signature=signature,date=snapshot,files=batch['files'],counts=audit['counts']));data['meta']['preferredDate']=max(r['date'] for r in data['meta']['erpImports'])
  data['meta']['files']=[r for r in data['meta']['files'] if r['name'] not in FILES]+batch['files']
  for note in audit['notes']:data['issues'].append(dict(table='Importação ERP',row='',field='Lote '+snapshot,value='',reason=note))
+ return data,audit
+
+def import_erp(folder=ROOT/'source-data/erp'):
+ batch=parse_erp(folder);target=ROOT/'dist/data.json'
+ if target.exists():
+  data=json.loads(target.read_text(encoding='utf8'))
+ else:
+  target.parent.mkdir(parents=True,exist_ok=True);data=None
+ data,audit=apply_batch(data,batch)
+ if audit is None:print('Lote ERP já importado; nenhuma duplicação.');return
+ backup=ROOT/'source-data/backups';backup.mkdir(parents=True,exist_ok=True)
+ if target.exists():shutil.copy2(target,backup/('before-'+datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f')+'.json'))
+ snapshot=batch['date']
  tmp=target.with_suffix('.tmp');tmp.write_text(json.dumps(data,ensure_ascii=False,separators=(',',':'),allow_nan=False),encoding='utf8');tmp.replace(target)
  (ROOT/f'docs/importacao-erp-{snapshot}.json').write_text(json.dumps(audit,ensure_ascii=False,indent=2),encoding='utf8')
  (ROOT/'docs/qualidade-dados.json').write_text(json.dumps(data['issues'],ensure_ascii=False,indent=2),encoding='utf8')
@@ -143,6 +151,9 @@ if __name__=='__main__':
  try:
   if len(sys.argv)>1 and sys.argv[1]=='preview':
    b=parse_erp(folder);print(json.dumps(dict(date=b['date'],counts={k:len(b[k]) for k in ['requests','params','stocks','movements']},files=b['files']),ensure_ascii=False))
+  elif len(sys.argv)>1 and sys.argv[1]=='apply-stdin':
+   data=json.load(sys.stdin);batch=parse_erp(folder);updated,audit=apply_batch(data,batch)
+   print(json.dumps(dict(data=updated,audit=audit,duplicate=audit is None,date=batch['date'],files=batch['files']),ensure_ascii=False,separators=(',',':'),allow_nan=False))
   else:import_erp(folder)
  except Exception as e:
   print(str(e),file=sys.stderr);sys.exit(1)

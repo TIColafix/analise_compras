@@ -40,6 +40,31 @@ export async function writeDocument(key,data){
     on conflict(key) do update set data=excluded.data,version=app_documents.version+1,updated_at=now()`,[key,JSON.stringify(data)]);
   return data;
 }
+
+// Serializa alterações da base principal entre processos e grava auditoria na
+// mesma transação. O callback recebe o estado mais recente, não o da prévia.
+export async function updateMainData(actor,transform){
+  const p=getPool();if(!p)throw Error('Banco de dados online não configurado.');
+  await initDatabase();
+  const client=await p.connect();
+  try{return await runMainDataTransaction(client,actor,transform);}
+  finally{client.release();}
+}
+
+export async function runMainDataTransaction(client,actor,transform){
+  try{
+    await client.query('BEGIN');
+    await client.query("select pg_advisory_xact_lock(hashtext('colafix-main-data'))");
+    const current=await client.query("select data from app_documents where key='main-data' for update");
+    const result=await transform(current.rows[0]?.data??null);
+    if(result.changed){
+      await client.query(`insert into app_documents(key,data,version,updated_at) values('main-data',$1::jsonb,1,now())
+        on conflict(key) do update set data=excluded.data,version=app_documents.version+1,updated_at=now()`,[JSON.stringify(result.data)]);
+      await client.query("insert into app_audit(actor,action,document_key,detail) values($1,$2,'main-data',$3::jsonb)",[actor,result.action,JSON.stringify(result.detail||{})]);
+    }
+    await client.query('COMMIT');return result;
+  }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error;}
+}
 export async function appendAudit(actor,action,documentKey=null,detail={}){
   const p=getPool();if(!p)return null;await initDatabase();
   await p.query('insert into app_audit(actor,action,document_key,detail) values($1,$2,$3,$4::jsonb)',[actor,action,documentKey,JSON.stringify(detail)]);

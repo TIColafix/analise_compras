@@ -9,7 +9,7 @@ import {randomUUID,randomBytes,createHmac,timingSafeEqual,scryptSync} from 'node
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {readDocument,writeDocument,appendAudit,readAudit,exportDatabaseSnapshot,saveSupplierCatalog,getSupplierCatalog,deleteSupplierCatalog} from './database.mjs';
+import {readDocument,writeDocument,updateMainData,appendAudit,readAudit,exportDatabaseSnapshot,saveSupplierCatalog,getSupplierCatalog,deleteSupplierCatalog} from './database.mjs';
 const root=fileURLToPath(new URL('.',import.meta.url));
 const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
 const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'python');
@@ -91,6 +91,7 @@ function allowedHost(value){if(!value)return false;if(publicOrigin){try{return v
 const names=['Necessidades de compra do dia.csv','PERFIL ITENS 27.04.pdf','SALDO ALMOXARIFADOS 27.04.pdf'];
 function runPurchasePdf(file){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_purchase_order.py'),file],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',reject);p.on('close',c=>c?reject(Error(err.trim()||(()=>{try{return JSON.parse(out).error}catch{return 'Falha ao ler pedido PDF.'}})())):resolve(out));});}
 function run(mode,folder){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_erp.py'),mode,folder],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',reject);p.on('close',c=>c?reject(Error(err.trim()||'Falha na importação.')):resolve(out));});}
+function applyImport(folder,data){return new Promise((resolve,reject)=>{const p=spawn(python,[join(root,'scripts/import_erp.py'),'apply-stdin',folder],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.stdin.on('error',()=>{});p.on('error',reject);p.on('close',c=>{if(c)return reject(Error(err.trim()||'Falha na importação.'));try{resolve(JSON.parse(out))}catch{reject(Error('Resposta inválida do importador.'))}});p.stdin.end(JSON.stringify(data));});}
 async function body(req){let size=0,chunks=[];for await(const chunk of req){size+=chunk.length;if(size>40*1024*1024)throw Error('Limite de 30 MB por lote excedido.');chunks.push(chunk);}return JSON.parse(Buffer.concat(chunks).toString());}
 const reply=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
 function limitedAreiaPage(){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Areia Amigos | Controle de Carregamentos</title><link rel="stylesheet" href="/style.css"><style>html,body{margin:0!important;padding:0!important;min-height:100%;width:100%!important;max-width:100%!important;background:#081625;overflow-x:hidden}body{display:block!important}#areiaamigos-view{min-height:100vh;width:100%}#areiaamigos-view .av-shell{min-height:100vh}#areiaamigos-view .av-main-content{min-width:0}#areiaamigos-view .av-layout.av-load-layout{grid-template-columns:minmax(0,1.6fr) minmax(320px,.85fr)}@media(max-width:1150px){#areiaamigos-view .av-layout.av-load-layout{grid-template-columns:minmax(0,1fr)}} </style></head><body><div id="areiaamigos-view"></div><script type="module" src="/areia-v3.js?v=responsive-20261112b"></script><script>fetch('/api/me',{cache:'no-store'});</script></body></html>`}
@@ -510,13 +511,16 @@ createServer(async(req,res)=>{try{
    if(path==='/api/maintenance'){const request=await saveMaintenance(root,input);await audit(req,'salvar','maintenance',{id:request?.id||input.id||'',status:request?.status||input.status||''});return reply(res,200,{ok:true,request});}
    if(path==='/api/parameters'){
     const target=join(root,'dist/data.json');let data,raw;
-    if(process.env.DATABASE_URL){data=await readDocument('main-data',null);if(!data)throw Error('Base principal não encontrada no PostgreSQL.');raw=JSON.stringify(data);}else{raw=await readFile(target,'utf8');data=JSON.parse(raw);}
+    const prepare=data=>{
+    if(!data)throw Error('Base principal não encontrada.');
     if(!data.catalog.some(r=>r.id===input.id)||!/^\d{4}-\d{2}-\d{2}$/.test(input.date)||![...data.daily,...data.weekly,...(data.reportProfiles||[])].some(r=>r.id===input.id&&r.date===input.date))throw Error('Item ou data inválidos.');
     const allowed=['monthly','safety','min','multiple','lead','buffer'],values=input.values;
     if(!values||typeof values!=='object'||!Object.keys(values).length||Object.entries(values).some(([k,v])=>!allowed.includes(k)||typeof v!=='number'||!Number.isFinite(v)||v<0||v>1e12))throw Error('Informe números válidos e não negativos.');
     const edit={id:input.id,date:input.date,values,savedAt:new Date().toISOString(),knownDates:[...new Set((data.paramSnapshots||[]).map(r=>r.date))]};
     data.parameterEdits??=[];data.parameterEdits.push(edit);
-    if(process.env.DATABASE_URL){await writeDocument('main-data',data);await audit(req,'alterar-parametros','main-data',{id:input.id,date:input.date,values});}else{const backup=join(root,'source-data/backups');await mkdir(backup,{recursive:true});await writeFile(join(backup,'parameters-'+randomUUID()+'.json'),raw);const temp=target+'.'+randomUUID()+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);}
+    return edit;};
+    let edit;
+    if(process.env.DATABASE_URL){const result=await updateMainData(actor(req),data=>{const edit=prepare(data);return {changed:true,data,edit,action:'alterar-parametros',detail:{id:input.id,date:input.date,values:input.values}}});edit=result.edit;}else{raw=await readFile(target,'utf8');data=JSON.parse(raw);edit=prepare(data);const backup=join(root,'source-data/backups');await mkdir(backup,{recursive:true});await writeFile(join(backup,'parameters-'+randomUUID()+'.json'),raw);const temp=target+'.'+randomUUID()+'.tmp';await writeFile(temp,JSON.stringify(data));await rename(temp,target);}
     return reply(res,200,{ok:true,edit});
    }
    if(path==='/api/deadlines/import-pdf'||path==='/api/maintenance-deadlines/import-pdf'){
@@ -528,19 +532,20 @@ createServer(async(req,res)=>{try{
    }
    if(path==='/api/import/preview'){
     if(!Array.isArray(input.files)||input.files.length!==3)throw Error('Selecione os três arquivos.');
-    if(process.env.DATABASE_URL){const remote=await readDocument('main-data',null);if(remote){await mkdir(join(root,'dist'),{recursive:true});await writeFile(join(root,'dist/data.json'),JSON.stringify(remote));}}
     const id=randomUUID(),folder=join(root,'source-data/imports',id);await mkdir(folder,{recursive:true});
     for(let n=0;n<3;n++){const f=input.files[n];if(typeof f.content!=='string'||!f.content.length)throw Error('Arquivo vazio.');const bytes=Buffer.from(f.content,'base64');if(n>0&&bytes.subarray(0,5).toString()!=='%PDF-')throw Error('Perfil e saldos devem ser arquivos PDF.');await writeFile(join(folder,names[n]),bytes);}
     await writeFile(join(folder,'originais.json'),JSON.stringify(input.files.map(f=>({name:String(f.name)}))));
-    const result=JSON.parse(await run('preview',folder));let data={meta:{erpImports:[]}};try{data=JSON.parse(await readFile(join(root,'dist/data.json'),'utf8'));}catch(e){if(e.code!=='ENOENT')throw e;}
+    const result=JSON.parse(await run('preview',folder));let data={meta:{erpImports:[]}};if(process.env.DATABASE_URL){data=await readDocument('main-data',null)||data;}else try{data=JSON.parse(await readFile(join(root,'dist/data.json'),'utf8'));}catch(e){if(e.code!=='ENOENT')throw e;}
     const same=data.meta?.erpImports?.find(r=>r.date===result.date);result.duplicate=!!same&&result.files.every((f,i)=>same.files[i]?.sha256===f.sha256);result.conflict=!!same&&!result.duplicate;
     pending.set(id,{folder,result});return reply(res,200,{id,...result});
    }
    if(path==='/api/import/commit'){
     const entry=pending.get(input.id);if(!entry)throw Error('Confira os arquivos novamente antes de importar.');if(entry.result.conflict)throw Error('Já existe um lote diferente nesta data; histórico preservado.');
-    if(!entry.result.duplicate){await run('commit',entry.folder);if(process.env.DATABASE_URL){const updated=JSON.parse(await readFile(join(root,'dist/data.json'),'utf8'));await writeDocument('main-data',updated);await audit(req,'importar-erp','main-data',{date:entry.result.date});}}
-    await writeFile(join(entry.folder,'resultado.json'),JSON.stringify({...entry.result,importedAt:new Date().toISOString()},null,2));pending.delete(input.id);
-    return reply(res,200,{ok:true,duplicate:entry.result.duplicate,date:entry.result.date});
+    let duplicate=entry.result.duplicate;
+    if(process.env.DATABASE_URL){const result=await updateMainData(actor(req),async data=>{const applied=await applyImport(entry.folder,data);if(applied.date!==entry.result.date||applied.files.length!==entry.result.files.length||applied.files.some((f,i)=>f.sha256!==entry.result.files[i].sha256))throw Error('Os arquivos mudaram depois da conferência. Confira novamente.');return {changed:!applied.duplicate,data:applied.data,duplicate:applied.duplicate,action:'importar-erp',detail:{date:entry.result.date}}});duplicate=result.duplicate;}
+    else if(!duplicate)await run('commit',entry.folder);
+    await writeFile(join(entry.folder,'resultado.json'),JSON.stringify({...entry.result,duplicate,importedAt:new Date().toISOString()},null,2));pending.delete(input.id);
+    return reply(res,200,{ok:true,duplicate,date:entry.result.date});
    }
    return reply(res,404,{error:'Rota não encontrada.'});
   }finally{busy=false;}
