@@ -1,7 +1,9 @@
 import pg from 'pg';
+import {createMainDataReader} from './main-data-cache.mjs';
 
 const {Pool}=pg;
 let pool=null;
+let initialization=null,mainDataReader=null;
 function getPool(){
   if(!process.env.DATABASE_URL)return null;
   if(!pool)pool=new Pool({connectionString:process.env.DATABASE_URL,max:5,idleTimeoutMillis:30000,connectionTimeoutMillis:10000});
@@ -10,6 +12,8 @@ function getPool(){
 export function databaseEnabled(){return !!process.env.DATABASE_URL;}
 export async function initDatabase(){
   const p=getPool(); if(!p)return false;
+  if(!initialization){
+    initialization=(async()=>{
   await p.query(`create table if not exists app_documents (
     key text primary key,
     data jsonb not null,
@@ -26,10 +30,17 @@ export async function initDatabase(){
   )`);
   await p.query(`create table if not exists supplier_catalog_files (contact_id text primary key, filename text not null, content bytea not null, updated_at timestamptz not null default now())`);
   return true;
+    })().catch(error=>{initialization=null;throw error;});
+  }
+  return initialization;
 }
 export async function readDocument(key,fallback){
   const p=getPool(); if(!p)return fallback;
   await initDatabase();
+  if(key==='main-data'){
+    if(!mainDataReader)mainDataReader=createMainDataReader((...args)=>p.query(...args));
+    return mainDataReader(fallback);
+  }
   const r=await p.query('select data from app_documents where key=$1',[key]);
   return r.rows.length?r.rows[0].data:fallback;
 }
@@ -65,6 +76,28 @@ export async function runMainDataTransaction(client,actor,transform){
     await client.query('COMMIT');return result;
   }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error;}
 }
+
+// Serializa alterações de contas e registra auditoria sem expor senhas.
+export async function updateManagedUsers(actor,transform){
+  const p=getPool();if(!p)throw Error('Configure o banco de dados para administrar usuários.');
+  await initDatabase();const client=await p.connect();
+  try{return await runManagedUsersTransaction(client,actor,transform);}
+  finally{client.release();}
+}
+export async function runManagedUsersTransaction(client,actor,transform){
+  try{
+    await client.query('BEGIN');
+    await client.query("select pg_advisory_xact_lock(hashtext('colafix-app-users'))");
+    const current=await client.query("select data from app_documents where key='app-users' for update");
+    const users=current.rows[0]?.data??[];
+    if(!Array.isArray(users))throw Error('Cadastro de usuários inválido.');
+    const result=await transform(users);
+    await client.query(`insert into app_documents(key,data,version,updated_at) values('app-users',$1::jsonb,1,now())
+      on conflict(key) do update set data=excluded.data,version=app_documents.version+1,updated_at=now()`,[JSON.stringify(users)]);
+    await client.query("insert into app_audit(actor,action,document_key,detail) values($1,$2,'app-users',$3::jsonb)",[actor,result.action,JSON.stringify(result.detail||{})]);
+    await client.query('COMMIT');return result;
+  }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error;}
+}
 export async function appendAudit(actor,action,documentKey=null,detail={}){
   const p=getPool();if(!p)return null;await initDatabase();
   await p.query('insert into app_audit(actor,action,document_key,detail) values($1,$2,$3,$4::jsonb)',[actor,action,documentKey,JSON.stringify(detail)]);
@@ -74,7 +107,7 @@ export async function readAudit(limit=200){
   const n=Math.max(1,Math.min(500,Number(limit)||200));
   const r=await p.query('select id,created_at,actor,action,document_key,detail from app_audit order by id desc limit $1',[n]);return r.rows;
 }
-export async function closeDatabase(){if(pool){await pool.end();pool=null;}}
+export async function closeDatabase(){if(pool){await pool.end();pool=null;}initialization=null;mainDataReader=null;}
 
 /* Exporta todos os documentos e todo o histórico em uma mesma visão consistente. */
 export async function exportDatabaseSnapshot(){

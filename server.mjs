@@ -10,11 +10,13 @@ import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {allowLocalAdmin} from './auth-mode.mjs';
-import {readDocument,writeDocument,updateMainData,appendAudit,readAudit,exportDatabaseSnapshot,saveSupplierCatalog,getSupplierCatalog,deleteSupplierCatalog} from './database.mjs';
+import {sendDataJson} from './data-response.mjs';
+import {MODULES,isProtectedUser,userRole,validateModules,sanitizeUser,hasModule,categoryModule,cementModule,routeAllowed} from './users-policy.mjs';
+import {readDocument,writeDocument,updateMainData,updateManagedUsers,appendAudit,readAudit,exportDatabaseSnapshot,saveSupplierCatalog,getSupplierCatalog,deleteSupplierCatalog} from './database.mjs';
 const root=fileURLToPath(new URL('.',import.meta.url));
 const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
 const python=process.env.MRP_PYTHON||(existsSync(bundledPython)?bundledPython:'python');
-const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/bulk-prices.js':'bulk-prices.js','/areia-amigos.js':'areia-amigos.js','/areia-v3.js':'areia-v3.js','/diesel.js':'diesel.js','/supplier-agenda.js':'supplier-agenda.js','/deadlines.js':'deadlines.js','/maintenance-deadlines.js':'maintenance-deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js','/mp-report.js':'mp-report.js','/indirect-materials.js':'indirect-materials.js','/migration':'migration.html','/migration.html':'migration.html'};
+const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js','/data.json':'data.json','/favicon.svg':'favicon.svg','/imports.js':'imports.js','/cement.js':'cement.js','/bulk-prices.js':'bulk-prices.js','/areia-amigos.js':'areia-amigos.js','/areia-v3.js':'areia-v3.js','/diesel.js':'diesel.js','/supplier-agenda.js':'supplier-agenda.js','/deadlines.js':'deadlines.js','/maintenance-deadlines.js':'maintenance-deadlines.js','/maintenance.js':'maintenance.js','/mpquotes.js':'mpquotes.js','/reports.js':'reports.js','/mp-report.js':'mp-report.js','/indirect-materials.js':'indirect-materials.js','/users-admin.js':'users-admin.js','/migration':'migration.html','/migration.html':'migration.html'};
 const types={html:'text/html; charset=utf-8',css:'text/css',js:'text/javascript',svg:'image/svg+xml',json:'application/json; charset=utf-8'};
 const pending=new Map();const sessions=new Map();let busy=false;
 async function pythonReady(){return new Promise(resolve=>{const p=spawn(python,['-c','import sys,pypdf; print(sys.version.split()[0],pypdf.__version__)'],{windowsHide:true,env:{...process.env,PYTHONIOENCODING:'utf-8'}});let out='',err='';p.stdout.on('data',d=>out+=d);p.stderr.on('data',d=>err+=d);p.on('error',e=>resolve({ok:false,error:e.message}));p.on('close',c=>resolve(c===0?{ok:true,detail:out.trim()}:{ok:false,error:err.trim()||'Python indisponível'}));});}
@@ -41,12 +43,13 @@ function validPassword(password,stored){
  return timingSafeEqual(scryptSync(password,salt,64),Buffer.from(hex,'hex'));
 }
 async function accountFor(user,pass){
+ const found=(await managedUsers()).find(x=>x.user===user);
+ if(found)return found.enabled&&validPassword(pass,found.passwordHash)?{user:found.user,name:found.name,role:userRole(found),permissions:found.permissions||[],managed:true,sessionVersion:found.sessionVersion||0}:null;
  const adminUser=process.env.APP_USER||'',adminPass=process.env.APP_PASSWORD||'';
  if(adminUser&&adminPass&&user===adminUser&&pass===adminPass)return {user,name:'Paulo',role:'admin'};
  const au=process.env.ALISSON_USER||'alisson',ap=process.env.ALISSON_PASSWORD||'';
  if(ap&&user===au&&pass===ap)return {user,name:'Alisson Santos',role:'operator'};
- const found=(await managedUsers()).find(x=>x.user===user&&x.enabled&&validPassword(pass,x.passwordHash));
- return found?{user:found.user,name:found.name,role:'limited',permissions:found.permissions||[],managed:true,sessionVersion:found.sessionVersion||0}:null;
+ return null;
 }
 
 function cookies(req){return Object.fromEntries(String(req.headers.cookie||'').split(';').map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf('=');return i<0?[x,'']:[x.slice(0,i),decodeURIComponent(x.slice(i+1))]}));}
@@ -61,13 +64,14 @@ function isAdmin(req){return credentials(req)?.role==='admin';}
 function isAreiaAdmin(req){const acc=credentials(req);return isAdmin(req)||acc?.role==='limited'&&acc.permissions?.includes('areiaadmin');}
 async function refreshManagedSession(req){
  const token=cookies(req).colafix_session,session=token&&sessions.get(token);
- if(!session?.account?.managed)return;
+ if(!session)return;
  const user=(await managedUsers()).find(x=>x.user===session.account.user);
- if(!user?.enabled||!user.passwordHash||user.sessionVersion!==session.account.sessionVersion){sessions.delete(token);return;}
- session.account={...session.account,name:user.name,permissions:user.permissions||[]};
+ if(!session.account.managed){if(user)sessions.delete(token);return;}
+ if(!user?.enabled||!user.passwordHash||(user.sessionVersion||0)!==session.account.sessionVersion){sessions.delete(token);return;}
+ session.account={...session.account,name:user.name,role:userRole(user),permissions:user.permissions||[]};
 }
 function isLimited(req){return credentials(req)?.role==='limited';}
-function hasAccess(req,module){const acc=credentials(req);return acc?.role!=='limited'||acc.permissions?.includes(module);}
+function hasAccess(req,module){return hasModule(credentials(req),module);}
 
 function audit(req,action,key,detail={}){return appendAudit(actor(req),action,key,detail).catch(e=>console.error('Falha auditoria:',e.message));}
 function loginPage(message=''){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Colafix · Login</title><style>
@@ -98,18 +102,6 @@ const reply=(res,status,value)=>{res.writeHead(status,{'Content-Type':'applicati
 function limitedAreiaPage(){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Areia Amigos | Controle de Carregamentos</title><link rel="stylesheet" href="/style.css"><style>html,body{margin:0!important;padding:0!important;min-height:100%;width:100%!important;max-width:100%!important;background:#081625;overflow-x:hidden}body{display:block!important}#areiaamigos-view{min-height:100vh;width:100%}#areiaamigos-view .av-shell{min-height:100vh}#areiaamigos-view .av-main-content{min-width:0}#areiaamigos-view .av-layout.av-load-layout{grid-template-columns:minmax(0,1.6fr) minmax(320px,.85fr)}@media(max-width:1150px){#areiaamigos-view .av-layout.av-load-layout{grid-template-columns:minmax(0,1fr)}} </style></head><body><div id="areiaamigos-view"></div><script type="module" src="/areia-v3.js?v=responsive-20261112b"></script><script>fetch('/api/me',{cache:'no-store'});</script></body></html>`}
 function areiaLoginPage(message=''){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Areia Amigos | Acesso</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#06182b,#123454);color:white;font-family:Arial,sans-serif;padding:20px}.panel{width:min(420px,100%);background:#0c2036;border:1px solid #38516b;border-radius:18px;padding:32px;box-shadow:0 20px 65px #0005}.banner{width:100%;border-radius:10px;margin-bottom:18px}h1{font-size:23px;margin:0 0 6px}p{color:#b5c7d9;font-size:14px}label{display:block;margin:18px 0 6px;font-size:13px;font-weight:bold}input:not([type=checkbox]){width:100%;padding:14px;background:#071625;color:white;border:1px solid #5b7088;border-radius:9px;font-size:16px}button{width:100%;background:#ff930b;border:0;padding:15px;border-radius:9px;font-size:16px;font-weight:bold;margin-top:22px;cursor:pointer}.error{color:#ffb0b0}.remember{display:flex;gap:8px;align-items:center;font-size:13px;margin-top:15px}</style></head><body><main class="panel"><img class="banner" src="/images/areia-header.png" alt="Areia Amigos"><h1>Acesso ao carregamento</h1><p>Entre com seu usuário autorizado do Areia Amigos.</p>${message?'<p class="error">'+message+'</p>':''}<form method="POST" action="/areia/login"><label for="user">Usuário</label><input id="user" name="username" autocomplete="username" required><label for="pass">Senha</label><input id="pass" name="password" type="password" autocomplete="current-password" required><label class="remember"><input name="remember" type="checkbox" value="1">Manter login neste dispositivo</label><button type="submit">Entrar no Areia Amigos</button></form></main></body></html>`}
 
-function usersPage(){return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Colafix · Usuários</title><style>body{margin:0;background:#f1f5f9;color:#142944;font:15px Arial,sans-serif}header{background:#242b36;color:white;padding:20px 28px;display:flex;justify-content:space-between;align-items:center}header a{color:white}main{max-width:1050px;margin:28px auto;padding:0 18px}section{background:white;border:1px solid #d8e1ee;border-radius:12px;padding:24px;margin-bottom:18px}h1{margin:0}h2{margin-top:0}label{display:block;font-weight:600;margin:12px 0 5px}input{box-sizing:border-box;width:100%;padding:11px;border:1px solid #b8c9dc;border-radius:7px;font-size:15px}button{padding:10px 14px;border:0;border-radius:7px;background:#0877e7;color:white;font-weight:600;cursor:pointer}button:disabled{opacity:.55}button.secondary{background:#52647c}button.danger{background:#b42332}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end}.row{border-top:1px solid #e1e8f2;padding:18px 0;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}.actions{display:flex;gap:8px;flex-wrap:wrap}.hint{color:#66778b;font-size:13px}.msg{padding:10px;margin:12px 0;border-radius:7px;background:#e4f5e8} .error{background:#ffe7e7;color:#a32121}@media(max-width:720px){.grid{grid-template-columns:1fr}}html{color-scheme:light}html[data-colafix-theme="dark"]{color-scheme:dark}html[data-colafix-theme="dark"] body{background:#101720;color:#e6edf5}html[data-colafix-theme="dark"] section{background:#1c293a;border-color:#3b506b;color:#edf3ff}html[data-colafix-theme="dark"] header{background:#080e17;border-bottom:1px solid #3b506b}html[data-colafix-theme="dark"] header a{color:#d5e6ff}html[data-colafix-theme="dark"] input{background:#142236;border-color:#526781;color:#f6f9ff}html[data-colafix-theme="dark"] input::placeholder{color:#a7bad3}html[data-colafix-theme="dark"] .hint{color:#b6c8e0}html[data-colafix-theme="dark"] .row{border-color:#3b506b}html[data-colafix-theme="dark"] .msg{background:#20422f;color:#d7ffe6}html[data-colafix-theme="dark"] .msg.error{background:#4a252b;color:#ffdde1}.theme-users-switch{position:fixed;bottom:20px;right:20px;z-index:1000;background:#eaf2ff;color:#14243a;border:1px solid #b7c9e0;border-radius:999px;padding:12px 17px;box-shadow:0 5px 18px #0003}html[data-colafix-theme="dark"] .theme-users-switch{background:#26394f;color:#f4f8ff;border-color:#506782}</style></head><body><header><strong>Colafix · Administração de usuários</strong><a href="/">← Voltar ao sistema</a></header><main><h1>Usuários</h1><p>Cadastre, libere ou bloqueie acessos. Senhas são armazenadas com hash seguro; não são exibidas novamente.</p><div id="message" aria-live="polite"></div><section><h2>Novo usuário</h2><form id="new"><div class="grid"><div><label>Nome completo</label><input name="name" required minlength="3" autocomplete="off"></div><div><label>Usuário de login</label><input name="user" required pattern="[a-zA-Z][a-zA-Z0-9._-]{2,39}" autocomplete="off"></div><div><label>Senha inicial (mínimo 6 caracteres)</label><input name="password" type="password" minlength="6" autocomplete="new-password" placeholder="Opcional: ativar depois"></div></div><p class="hint">Permissão inicial: apenas Areia Amigos. Se deixar a senha em branco, a conta fica bloqueada até você definir uma.</p><button>Criar usuário</button></form></section><section><h2>🟢 Conectados agora</h2><p class="hint">Usuários com atividade nos últimos 2 minutos. Atualização automática a cada 30 segundos.</p><div id="online">Carregando…</div></section><section><h2>Contas cadastradas</h2><div id="users">Carregando…</div></section></main><button type="button" class="theme-users-switch" id="theme-users-switch">🌙 Modo escuro</button><script>
-(function(){const key='colafix-theme';const apply=()=>{const dark=localStorage.getItem(key)==='dark';document.documentElement.setAttribute('data-colafix-theme',dark?'dark':'light');document.getElementById('theme-users-switch').textContent=dark?'☀️ Modo claro':'🌙 Modo escuro'};document.getElementById('theme-users-switch').addEventListener('click',()=>{localStorage.setItem(key,localStorage.getItem(key)==='dark'?'light':'dark');apply()});apply()})();
-const $=s=>document.querySelector(s),escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&#39;'}[c]));
-async function api(path,method='GET',data){const r=await fetch(path,{method,headers:data?{'Content-Type':'application/json'}:{},body:data?JSON.stringify(data):undefined,credentials:'same-origin'});const j=await r.json();if(!r.ok)throw Error(j.error||'Falha na operação.');return j;}
-function message(t,error=false){$('#message').innerHTML='<div class="msg '+(error?'error':'')+'">'+escapeHtml(t)+'</div>';}
-async function load(){try{const j=await api('/api/users');$('#users').innerHTML=j.users.length?j.users.map(u=>'<div class="row"><div><strong>'+escapeHtml(u.name)+'</strong> · <code>'+escapeHtml(u.user)+'</code><p class="hint">Permissões: '+(u.role==='admin'?'Administrador · todas as abas':u.role==='operator'?'Operacional':(u.permissions||[]).includes('areiaamigos')?'Areia Amigos':'Restrito')+' · '+(u.enabled?'🟢 Liberado':'🔴 Bloqueado')+'</p></div><div class="actions">'+(u.protected?'<span class="hint">🔐 Conta existente · gerenciada no Railway</span>':'<button data-user="'+escapeHtml(u.user)+'" data-action="password" class="secondary">🔑 Definir senha</button><button data-user="'+escapeHtml(u.user)+'" data-action="toggle" data-enabled="'+u.enabled+'" class="'+(u.enabled?'danger':'')+'">'+(u.enabled?'🔒 Bloquear':'🔓 Liberar')+'</button>')+'</div></div>').join(''):'<p>Nenhum usuário cadastrado.</p>';}catch(e){message(e.message,true)}}
-$('#new').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);try{await api('/api/users','POST',{name:f.get('name'),user:f.get('user'),password:f.get('password')});e.target.reset();message('Usuário criado.');load()}catch(err){message(err.message,true)}};
-function askPassword(user){return new Promise(resolve=>{const layer=document.createElement('div');layer.style.cssText='position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:99999;padding:16px';layer.innerHTML='<form style="width:min(430px,100%);background:white;border-radius:12px;padding:24px;box-sizing:border-box"><h2>Definir senha de '+escapeHtml(user)+'</h2><label>Nova senha (mínimo 6 caracteres)</label><input type="password" required minlength="6" autocomplete="new-password" style="width:100%"><div style="display:flex;gap:8px;margin-top:18px"><button type="submit">Salvar senha</button><button type="button" class="secondary">Cancelar</button></div></form>';document.body.appendChild(layer);const form=layer.querySelector('form'),input=layer.querySelector('input');input.focus();form.onsubmit=e=>{e.preventDefault();const password=input.value;layer.remove();resolve(password)};layer.querySelector('button[type=button]').onclick=()=>{layer.remove();resolve(null)};layer.onkeydown=e=>{if(e.key==='Escape'){layer.remove();resolve(null)}};});}
-$('#users').onclick=async e=>{const b=e.target.closest('button[data-user]');if(!b)return;const user=b.dataset.user;try{if(b.dataset.action==='password'){const password=await askPassword(user);if(password===null)return;await api('/api/users/'+encodeURIComponent(user),'PATCH',{password});message('Senha definida. Sessões anteriores foram encerradas.');}else{const enabled=b.dataset.enabled!=='true';if(!confirm((enabled?'Liberar':'Bloquear')+' o usuário '+user+'?'))return;await api('/api/users/'+encodeURIComponent(user),'PATCH',{enabled});message('Acesso atualizado.')}load()}catch(err){message(err.message,true)}};
-async function loadOnline(){try{const j=await api('/api/online');$('#online').innerHTML=j.users.length?j.users.map(u=>'<div class="row"><strong>🟢 '+escapeHtml(u.name)+'</strong><span class="hint">'+escapeHtml(u.user)+' · Última atividade: '+new Date(u.lastSeen).toLocaleTimeString('pt-BR')+'</span></div>').join(''):'<p class="hint">Nenhum usuário ativo nos últimos 2 minutos.</p>';}catch(e){$('#online').textContent=e.message;}}
-load();loadOnline();setInterval(loadOnline,30000);
-</script></body></html>`;}
 createServer(async(req,res)=>{try{
  if(!allowedHost(req.headers.host))return reply(res,403,{error:'Endereço não autorizado.'});
  const path=new URL(req.url,'http://localhost').pathname;
@@ -130,7 +122,7 @@ createServer(async(req,res)=>{try{
  if(path==='/usuarios'&&req.method==='GET'){
   if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
   res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});
-  return res.end(usersPage());
+  return res.end(await readFile(join(root,'dist','users-admin.html')));
  }
  if(path==='/areia'&&req.method==='GET'){
   if(!hasAccess(req,'areiaamigos')&&!hasAccess(req,'areiaadmin'))return reply(res,403,{error:'Sem acesso a Areia Amigos.'});
@@ -138,72 +130,51 @@ createServer(async(req,res)=>{try{
   return res.end(limitedAreiaPage());
  }
  if(isLimited(req)){
-  if(path==='/'||path==='/index.html'){res.writeHead(302,{Location:'/areia','Cache-Control':'no-store'});return res.end();}
-  const allow=['/api/me','/api/areia-amigos','/api/areia-v3','/api/areia-drivers','/api/areia-companies',...(isAreiaAdmin(req)?['/api/users']:[]),'/api/areia-amigos/extract','/style.css','/areia-amigos.js','/areia-v3.js','/favicon.svg'];
-  if(!hasAccess(req,'areiaamigos')&&!hasAccess(req,'areiaadmin')||!allow.includes(path)&&path!=='/images/areia-header.png'&&!path.startsWith('/api/areia-amigos/')&&!path.startsWith('/api/areia-drivers/')&&!(isAreiaAdmin(req)&&path.startsWith('/api/users/')))return reply(res,403,{error:'Você não tem permissão para acessar este módulo.'});
+  const account=credentials(req),permissions=account.permissions||[];
+  if((path==='/'||path==='/index.html')&&permissions.includes('areiaamigos')&&!permissions.some(p=>MODULES.includes(p)&&p!=='areiaamigos')){res.writeHead(302,{Location:'/areia','Cache-Control':'no-store'});return res.end();}
+  if((path.startsWith('/api/')||path==='/data.json')&&!routeAllowed(account,path))return reply(res,403,{error:'Você não tem permissão para acessar este módulo.'});
  }
  if(path==='/api/areia-drivers'&&req.method==='GET'){const list=await readDocument('areia-v3-drivers',[]);return reply(res,200,{drivers:(Array.isArray(list)?list:[]).filter(x=>isAreiaAdmin(req)||x.enabled!==false).map(x=>isAreiaAdmin(req)?x:{id:x.id,name:x.name,company:x.company,plate:x.plate,phone:x.phone})});}
  if(path==='/api/areia-drivers'&&req.method==='POST'){if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente administrador.'});if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});const x=await body(req),list=await readDocument('areia-v3-drivers',[]),rows=Array.isArray(list)?list:[];const name=String(x.name||'').trim(),cpf=String(x.cpf||'').replace(/\D/g,''),plate=String(x.plate||'').toUpperCase().replace(/[^A-Z0-9]/g,'');if(name.length<3||cpf.length!==11||!/^([A-Z]{3}[0-9]{4}|[A-Z]{3}[0-9][A-Z][0-9]{2})$/.test(plate))return reply(res,400,{error:'Informe nome, CPF de 11 dígitos e placa válida.'});if(rows.some(y=>y.cpf===cpf))return reply(res,409,{error:'CPF já cadastrado.'});rows.push({id:randomBytes(12).toString('hex'),name,cpf,plate,company:String(x.company||'').trim().slice(0,100),phone:String(x.phone||'').trim().slice(0,30),enabled:true});await writeDocument('areia-v3-drivers',rows);await audit(req,'criar','areia-motoristas',{name});return reply(res,201,{ok:true});}
  if(path.startsWith('/api/areia-drivers/')&&req.method==='PATCH'){if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente administrador.'});if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});const id=path.slice('/api/areia-drivers/'.length),x=await body(req),list=await readDocument('areia-v3-drivers',[]),rows=Array.isArray(list)?list:[],found=rows.find(y=>y.id===id);if(!found)return reply(res,404,{error:'Motorista não encontrado.'});if(x.enabled!==undefined)found.enabled=!!x.enabled;for(const k of ['name','company','phone'])if(x[k]!==undefined)found[k]=String(x[k]).trim().slice(0,100);if(x.plate!==undefined){const plate=String(x.plate).toUpperCase().replace(/[^A-Z0-9]/g,'');if(!/^([A-Z]{3}[0-9]{4}|[A-Z]{3}[0-9][A-Z][0-9]{2})$/.test(plate))return reply(res,400,{error:'Placa inválida.'});found.plate=plate;}if(x.cpf!==undefined){const cpf=String(x.cpf).replace(/\D/g,'');if(cpf.length!==11||rows.some(y=>y.id!==id&&y.cpf===cpf))return reply(res,400,{error:'CPF inválido ou já cadastrado.'});found.cpf=cpf;}await writeDocument('areia-v3-drivers',rows);await audit(req,'alterar','areia-motoristas',{id});return reply(res,200,{ok:true});}
  if(path.startsWith('/api/areia-drivers/')&&req.method==='DELETE'){if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente administrador.'});if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada.'});const id=path.slice('/api/areia-drivers/'.length),list=await readDocument('areia-v3-drivers',[]),rows=Array.isArray(list)?list:[];await writeDocument('areia-v3-drivers',rows.filter(x=>x.id!==id));await audit(req,'excluir','areia-motoristas',{id});return reply(res,200,{ok:true});}
- if(path.startsWith('/api/users/')&&req.method==='DELETE'){if(!isAreiaAdmin(req))return reply(res,403,{error:'Somente administrador.'});if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada.'});const user=decodeURIComponent(path.slice('/api/users/'.length)),list=await managedUsers();if(!list.some(x=>x.user===user))return reply(res,403,{error:'Conta protegida ou inexistente.'});await writeDocument('app-users',list.filter(x=>x.user!==user));for(const [token,s] of sessions)if(s.account.user===user)sessions.delete(token);await audit(req,'excluir','usuarios',{user});return reply(res,200,{ok:true});}
  if(path==='/api/users'&&req.method==='GET'){
-  if(!isAreiaAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
-  const users=await managedUsers();
-  if(!users.some(u=>u.user==='gelson.osorio')){
-   users.push({user:'gelson.osorio',name:'Gelson Osorio',enabled:false,permissions:['areiaamigos'],passwordHash:'',sessionVersion:0,createdAt:new Date().toISOString()});
-   await writeDocument('app-users',users);
-  }
-  const builtin=[
-   {user:process.env.APP_USER||'admin',name:'Paulo',enabled:true,role:'admin',permissions:['*'],source:'environment',protected:true},
-   {user:process.env.ALISSON_USER||'alisson',name:'Alisson Santos',enabled:!!process.env.ALISSON_PASSWORD,role:'operator',permissions:['operacional'],source:'environment',protected:true}
-  ];
-  return reply(res,200,{users:[...(isAdmin(req)?builtin:[]),...users.filter(u=>isAdmin(req)||u.permissions?.includes('areiaamigos')).map(({passwordHash,...u})=>u)]});
+  if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
+  const users=await managedUsers(),managed=new Set(users.map(u=>u.user));
+  const legacy=[];
+  if(process.env.APP_USER&&!managed.has(process.env.APP_USER))legacy.push({user:process.env.APP_USER,name:isProtectedUser(process.env.APP_USER)?'Diego':'Paulo',enabled:!!process.env.APP_PASSWORD,role:'admin',permissions:['*'],source:'environment',protected:true});
+  if(process.env.ALISSON_PASSWORD&&!managed.has(process.env.ALISSON_USER||'alisson'))legacy.push({user:process.env.ALISSON_USER||'alisson',name:'Alisson Santos',enabled:true,role:'operator',permissions:['*'],source:'environment',protected:true});
+  return reply(res,200,{users:[...legacy,...users.filter(u=>!u.deleted).map(sanitizeUser)],modules:MODULES});
+ }
+ if(path==='/api/users/migrate-environment'&&req.method==='POST'){
+  if(!isAdmin(req)||!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Acesso não autorizado.'});
+  const result=await updateManagedUsers(actor(req),users=>{let count=0;for(const legacy of [{user:process.env.APP_USER,pass:process.env.APP_PASSWORD,name:'Paulo',role:'admin'},{user:process.env.ALISSON_USER||'alisson',pass:process.env.ALISSON_PASSWORD,name:'Alisson Santos',role:'operator'}]){if(!legacy.user||!legacy.pass||users.some(u=>u.user===legacy.user))continue;users.push({user:legacy.user,name:isProtectedUser(legacy.user)?'Diego':legacy.name,role:legacy.role==='operator'?'limited':legacy.role,permissions:legacy.role==='operator'?[...MODULES]:[],enabled:true,passwordHash:hashPassword(legacy.pass),sessionVersion:0,createdAt:new Date().toISOString()});count++;}return {action:'migrar-usuarios-ambiente',detail:{count},count};});
+  return reply(res,200,{ok:true,count:result.count});
  }
  if(path==='/api/users'&&req.method==='POST'){
-  if(!isAreiaAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
-  if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
-  const input=await body(req),users=await managedUsers();
-  const user=String(input.user||'').trim().toLowerCase(),name=String(input.name||'').trim();
-  if(!/^[a-z][a-z0-9._-]{2,39}$/.test(user)||name.length<3||name.length>100)return reply(res,400,{error:'Informe nome e usuário válido (3 a 40 caracteres).'});
-  if(user===process.env.APP_USER||user===(process.env.ALISSON_USER||'alisson')||users.some(u=>u.user===user))return reply(res,409,{error:'Usuário já existe.'});
-  const password=String(input.password||'');
-  if(password&&password.length<6)return reply(res,400,{error:'A senha deve ter pelo menos 6 caracteres.'});
-  users.push({user,name,enabled:!!password,permissions:input.accessRole==='admin'?['areiaamigos','areiaadmin']:['areiaamigos'],passwordHash:password?hashPassword(password):'',sessionVersion:0,createdAt:new Date().toISOString()});
-  await writeDocument('app-users',users);
-  await audit(req,'criar','usuarios',{user});
+  if(!isAdmin(req)||!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Acesso não autorizado.'});
+  const input=await body(req),user=String(input.user||'').trim().toLowerCase(),name=String(input.name||'').trim(),password=String(input.password||'');
+  if(!/^[a-z][a-z0-9._-]{2,39}$/.test(user)||name.length<3||name.length>100)throw Error('Informe nome e usuário válido (3 a 40 caracteres).');
+  if(password.length<8||password.length>256)throw Error('A senha deve ter entre 8 e 256 caracteres.');
+  const permissions=isProtectedUser(user)?[]:validateModules(input.permissions||[]);
+  await updateManagedUsers(actor(req),users=>{const prior=users.find(u=>u.user===user);if(prior&&!prior.deleted||!prior&&(user===process.env.APP_USER||user===(process.env.ALISSON_USER||'alisson')&&process.env.ALISSON_PASSWORD))throw Error('Usuário já existe.');const created={user,name,permissions,enabled:true,passwordHash:hashPassword(password),sessionVersion:randomUUID(),createdAt:new Date().toISOString()};if(prior)users[users.indexOf(prior)]=created;else users.push(created);return {action:'criar-usuario',detail:{user}};});
   return reply(res,201,{ok:true});
  }
- if(path.startsWith('/api/users/')&&req.method==='PATCH'){
-  if(!isAreiaAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});
-  if(!allowedOrigin(req.headers.origin)||!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Origem não autorizada.'});
-  const user=decodeURIComponent(path.slice('/api/users/'.length)),input=await body(req),users=await managedUsers(),found=users.find(x=>x.user===user);
-  if(!found||!isAdmin(req)&&!found.permissions?.includes('areiaamigos'))return reply(res,404,{error:'Conta existente gerenciada pelas variáveis do Railway. Para alterar seu acesso ou senha, atualize as variáveis correspondentes.'});
-  if(Object.hasOwn(input,'password')){
-   if(typeof input.password!=='string'||input.password.length<6)return reply(res,400,{error:'Senha deve ter pelo menos 6 caracteres.'});
-   found.passwordHash=hashPassword(input.password);found.sessionVersion=(found.sessionVersion||0)+1;
-  }
-  if(Object.hasOwn(input,'enabled')){
-   if(typeof input.enabled!=='boolean')return reply(res,400,{error:'Status inválido.'});
-   if(input.enabled&&!found.passwordHash)return reply(res,400,{error:'Defina uma senha antes de liberar o acesso.'});
-   found.enabled=input.enabled;
-   found.sessionVersion=(found.sessionVersion||0)+1;
-  }
-  if(Object.hasOwn(input,'accessRole')){
-   if(!['admin','loader'].includes(input.accessRole))return reply(res,400,{error:'Tipo de acesso inválido.'});
-   found.permissions=input.accessRole==='admin'?['areiaamigos','areiaadmin']:['areiaamigos'];
-   found.sessionVersion=(found.sessionVersion||0)+1;
-  }
-  if(Object.hasOwn(input,'name')){
-   if(typeof input.name!=='string'||input.name.trim().length<3)return reply(res,400,{error:'Nome inválido.'});
-   found.name=input.name.trim().slice(0,100);
-  }
-  await writeDocument('app-users',users);await audit(req,'alterar','usuarios',{user,enabled:found.enabled});
+ if(path.startsWith('/api/users/')&&['PATCH','DELETE'].includes(req.method)){
+  if(!isAdmin(req)||!allowedOrigin(req.headers.origin)||req.method==='PATCH'&&!req.headers['content-type']?.startsWith('application/json'))return reply(res,403,{error:'Acesso não autorizado.'});
+  const user=decodeURIComponent(path.slice('/api/users/'.length)).toLowerCase(),input=req.method==='PATCH'?await body(req):{};
+  await updateManagedUsers(actor(req),users=>{const index=users.findIndex(u=>u.user===user),found=users[index];if(!found||found.deleted)throw Error('Usuário não encontrado no banco.');const removesAdmin=req.method==='DELETE'||input.enabled===false;if(removesAdmin&&userRole(found)==='admin'&&!users.some(u=>isProtectedUser(u.user)&&u.enabled&&!u.deleted))throw Error('Ative o administrador Diego antes de remover outro administrador.');if(req.method==='DELETE'){if(isProtectedUser(user))throw Error('O administrador Diego não pode ser excluído.');if(user===process.env.APP_USER||user===(process.env.ALISSON_USER||'alisson')){found.deleted=true;found.enabled=false;found.passwordHash='';found.sessionVersion=randomUUID();}else users.splice(index,1);return {action:'excluir-usuario',detail:{user}};}
+   if(Object.hasOwn(input,'name')){if(typeof input.name!=='string'||input.name.trim().length<3||input.name.trim().length>100)throw Error('Nome inválido.');found.name=input.name.trim();}
+   if(Object.hasOwn(input,'password')){if(typeof input.password!=='string'||input.password.length<8||input.password.length>256)throw Error('Senha deve ter entre 8 e 256 caracteres.');found.passwordHash=hashPassword(input.password);found.sessionVersion=randomUUID();}
+   if(Object.hasOwn(input,'enabled')){if(typeof input.enabled!=='boolean'||isProtectedUser(user)&&!input.enabled)throw Error('O administrador Diego não pode ser bloqueado.');if(input.enabled&&!found.passwordHash)throw Error('Defina uma senha antes de liberar o acesso.');found.enabled=input.enabled;found.sessionVersion=randomUUID();}
+   if(Object.hasOwn(input,'permissions')){if(isProtectedUser(user))throw Error('As permissões do administrador Diego não podem ser alteradas.');found.permissions=validateModules(input.permissions);found.sessionVersion=randomUUID();}
+   return {action:'alterar-usuario',detail:{user,enabled:found.enabled}};
+  });
   return reply(res,200,{ok:true});
  }
  if(path==='/api/health'&&req.method==='GET')return reply(res,200,{app:'colafix-compras-mrp',version:2,database:!!process.env.DATABASE_URL});
  if(path==='/api/online'&&req.method==='GET'){if(!isAdmin(req))return reply(res,403,{error:'Acesso exclusivo do administrador.'});const now=Date.now(),active=new Map();for(const s of sessions.values()){if(now-(s.lastSeen||s.createdAt)>120000)continue;const key=s.account.user;const prev=active.get(key);if(!prev||prev.lastSeen<s.lastSeen)active.set(key,{user:key,name:s.account.name,role:s.account.role,lastSeen:s.lastSeen});}return reply(res,200,{users:[...active.values()].sort((a,b)=>b.lastSeen-a.lastSeen),checkedAt:now,windowSeconds:120});}
- if(path==='/api/me'&&req.method==='GET'){const token=cookies(req).colafix_session;if(token&&sessions.has(token))sessions.get(token).lastSeen=Date.now();const c=credentials(req);return reply(res,200,{ok:true,user:c?.user,name:c?.name,role:c?.role});}
+ if(path==='/api/me'&&req.method==='GET'){const token=cookies(req).colafix_session;if(token&&sessions.has(token))sessions.get(token).lastSeen=Date.now();const c=credentials(req);return reply(res,200,{ok:true,user:c?.user,name:c?.name,role:c?.role,permissions:c?.permissions||[]});}
  if(path==='/api/import/runtime'&&req.method==='GET')return reply(res,200,await pythonReady());
  if(path==='/api/external-summary'&&req.method==='GET'){
   const get=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(8000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json()};
@@ -234,7 +205,7 @@ createServer(async(req,res)=>{try{
   }catch{}
   return reply(res,200,{dollar,weather,updatedAt:new Date().toISOString()});
  }
- if(path==='/data.json'&&req.method==='GET'){const data=await readDocument('main-data',null);if(data!==null)return reply(res,200,data);}
+ if(path==='/data.json'&&req.method==='GET'){const data=await readDocument('main-data',null);if(data!==null)return await sendDataJson(req,res,data);}
  if(path.startsWith('/api/areia-amigos/')&&req.method==='DELETE'){
   if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode excluir recibos.'});
   if(!allowedOrigin(req.headers.origin))return reply(res,403,{error:'Origem não autorizada.'});
@@ -392,7 +363,10 @@ createServer(async(req,res)=>{try{
   await audit(req,'excluir','supplier-contact',{id});
   return reply(res,200,{ok:true});
  }
- if(path==='/api/cement'&&req.method==='GET')return reply(res,200,await readLoads(root));
+ if(path==='/api/cement'&&req.method==='GET'){
+  const data=await readLoads(root),granel=hasAccess(req,'cimento-granel'),ensacado=hasAccess(req,'cimento-ensacado');
+  return reply(res,200,{...data,loads:(data.loads||[]).filter(x=>hasAccess(req,cementModule(x.kind))),...(!granel?{monthlyOrders:{}}:{}),...(!ensacado?{bagProducts:[],bagPrices:null}:{})});
+ }
  if(path==='/api/diesel'&&req.method==='GET')return reply(res,200,await readDiesel(root));
  if(path==='/api/diesel-prices'&&req.method==='GET')return reply(res,200,{prices:await readDocument('diesel-prices',[])});
  if(path==='/api/deadlines'&&req.method==='GET')return reply(res,200,await readDeliveryDeadlines(root));
@@ -425,7 +399,7 @@ createServer(async(req,res)=>{try{
   await audit(req,'atualizar','indirect-materials',{total:items.length});
   return reply(res,200,{ok:true,count:items.length});
  }
- if(path==='/api/maintenance'&&req.method==='GET')return reply(res,200,await readMaintenance(root));
+ if(path==='/api/maintenance'&&req.method==='GET'){const data=await readMaintenance(root);return reply(res,200,{...data,requests:(data.requests||[]).filter(r=>hasAccess(req,categoryModule(r.category)))});}
  if(path==='/api/audit'&&req.method==='GET'){if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode consultar a auditoria.'});return reply(res,200,{ok:true,entries:await readAudit(300)});}
  if(path.startsWith('/api/maintenance/')&&req.method==='DELETE'){
   if(!isAdmin(req))return reply(res,403,{error:'Somente o administrador pode excluir solicitações.'});
@@ -504,12 +478,12 @@ createServer(async(req,res)=>{try{
   }catch(e){return reply(res,502,{error:e.name==='AbortError'?'Tempo limite excedido ao consultar o Gemini.':e.message})}finally{clearTimeout(timer)}
  }
  if(path==='/api/areia-amigos'){const account=credentials(req);const existingRecords=await readDocument('areia-amigos',[]);const existing=Array.isArray(existingRecords)?existingRecords.find(r=>r.id===input.id):null;if(existing&&!isAdmin(req))return reply(res,403,{error:'Recibo salvo não pode ser editado pelo carregador. Solicite correção ao administrador.'});if(!isAdmin(req)&&Array.isArray(input.quantities)&&input.quantities.filter(q=>Number(q)>0).length!==1)return reply(res,400,{error:'Informe exatamente um material por recibo.'});if(!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(input.image||'')||input.image.length>7e6)throw Error('Anexe uma imagem JPG, PNG ou WEBP de até 5 MB.');if(!/^\d{4}-\d{2}-\d{2}$/.test(input.date||'')||!String(input.receipt||'').trim())throw Error('Informe a data e o número do recibo.');const previous=await readDocument('areia-amigos',[]),records=Array.isArray(previous)?previous:[];const duplicate=records.find(x=>String(x.receipt||'').trim()===String(input.receipt||'').trim()&&String(x.id)!==String(input.id||''));if(duplicate)return reply(res,409,{error:'Recibo nº '+String(input.receipt).trim()+' já está cadastrado. Não é permitido salvar recibos duplicados.'});const entry={id:String(input.id||randomUUID()),receipt:String(input.receipt).trim().slice(0,80),date:input.date,time:String(input.time||'').slice(0,5),client:String(input.client||'').slice(0,180),plate:String(input.plate||'').slice(0,32),total:Number(input.total)||0,quantities:Array.from({length:5},(_,i)=>Math.max(0,Number(input.quantities?.[i])||0)),image:input.image,createdBy:existing?.createdBy||account?.user||'',createdByName:existing?.createdByName||account?.name||'',createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};const index=records.findIndex(x=>x.id===entry.id);if(index>=0)records[index]=entry;else records.unshift(entry);await writeDocument('areia-amigos',records);await audit(req,'salvar','areia-amigos',{id:entry.id,receipt:entry.receipt});return reply(res,200,{ok:true,records});}
- if(path==='/api/cement'){const load=await saveLoad(root,input);await audit(req,'salvar','cement',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}if(path==='/api/cement-bag-products'){const products=await saveBagProducts(root,input);await audit(req,'salvar','cement-bag-products',{count:products.length});return reply(res,200,{ok:true,products});}if(path==='/api/cement-bag-prices'){const bagPrices=await saveBagPrices(root,input);await audit(req,'salvar','cement-bag-prices',{period:bagPrices.period||'',updatedAt:bagPrices.updatedAt||''});return reply(res,200,{ok:true,bagPrices});}if(path==='/api/cement-monthly-order'){const orders=await saveMonthlyOrder(root,input);await audit(req,'salvar','cement-monthly-order',{supplier:input.supplier||''});return reply(res,200,{ok:true,orders});}
+ if(path==='/api/cement'){if(!cementModule(input.kind)||!hasAccess(req,cementModule(input.kind)))return reply(res,403,{error:'Sem acesso ao tipo de cimento.'});const load=await saveLoad(root,input);await audit(req,'salvar','cement',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}if(path==='/api/cement-bag-products'){const products=await saveBagProducts(root,input);await audit(req,'salvar','cement-bag-products',{count:products.length});return reply(res,200,{ok:true,products});}if(path==='/api/cement-bag-prices'){const bagPrices=await saveBagPrices(root,input);await audit(req,'salvar','cement-bag-prices',{period:bagPrices.period||'',updatedAt:bagPrices.updatedAt||''});return reply(res,200,{ok:true,bagPrices});}if(path==='/api/cement-monthly-order'){const orders=await saveMonthlyOrder(root,input);await audit(req,'salvar','cement-monthly-order',{supplier:input.supplier||''});return reply(res,200,{ok:true,orders});}
    if(path==='/api/diesel-prices'){const price=Number(input.price),date=String(input.date||''),company=String(input.company||'Todas');if(!Number.isFinite(price)||price<=0||price>1000||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!['Todas','Colafix','Fixcol','Argamazza'].includes(company))return reply(res,400,{error:'Informe uma data e um preço por litro válidos.'});const current=await readDocument('diesel-prices',[]);const record={id:randomUUID(),date,company,price,createdAt:new Date().toISOString()};const prices=[...current,record].slice(-1000);await writeDocument('diesel-prices',prices);await audit(req,'salvar','diesel-prices',{id:record.id,date,company,price});return reply(res,200,{ok:true,prices});}
    if(path==='/api/diesel'){const load=await saveDiesel(root,input);await audit(req,'salvar','diesel',{id:load?.id||input.id||'',status:load?.status||input.status||''});return reply(res,200,{ok:true,load});}
    if(path==='/api/maintenance-deadlines'){const order=await saveMaintenanceDeadline(root,input);await audit(req,'salvar','maintenance-deadlines',{id:order?.id||input.id||''});return reply(res,200,{ok:true,order});}
    if(path==='/api/deadlines'){const order=await saveDeliveryDeadline(root,input);await audit(req,'salvar','delivery-deadlines',{id:order?.id||input.id||'',purchaseOrder:order?.purchaseOrder||input.purchaseOrder||'',code:order?.code||input.code||''});return reply(res,200,{ok:true,order});}
-   if(path==='/api/maintenance'){const request=await saveMaintenance(root,input);await audit(req,'salvar','maintenance',{id:request?.id||input.id||'',status:request?.status||input.status||''});return reply(res,200,{ok:true,request});}
+   if(path==='/api/maintenance'){if(!hasAccess(req,categoryModule(input.category)))return reply(res,403,{error:'Sem acesso à categoria.'});if(input.id){const old=(await readMaintenance(root)).requests.find(r=>r.id===input.id);if(old&&!hasAccess(req,categoryModule(old.category)))return reply(res,403,{error:'Sem acesso à solicitação.'});}const request=await saveMaintenance(root,input);await audit(req,'salvar','maintenance',{id:request?.id||input.id||'',status:request?.status||input.status||''});return reply(res,200,{ok:true,request});}
    if(path==='/api/parameters'){
     const target=join(root,'dist/data.json');let data,raw;
     const prepare=data=>{

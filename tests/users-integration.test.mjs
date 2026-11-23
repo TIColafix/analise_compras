@@ -1,0 +1,65 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {createServer} from 'node:net';
+import {once} from 'node:events';
+import {setTimeout as delay} from 'node:timers/promises';
+
+test('administra usuários no banco e protege módulos e conta Diego',async()=>{
+  const socket=createServer();socket.listen(0,'127.0.0.1');await once(socket,'listening');
+  const port=socket.address().port;await new Promise(resolve=>socket.close(resolve));
+  const base=`http://127.0.0.1:${port}`;
+  const env={...process.env,HOST:'0.0.0.0',PORT:String(port),APP_ORIGIN:base,APP_USER:'admin',APP_PASSWORD:'senha-antiga'};
+  delete env.DATABASE_URL;delete env.RAILWAY_ENVIRONMENT;delete env.ALISSON_PASSWORD;
+  const child=spawn(process.execPath,['--experimental-loader','./tests/helpers/mock-db-loader.mjs','server.mjs'],{env,stdio:'ignore',windowsHide:true});
+  const request=(path,options={})=>fetch(base+path,{...options,headers:{origin:base,...options.headers},redirect:'manual'});
+  async function login(user,password){const r=await request('/login',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({username:user,password})});return {status:r.status,cookie:r.headers.get('set-cookie')?.split(';')[0]};}
+  async function api(cookie,path,method='GET',data){const r=await request(path,{method,headers:{cookie,...(data?{'content-type':'application/json'}:{})},body:data?JSON.stringify(data):undefined});return {status:r.status,body:await r.json()};}
+  try{
+    let ready=false;for(let i=0;i<100;i++){try{if((await request('/api/health')).ok){ready=true;break;}}catch{}await delay(50);}assert.ok(ready);
+    const initial=await login('admin','senha-antiga');assert.equal(initial.status,303);
+    const admin=initial.cookie;
+    const areia=await login('areia-admin','senha-areia');assert.equal(areia.status,303);
+    assert.equal((await api(areia.cookie,'/api/areia-drivers')).status,200);
+    assert.equal((await api(areia.cookie,'/api/users')).status,403);
+    let r=await api(admin,'/api/users','POST',{user:'diego',name:'Diego',password:'senha-diego',permissions:[]});assert.equal(r.status,201);
+    r=await api(admin,'/api/users/diego','DELETE');assert.notEqual(r.status,200);
+    r=await api(admin,'/api/users/diego','PATCH',{enabled:false});assert.notEqual(r.status,200);
+    r=await api(admin,'/api/users/diego','PATCH',{permissions:[]});assert.notEqual(r.status,200);
+    const diego=await login('diego','senha-diego');assert.equal(diego.status,303);
+    r=await api(diego.cookie,'/api/me');assert.equal(r.body.role,'admin');
+    r=await api(admin,'/api/users','POST',{user:'operador',name:'Operador',password:'senha-operador',permissions:['diesel']});assert.equal(r.status,201);
+    const operador=await login('operador','senha-operador');assert.equal(operador.status,303);
+    assert.equal((await api(operador.cookie,'/api/diesel')).status,200);
+    assert.equal((await api(operador.cookie,'/api/cement')).status,403);
+    assert.equal((await request('/data.json',{headers:{cookie:operador.cookie}})).status,403);
+    assert.equal((await api(operador.cookie,'/api/users')).status,403);
+    r=await api(admin,'/api/users/operador','PATCH',{permissions:['insumos']});assert.equal(r.status,200);
+    assert.equal((await api(operador.cookie,'/api/diesel')).status,401);
+    const updated=await login('operador','senha-operador');
+    assert.equal((await api(updated.cookie,'/api/diesel')).status,403);
+    assert.equal((await api(updated.cookie,'/api/indirect-materials')).status,200);
+    r=await api(admin,'/api/users','POST',{user:'granel',name:'Granel',password:'senha-granel',permissions:['cimento-granel']});assert.equal(r.status,201);
+    const bulk=await login('granel','senha-granel');
+    r=await api(bulk.cookie,'/api/cement');assert.deepEqual(r.body.loads.map(x=>x.id),['bulk']);assert.equal(r.body.bagPrices,null);
+    assert.equal((await api(bulk.cookie,'/api/cement-bag-prices')).status,403);
+    assert.equal((await api(bulk.cookie,'/api/cement','POST',{kind:'ensacado'})).status,403);
+    r=await api(admin,'/api/users','POST',{user:'material',name:'Material',password:'senha-material',permissions:['materia-prima']});assert.equal(r.status,201);
+    const material=await login('material','senha-material');
+    r=await api(material.cookie,'/api/maintenance');assert.deepEqual(r.body.requests.map(x=>x.id),['mp']);
+    assert.equal((await api(material.cookie,'/api/maintenance','POST',{id:'work',category:'MP'})).status,403);
+    assert.equal((await api(material.cookie,'/api/maintenance-deadlines')).status,403);
+    assert.equal((await api(admin,'/api/users/material','DELETE')).status,200);
+    assert.equal((await api(material.cookie,'/api/maintenance')).status,401);
+    assert.equal((await api(admin,'/api/users','POST',{user:'material',name:'Material',password:'senha-nova',permissions:['materia-prima']})).status,201);
+    assert.equal((await api(material.cookie,'/api/maintenance')).status,401);
+    r=await api(admin,'/api/users/migrate-environment','POST',{});assert.equal(r.status,200);assert.equal(r.body.count,1);
+    assert.equal((await api(admin,'/api/users')).status,401);
+    const migrated=await login('admin','senha-antiga');assert.equal(migrated.status,303);
+    r=await api(migrated.cookie,'/api/users/admin','PATCH',{password:'senha-nova'});assert.equal(r.status,200);
+    assert.equal((await login('admin','senha-antiga')).status,401);
+    assert.equal((await login('admin','senha-nova')).status,303);
+    assert.equal((await api(diego.cookie,'/api/users/admin','DELETE')).status,200);
+    assert.equal((await login('admin','senha-antiga')).status,401);
+  }finally{child.kill();}
+});
