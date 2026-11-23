@@ -9,6 +9,7 @@ import {randomUUID,randomBytes,createHmac,timingSafeEqual,scryptSync} from 'node
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
+import {allowLocalAdmin} from './auth-mode.mjs';
 import {readDocument,writeDocument,updateMainData,appendAudit,readAudit,exportDatabaseSnapshot,saveSupplierCatalog,getSupplierCatalog,deleteSupplierCatalog} from './database.mjs';
 const root=fileURLToPath(new URL('.',import.meta.url));
 const bundledPython=join(process.env.USERPROFILE||process.env.HOME||root,'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe');
@@ -50,7 +51,7 @@ async function accountFor(user,pass){
 
 function cookies(req){return Object.fromEntries(String(req.headers.cookie||'').split(';').map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf('=');return i<0?[x,'']:[x.slice(0,i),decodeURIComponent(x.slice(i+1))]}));}
 function credentials(req){
- if(!process.env.RAILWAY_ENVIRONMENT)return {user:'local',name:'Local',role:'admin'};
+ if(allowLocalAdmin({host,publicOrigin,railway:process.env.RAILWAY_ENVIRONMENT,headers:req.headers}))return {user:'local',name:'Local',role:'admin'};
  const token=cookies(req).colafix_session;if(token&&sessions.has(token))return sessions.get(token).account;
  return null;
 }
