@@ -330,3 +330,9 @@ Criada a página `/minha-senha`, acessível pelo menu principal, pela administra
 Os testes de integração com usuários fictícios verificaram senha atual inválida, origem não autorizada, usuários limitados, Diego, contas legadas e revogação de sessões. Nenhuma senha real foi alterada por esta implementação; a alteração depende de instalação na hospedagem.
 
 Na gestão administrativa, o botão **Redefinir senha** permite ao administrador definir uma nova senha para qualquer conta no banco, inclusive Diego, sem exigir a senha anterior e sem alterar módulos. As sessões anteriores da conta são invalidadas. Contas ainda mantidas em variáveis do ambiente devem ser migradas para o banco antes da redefinição pela tela. Testes com contas fictícias confirmaram a redefinição de Diego, sua permanência como administrador e o bloqueio da mesma ação por usuário sem privilégios.
+
+### Identificação da versão na tela de login
+
+A tela de login exibe o commit e a data de geração da imagem, em horário de Brasília. O Dockerfile recebe `GIT_SHA` do EasyPanel como argumento de compilação e gera `build-info.json` dentro da imagem; quando o identificador não é fornecido, a tela informa que o commit está indisponível, sem inventá-lo. A data exibida na imagem é a de geração da imagem, não necessariamente a data do commit nem de um eventual redeploy da mesma imagem. No modo local, quando possível, são exibidos o commit e a data do checkout local.
+
+O `.dockerignore` impede a inclusão de `.git`, dados operacionais, arquivos de ambiente e dependências locais no contexto da imagem. Testes cobrem geração/validação de metadados, ausência do commit e presença da informação no HTML de login. A instalação no EasyPanel e a passagem efetiva de `GIT_SHA` ainda precisam ser verificadas após o deploy; Docker não estava disponível para build completo neste computador. Nenhum dado operacional foi alterado.

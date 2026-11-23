@@ -20,7 +20,7 @@ test('ambiente de nuvem exige login, mantém sessão e encerra no logout',async(
     let r=await request('/');assert.equal(r.status,302);assert.equal(r.headers.get('location'),'/login');
     r=await request('/api/me');assert.equal(r.status,401);
     r=await request('/data.json');assert.equal(r.status,302);assert.equal(r.headers.get('location'),'/login');
-    r=await request('/login');assert.equal(r.status,200);
+    r=await request('/login');assert.equal(r.status,200);assert.match(await r.text(),/class="build-info"[^>]*>[^<]*commit/);
     r=await request('/login',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:'username=teste&password=errada'});assert.equal(r.status,401);
     r=await request('/login',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:'username=teste&password=senha-teste'});assert.equal(r.status,303);
     const cookie=r.headers.get('set-cookie').split(';')[0];

@@ -15,6 +15,10 @@ RUN python3 -m venv /opt/colafix-venv \
 
 COPY . .
 
+# O EasyPanel fornece GIT_SHA na compilação; a data indica a geração da imagem.
+ARG GIT_SHA
+RUN GIT_SHA="$GIT_SHA" node scripts/write-build-info.mjs
+
 ENV NODE_ENV=production \
     PORT=8080 \
     HOST=0.0.0.0 \
