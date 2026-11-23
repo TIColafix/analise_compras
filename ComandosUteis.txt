@@ -1,0 +1,2 @@
+cd C:\dev\Projects\Colafix_Web_Focco\analise_compras
+npm start
