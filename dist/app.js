@@ -67,8 +67,18 @@ function weeklyAveragePanel(i){
  const monthly=Number(i.monthly);
  const valid=i.monthly!==null&&i.monthly!==undefined&&i.monthly!==''&&Number.isFinite(monthly)&&monthly>=0&&!i.missingMonth;
  const week=valid?monthly/4:null;
+ const balance=Number(i.warehouse);
+ const base=String(i.date||'').slice(0,10);
+ const baseTime=Date.parse(base+'T00:00:00Z');
+ const canCover=valid&&monthly>0&&i.warehouse!=null&&i.warehouse!==''&&Number.isFinite(balance)&&!(i.problems||[]).length&&Number.isFinite(baseTime);
+ const coverDays=canCover?Math.floor(Math.max(0,balance)/monthly*30):null;
+ const end=coverDays===null?null:new Date(baseTime+coverDays*86400000);
+ const months=coverDays===null?0:Math.floor(coverDays/30), remainder=coverDays===null?0:coverDays%30;
+ const duration=coverDays===null?'Indisponível':(months?months+(months===1?' mês':' meses'):'')+(months&&remainder?' e ':'')+(remainder||!months?remainder+(remainder===1?' dia':' dias'):'');
+ const color=coverDays===null?'inherit':coverDays>90?'#4ade80':coverDays>=30?'#fbbf24':'#f87171';
+ const coverageHtml='<h4>Previsão de cobertura do estoque</h4><div class="weekly-average-summary"><div><small>Duração estimada do estoque</small><strong style="color:'+color+'">'+duration+'</strong></div><div><small>Previsão de término</small><strong style="color:'+color+'">'+(end&&Number.isFinite(end.getTime())?end.toLocaleDateString('pt-BR',{timeZone:'UTC'}):'Indisponível')+'</strong></div></div><p class="hint">Saldo do Almox. 1, sem pedidos pendentes. Base: data da análise '+(Number.isFinite(baseTime)?new Date(baseTime).toLocaleDateString('pt-BR',{timeZone:'UTC'}):'indisponível')+'. Estimativa de 30 dias por mês; consumo zero ou dados inconsistentes não geram previsão.</p>';
  return '<section class="panel weekly-average-panel"><h3>Média de consumo por semana · '+esc(i.id)+'</h3>'+
- (valid?'<div class="weekly-average-summary"><div><small>Média mensal dos parâmetros</small><strong>'+qty(monthly,i.unit)+'</strong></div><div><small>Média semanal (4 semanas)</small><strong>'+qty(week,i.unit)+'</strong></div></div><div class="weekly-average-grid">'+[1,2,3,4].map(n=>'<div><small>Semana '+n+'</small><strong>'+qty(week,i.unit)+'</strong></div>').join('')+'</div><p class="hint">Estimativa uniforme: consumo médio mensal ÷ 4. Não representa consumo real de cada semana nem quantidade de compra recomendada.</p>':'<p class="hint">Média semanal indisponível: não há consumo médio mensal válido nos parâmetros deste item para a data selecionada.</p>')+'</section>';
+ (valid?'<div class="weekly-average-summary"><div><small>Média mensal dos parâmetros</small><strong>'+qty(monthly,i.unit)+'</strong></div><div><small>Média semanal (4 semanas)</small><strong>'+qty(week,i.unit)+'</strong></div></div><div class="weekly-average-grid">'+[1,2,3,4].map(n=>'<div><small>Semana '+n+'</small><strong>'+qty(week,i.unit)+'</strong></div>').join('')+'</div><p class="hint">Estimativa uniforme: consumo médio mensal ÷ 4. Não representa consumo real de cada semana nem quantidade de compra recomendada.</p>':'<p class="hint">Média semanal indisponível: não há consumo médio mensal válido nos parâmetros deste item para a data selecionada.</p>')+coverageHtml+'</section>';
 }
 function deadlineItemMatches(r,code,unit){
  const norm=v=>String(v??'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
