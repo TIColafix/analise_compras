@@ -36,7 +36,7 @@ function renderAudit(){
  const list=rows.filter(x=>(!uf?.value||x.actor===uf.value)&&(!mf?.value||x.document_key===mf.value)&&(!q||JSON.stringify(x).toLowerCase().includes(q)));
  $('#audit-table').innerHTML=list.length?table(['Data / hora','Usuário','Módulo','Ação','Detalhes'],list.map(x=>`<tr><td>${new Date(x.created_at).toLocaleString('pt-BR')}</td><td><strong>${esc(x.actor)}</strong></td><td>${esc(auditLabel(x.document_key))}</td><td>${esc(x.action)}</td><td><small>${esc(Object.entries(x.detail||{}).map(([k,v])=>k+': '+v).join(' · ')||'—')}</small></td></tr>`)):empty('Nenhuma alteração encontrada para os filtros.');
 }
-async function loadDeadlineOrders(){try{const r=await fetch('/api/deadlines');if(!r.ok)return;const j=await r.json();deadlineOrders=j.orders||[]}catch{deadlineOrders=[]}} async function recalculatePlanning(message='Planejamento recalculado.'){await loadDeadlineOrders();if(page==='dashboard')renderDashboard();else if(page==='mrp')renderMRP();else if(page==='estoque')renderStock(true);window.dispatchEvent(new CustomEvent('planning:recalculated',{detail:{message}}));} async function loadDashboardExtras(){try{const [a,b]=await Promise.all([fetch('/api/external-summary',{cache:'no-store'}),fetch('/api/diesel')]);if(a.ok)externalSummary=await a.json();if(b.ok)dieselSummary=await b.json()}catch{}}
+async function loadDeadlineOrders(){try{const r=await fetch('/api/deadlines');if(!r.ok)return;const j=await r.json();deadlineOrders=j.orders||[]}catch{deadlineOrders=[]}} async function recalculatePlanning(message='Planejamento recalculado.'){await loadDeadlineOrders();if(page==='dashboard')renderDashboard();else if(page==='mrp')renderMRP();else if(page==='estoque')renderStock();window.dispatchEvent(new CustomEvent('planning:recalculated',{detail:{message}}));} async function loadDashboardExtras(){try{const [a,b]=await Promise.all([fetch('/api/external-summary',{cache:'no-store'}),fetch('/api/diesel')]);if(a.ok)externalSummary=await a.json();if(b.ok)dieselSummary=await b.json()}catch{}}
 // Atualiza as condições externas a cada hora enquanto a aplicação estiver aberta.
 setInterval(async()=>{if(document.hidden)return;await loadDashboardExtras();if(page==='dashboard')renderDashboard()},60*60*1000);
 document.addEventListener('visibilitychange',async()=>{if(!document.hidden&&page==='dashboard'){await loadDashboardExtras();renderDashboard()}});
@@ -95,16 +95,20 @@ function activeDeadlineItem(r){
  const status=String(r.status||'').trim().toLocaleLowerCase('pt-BR');
  return !['entregue','concluído','concluido','cancelado','cancelada','excluído','excluido'].includes(status);
 }
-function pendingItemPanel(code,unit,name){
+function matchingPendingOrders(code,unit,name){
  const normName=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
  const materialName=normName(name);
- const matching=deadlineOrders.filter(r=>activeDeadlineItem(r)).map(r=>({
+ return deadlineOrders.filter(r=>activeDeadlineItem(r)).map(r=>({
   ...r,
   remaining:Math.max(0,deadlineNumber(r.quantity)-deadlineNumber(r.deliveredQuantity)),
   codeMatch:deadlineItemMatches(r,code,unit),
   nameMatch:!!materialName&&materialName.length>=6&&normName(r.product||r.description||r.productName||r.materialName)===materialName,
   unitMatch:normalizedUnit(r.unit)===normalizedUnit(unit)
  })).filter(r=>r.remaining>0&&(r.codeMatch||r.nameMatch&&r.unitMatch));
+
+}
+function pendingItemPanel(code,unit,name){
+ const matching=matchingPendingOrders(code,unit,name);
  const rows=matching.map(r=>{
   const mismatch=!r.codeMatch;
   const codeOnOrder=r.code||r.productCode||r.itemCode||r.materialCode||'—';
@@ -117,15 +121,13 @@ function pendingItemPanel(code,unit,name){
 let pendingRefreshSerial=0;
 async function refreshSelectedStockDeadlines(){
  const serial=++pendingRefreshSerial;
+ const before=JSON.stringify(deadlineOrders);
  await loadDeadlineOrders();
  if(serial!==pendingRefreshSerial||page!=='estoque')return;
- const i=engine.stock(dates.estoque).find(x=>x.id===stockSelection);
- if(!i)return;
- const target=document.querySelector('#stock-bottom .pending-stock-deliveries');
- if(target)target.innerHTML=pendingItemPanel(i.id,i.unit,i.name);
+ if(before!==JSON.stringify(deadlineOrders))renderStock();
 }
 
-function renderStock(selectionOnly=false){let list=engine.stock(dates.estoque),q=$('#stock-search').value.toLocaleLowerCase('pt-BR');list=list.filter(i=>(i.id+' '+i.name).toLocaleLowerCase('pt-BR').includes(q)&&(!$('#stock-supplier').value||i.supplier===$('#stock-supplier').value)&&(!$('#stock-status').value||i.status===$('#stock-status').value)&&(!$('#stock-rupture').value||($('#stock-rupture').value==='status:Atencao'?i.status==='Atenção':i.rupture===$('#stock-rupture').value))&&(!$('#stock-change').value||($('#stock-change').value==='unknown'?i.variation==null:i.variation!=null&&($('#stock-change').value==='up'?i.variation>0:$('#stock-change').value==='down'?i.variation<0:i.variation===0))));if(!list.some(i=>i.id===stockSelection))stockSelection=list[0]?.id;$('#stock-count').textContent=list.length+' materiais · '+dt(dates.estoque);
+function renderStock(selectionOnly=false){let list=engine.stock(dates.estoque).map(i=>{const pending=matchingPendingOrders(i.id,i.unit,i.name);if(!pending.length)return i;const next=pending.map(r=>r.newDate||r.deliveryDate).filter(d=>d&&Number.isFinite(Date.parse(d))).sort((a,b)=>Date.parse(a)-Date.parse(b))[0];const rupture=i.rupture!=='Sem pedido'?i.rupture:!next?'Pedido pendente':Date.parse(next)>=Date.parse(i.date||dates.estoque)+i.coverage*86400000?'Risco de ruptura':'Sem risco';return {...i,rupture};}),q=$('#stock-search').value.toLocaleLowerCase('pt-BR');list=list.filter(i=>(i.id+' '+i.name).toLocaleLowerCase('pt-BR').includes(q)&&(!$('#stock-supplier').value||i.supplier===$('#stock-supplier').value)&&(!$('#stock-status').value||i.status===$('#stock-status').value)&&(!$('#stock-rupture').value||($('#stock-rupture').value==='status:Atencao'?i.status==='Atenção':i.rupture===$('#stock-rupture').value))&&(!$('#stock-change').value||($('#stock-change').value==='unknown'?i.variation==null:i.variation!=null&&($('#stock-change').value==='up'?i.variation>0:$('#stock-change').value==='down'?i.variation<0:i.variation===0))));if(!list.some(i=>i.id===stockSelection))stockSelection=list[0]?.id;$('#stock-count').textContent=list.length+' materiais · '+dt(dates.estoque);
  let stockPdf=$('#stock-export-pdf');if(!stockPdf){stockPdf=document.createElement('button');stockPdf.id='stock-export-pdf';stockPdf.type='button';stockPdf.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 9h6M9 13h6"/></svg> Gerar PDF';stockPdf.style.cssText='background:#bd1919;color:#fff;border:1px solid #bd1919;border-radius:9px;padding:0 12px;height:42px;font:inherit;font-weight:500;white-space:nowrap;cursor:pointer;align-self:end';stockPdf.querySelector('svg').style.verticalAlign='-2px';$('#stock-rupture').closest('label').after(stockPdf);}
  stockPdf.disabled=!list.length;stockPdf.onclick=()=>{const filters=['stock-supplier','stock-status','stock-rupture','stock-change'].map(id=>{const el=$('#'+id);return el.value?el.options[el.selectedIndex].text:''}).filter(Boolean);const rows=list.map(i=>'<tr><td>'+esc(i.id)+'</td><td>'+esc(i.name)+'</td><td>'+esc(i.unit||'—')+'</td><td class="number">'+esc(i.warehouse==null?'—':erpQtyFmt(i.warehouse))+'</td></tr>').join('');const w=window.open('','_blank');if(!w){alert('Permita pop-ups para gerar o PDF.');return;}w.opener=null;w.document.open();w.document.write('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Posição de estoque - '+esc(dates.estoque)+'</title><style>@page{size:A4 portrait;margin:15mm}body{font:12px Arial,sans-serif;color:#111}h1{font-size:22px;margin:0;color:#d22630}h2{font-size:15px;text-align:center}table{width:100%;border-collapse:collapse}th,td{border:1px solid #aaa;padding:7px;text-align:left}th{background:#eee}td.number{text-align:right}tr{break-inside:avoid}thead{display:table-header-group}@media print{button{display:none}}</style></head><body><h1>Colafix</h1><h2>POSIÇÃO DE ESTOQUE — ALMOXARIFADO 1</h2><p>Data: '+esc(dt(dates.estoque))+' · Filtros: '+esc(filters.join(' / ')||'Todos')+' · Pesquisa: '+esc($('#stock-search').value||'Todas')+'</p><table><thead><tr><th>Cód. Item</th><th>Descrição</th><th>UM</th><th>Saldo Almox. 1</th></tr></thead><tbody>'+rows+'</tbody></table><p>Total: '+list.length+' materiais.</p><button onclick="window.print()">Imprimir / Salvar PDF</button></body></html>');w.document.close();w.focus();w.print();};
 
