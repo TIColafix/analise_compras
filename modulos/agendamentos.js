@@ -713,8 +713,6 @@
   async function pdfPronto(){ const PP=window.Painel&&window.Painel.pdf; if(!PP||!PP.novo){ P.toast('O gerador de PDF ainda não carregou. Tente de novo.'); return null; }
     try{ if(!(window.jspdf&&window.jspdf.jsPDF)&&PP.carregar) await PP.carregar(); }catch(e){}
     if(!(window.jspdf&&window.jspdf.jsPDF)){ P.toast('O gerador de PDF não carregou. Confira a internet e tente de novo.'); return null; } return PP; }
-  /* 28/11/2026 ("colocar embaixo ou no verso a folha para o operador de empilhadeira"): página própria (sai no verso ao imprimir frente e verso),
-     letra grande, um quadrado para marcar cada palete completo; os avulsos ficam com a separação */
   async function pdfSep(ids){ const PP=await pdfPronto(); if(!PP) return; const xs=ids.map(deId).filter(Boolean); if(!xs.length) return;
     const r=soma(xs), cap=capCarga(xs), x0=xs[0], k=x0.carga?'Carga '+x0.carga:ehCarga(x0)?'Carga com '+pedList(x0).length+' pedidos':xs.length>1?xs.length+' pedidos sem carga':'Pedido '+pedCurto(x0);
     try{ const img=await PP.imgs(), Q=PP.novo('Separação · '+k,[x0.data?br(x0.data):'sem data',x0.diario?'diário nº '+x0.diario:'',x0.transp||'',x0.placa||'',cap.v?cap.v.nome:'',x0.hora||''].filter(Boolean).join(' · '),img); Q.capa();
